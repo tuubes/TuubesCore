@@ -1,0 +1,4 @@
+rootProject.name = 'Photon-Implementation'
+
+include ':Photon-API'
+project(':Photon-API').projectDir = new File(settingsDir, '../Photon-API')

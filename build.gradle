@@ -1,0 +1,42 @@
+apply plugin: 'java'
+version = '0.3.0'
+description 'Implementation of the multi-threaded minecraft server Photon'
+
+sourceCompatibility = '1.8'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+if (!hasProperty('mainClass')) {
+    ext.mainClass = 'org.mcphoton.impl.Main'
+}
+
+build {
+	dependsOn('downloadJars')
+}
+
+repositories {
+	mavenCentral()
+}
+
+task downloadJars {
+	File dir = new File(buildDir, 'dependLibs')
+	if(!dir.isDirectory()){
+		dir.mkdir()
+	}
+	download(dir, 'TOML_lib.jar', 'https://github.com/TheElectronWill/TOML-javalib/releases/download/v1.2.1/TOML.lib.v1.2.1.by.TheElectronWill.jar')
+	download(dir, 'JSON_lib.jar', 'https://github.com/TheElectronWill/JSON-javalib/releases/download/v1.1/JSON.lib.v1.1.by.TheElectronWill.jar')
+	download(dir, 'NBT_lib.jar', 'https://github.com/TheElectronWill/NBT-javalib/releases/download/v1.0/NBT.lib.v1.0.jar')
+}
+
+//Downloads a file from an url
+def download(File destDir, String destName, String url) {
+	def file = new File(destDir, destName)
+	if(!file.exists()) {
+		println "Downloading ${url} to ${file.absolutePath}"
+		file << new URL(url).openStream()
+	}
+}
+
+dependencies {
+	compile project(':Photon-API')
+	compile fileTree(dir: "$buildDir/dependLibs", include: '*.jar')
+}
