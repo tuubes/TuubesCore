@@ -1,0 +1,5 @@
+.nb-gradle*
+.gradle
+build
+logs
+serverConfig.toml
