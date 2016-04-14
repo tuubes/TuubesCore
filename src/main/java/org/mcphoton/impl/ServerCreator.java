@@ -62,6 +62,7 @@ public class ServerCreator {
 			}
 		} catch (IOException ex) {
 			logger.error("Cannot load server configuration", ex);
+			System.exit(1);
 		}
 	}
 
@@ -73,6 +74,7 @@ public class ServerCreator {
 			keyPair = generator.genKeyPair();
 		} catch (NoSuchAlgorithmException ex) {
 			logger.error("Cannot generate RSA keypair", ex);
+			System.exit(2);
 		}
 	}
 
@@ -83,6 +85,7 @@ public class ServerCreator {
 			not = new NetworkOutputThread(nit.getSelector(), nit);
 		} catch (IOException ex) {
 			logger.error("Cannot create network threads", ex);
+			System.exit(3);
 		}
 	}
 
