@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.impl.PhotonLogger;
 
 /**
+ * Configures and creates a server instance.
  *
  * @author TheElectronWill
  */

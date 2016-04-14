@@ -22,7 +22,7 @@ import org.slf4j.impl.LoggingService;
 import org.slf4j.impl.PhotonLogger;
 
 /**
- * Serveur de jeu.
+ * The game server.
  *
  * @author TheElectronWill
  *

@@ -3,7 +3,7 @@ package org.mcphoton.impl;
 import org.mcphoton.Photon;
 
 /**
- * Classe de lancement du programme.
+ * Main class, which launches the program.
  *
  * @author TheElectronWill
  *
