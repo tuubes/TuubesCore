@@ -11,12 +11,13 @@ import org.mcphoton.Photon;
 public class Main {
 
 	static final String os = System.getProperty("os.name");
+	public static volatile PhotonServer serverInstance;
 
 	public static void main(String[] args) {
 		printFramed("Photon server version " + Photon.getVersion(), "For minecraft version " + Photon.getMinecraftVersion());
 		ServerCreator serverCreator = new ServerCreator("PhotonServer");
-		PhotonServer server = serverCreator.createServer();
-		server.startThreads();
+		serverInstance = serverCreator.createServer();
+		serverInstance.startThreads();
 	}
 
 	private static void printFramed(String... strings) {
