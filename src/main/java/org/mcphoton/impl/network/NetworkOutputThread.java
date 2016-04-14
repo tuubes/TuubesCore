@@ -10,31 +10,31 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The thread that manages all the network output. It writes outcoming packets.
- * 
+ *
  * @author TheElectronWill
- * 		
+ *
  */
 public final class NetworkOutputThread extends Thread {
-	
+
 	// TODO measurements to determine the best queue's capacity
 	private final BlockingQueue<PacketSending> queue = new ArrayBlockingQueue<>(200, false);
 	private final PacketSending POISON = new PacketSending(null, null);
 	private final Selector selector;
 	private final Object guard;
 	private volatile boolean run = true;
-	
+
 	/**
-	 * Creates a new <code>NetworkOutputThread</code> that registers channels to the specified <code>Selector</code> in
-	 * case of incomplete writing.
-	 * 
+	 * Creates a new <code>NetworkOutputThread</code> that registers channels to the specified
+	 * <code>Selector</code> in case of incomplete writing.
+	 *
 	 * @param selector the selector to use in case of incomplete writing
-	 * @param the guard for wakeup (normally this is the NetworkInputTherad instance).
+	 * @param the guard for wakeup (normally it's the NetworkInputThread instance).
 	 */
 	public NetworkOutputThread(Selector selector, Object guard) {
 		this.selector = selector;
 		this.guard = guard;
 	}
-	
+
 	/**
 	 * Stops this Thread nicely, as soon as possible but without any forcing.
 	 */
@@ -42,7 +42,7 @@ public final class NetworkOutputThread extends Thread {
 		run = false;
 		queue.offer(POISON);
 	}
-	
+
 	@Override
 	public void run() {
 		while (run) {
@@ -73,9 +73,10 @@ public final class NetworkOutputThread extends Thread {
 			}
 		}
 	}
-	
+
 	/**
-	 * Adds a <code>PacketSending</code> to the sending queue, waiting if necessary for space to become available.
+	 * Adds a <code>PacketSending</code> to the sending queue, waiting if necessary for space to become
+	 * available.
 	 */
 	public void enqueue(PacketSending sending) {
 		try {
@@ -84,10 +85,10 @@ public final class NetworkOutputThread extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
-	 * Adds a <code>PacketSending</code> to the sending queue, waiting up to the specified wait time if necessary for
-	 * space to become available.
+	 * Adds a <code>PacketSending</code> to the sending queue, waiting up to the specified wait time if
+	 * necessary for space to become available.
 	 */
 	public void enqueue(PacketSending sending, long timeout, TimeUnit unit) {
 		try {
@@ -96,5 +97,5 @@ public final class NetworkOutputThread extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
+
 }
