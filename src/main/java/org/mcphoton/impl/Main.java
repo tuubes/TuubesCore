@@ -1,8 +1,5 @@
 package org.mcphoton.impl;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import org.mcphoton.Photon;
 
 /**
@@ -17,22 +14,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		printFramed("Photon server version " + Photon.getVersion(), "For minecraft version " + Photon.getMinecraftVersion());
-		try {
-			KeyPair rsaKeyPair = generateRsaKeyPair();
-			PhotonServer server = new PhotonServer(rsaKeyPair);
-			server.specifyConfig();
-			server.reloadConfig();
-			server.setShutdownHook();
-			server.startThreads();
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
-	}
-
-	private static KeyPair generateRsaKeyPair() throws NoSuchAlgorithmException {
-		KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-		generator.initialize(512);
-		return generator.genKeyPair();
+		ServerCreator serverCreator = new ServerCreator("PhotonServer");
+		PhotonServer server = serverCreator.createServer();
+		server.startThreads();
 	}
 
 	private static void printFramed(String... strings) {

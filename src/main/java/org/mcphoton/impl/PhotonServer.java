@@ -1,8 +1,6 @@
 package org.mcphoton.impl;
 
 import com.electronwill.utils.SimpleBag;
-import java.io.File;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.util.Collection;
@@ -10,8 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import org.mcphoton.config.ConfigurationSpecification;
-import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.entity.living.player.Player;
 import org.mcphoton.impl.network.NetworkInputThread;
 import org.mcphoton.impl.network.NetworkOutputThread;
@@ -22,7 +18,6 @@ import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
 import org.mcphoton.world.Location;
 import org.mcphoton.world.World;
-import org.slf4j.LoggerFactory;
 import org.slf4j.impl.LoggingService;
 import org.slf4j.impl.PhotonLogger;
 
@@ -34,63 +29,40 @@ import org.slf4j.impl.PhotonLogger;
  */
 public final class PhotonServer implements Server {
 
-	private final KeyPair keyPair;
-	private final File configFile = new File("serverConfig.toml");
-	private final ConfigurationSpecification configSpec = new ConfigurationSpecification();
-	private final TomlConfiguration config = new TomlConfiguration();
-	private final PhotonLogger log = (PhotonLogger) LoggerFactory.getLogger("Photon");
-	private final PluginsManager pm = new PhotonPluginsManager();
+	public final PhotonLogger logger;
+	public final KeyPair keyPair;
+	public final InetSocketAddress address;
+	public final NetworkInputThread networkInputThread;
+	public final NetworkOutputThread networkOutputThread;
 
-	private volatile InetSocketAddress address;
-	private volatile NetworkInputThread networkInputThread;
-	private volatile NetworkOutputThread networkOutputThread;
+	public final PluginsManager pm = new PhotonPluginsManager();
 
-	private volatile String motd;
+	public volatile String motd;
 
-	private final Collection<Player> onlinePlayers = new SimpleBag<>();
-	private volatile int maxPlayers;
+	public final Collection<Player> onlinePlayers = new SimpleBag<>();
+	public volatile int maxPlayers;
 
-	private final Map<String, World> worlds = new HashMap<>();
-	private volatile Location spawn;
+	public final Map<String, World> worlds = new HashMap<>();
+	public volatile Location spawn;
 
-	public PhotonServer(KeyPair keyPair) {
+	public PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, NetworkInputThread networkInputThread, NetworkOutputThread networkOutputThread, String motd, int maxPlayers, Location spawn) {
+		this.logger = logger;
 		this.keyPair = keyPair;
-		log.setLevel(PhotonLogger.LEVEL_DEBUG);
-	}
-
-	void specifyConfig() {
-		configSpec.defineInt("port", 25565, 0, 65535);
-		configSpec.defineInt("maxPlayers", 10, 1, 1000);
-		configSpec.defineString("motd", "Photon server, version alpha");
-	}
-
-	void reloadConfig() throws IOException {
-		log.info("Loading serverConfig.toml...");
-		if (configFile.exists()) {
-			config.readFrom(configFile);
-			int corrected = config.correct(configSpec);
-			if (corrected > 0) {
-				config.writeTo(configFile);
-				log.warn("Corrected {} entry(ies) in serverConfig.toml", corrected);
-			}
-			address = new InetSocketAddress(config.getInt("port"));
-			maxPlayers = config.getInt("maxPlayers");
-			motd = config.getString("motd");
-		} else {
-			int corrected = config.correct(configSpec);
-			log.info("Added {} entries in serverConfig.toml", corrected);
-			config.writeTo(configFile);
-		}
+		this.address = address;
+		this.networkInputThread = networkInputThread;
+		this.networkOutputThread = networkOutputThread;
+		this.motd = motd;
+		this.maxPlayers = maxPlayers;
+		this.spawn = spawn;
 	}
 
 	void startThreads() {
 		try {
-			networkInputThread = new NetworkInputThread(address);
-			networkOutputThread = new NetworkOutputThread(networkInputThread.getSelector(), networkInputThread);
 			networkInputThread.start();
 			networkOutputThread.start();
-		} catch (IOException ex) {
-			log.error("Cannot create network threads", ex);
+		} catch (Exception ex) {
+			logger.error("Cannot start network threads", ex);
+			System.exit(100);
 		}
 
 	}
@@ -104,7 +76,10 @@ public final class PhotonServer implements Server {
 				networkInputThread.join(1000);
 				networkOutputThread.join(1000);
 			} catch (InterruptedException ex) {
-				log.error("Unable to close the network threads in an acceptable time", ex);
+				logger.error("Unable to close the network threads in an acceptable time", ex);
+				logger.warn("The network threads will be forcibly stopped!");
+				networkInputThread.stop();
+				networkOutputThread.stop();
 			}
 		}));
 	}
