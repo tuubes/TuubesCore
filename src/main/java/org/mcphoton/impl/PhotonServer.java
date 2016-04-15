@@ -11,8 +11,8 @@ import java.util.UUID;
 import org.mcphoton.entity.living.player.Player;
 import org.mcphoton.impl.network.NetworkInputThread;
 import org.mcphoton.impl.network.NetworkOutputThread;
-import org.mcphoton.impl.plugin.PhotonPluginsManager;
-import org.mcphoton.plugin.PluginsManager;
+import org.mcphoton.impl.network.PhotonPacketsManager;
+import org.mcphoton.network.PacketsManager;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
@@ -34,8 +34,7 @@ public final class PhotonServer implements Server {
 	public final InetSocketAddress address;
 	public final NetworkInputThread networkInputThread;
 	public final NetworkOutputThread networkOutputThread;
-
-	public final PluginsManager pm = new PhotonPluginsManager();
+	public final PacketsManager packetsManager = new PhotonPacketsManager(this);
 
 	public volatile String motd;
 
