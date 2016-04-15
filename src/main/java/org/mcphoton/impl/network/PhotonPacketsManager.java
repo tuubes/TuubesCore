@@ -14,8 +14,6 @@ import org.mcphoton.network.Packet;
 import org.mcphoton.network.PacketHandler;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.network.ProtocolHelper;
-import org.slf4j.LoggerFactory;
-import org.slf4j.impl.PhotonLogger;
 
 /**
  * Implementation of the PacketsManager.
@@ -24,7 +22,6 @@ import org.slf4j.impl.PhotonLogger;
  */
 public final class PhotonPacketsManager implements PacketsManager {
 
-	private static final PhotonLogger logger = (PhotonLogger) LoggerFactory.getLogger("PhotonPacketsManager");
 	private final PhotonServer server;
 
 	//--- ServerBound ---
@@ -37,7 +34,6 @@ public final class PhotonPacketsManager implements PacketsManager {
 
 	public PhotonPacketsManager(PhotonServer server) {
 		this.server = server;
-		logger.setLevel(server.logger.getLevel());
 
 		//TODO set the correct sizes
 		this.serverInitPackets = new IndexMap<>();
@@ -194,14 +190,14 @@ public final class PhotonPacketsManager implements PacketsManager {
 			Packet packet = packetClass.newInstance();
 			return packet.readFrom(data);
 		} catch (InstantiationException | IllegalAccessException | NullPointerException ex) {
-			logger.error("Cannot create packet object with id {}", packetId, ex);
+			server.logger.error("Cannot create packet object with id {}", packetId, ex);
 		}
 		return null;
 	}
 
 	@Override
 	public void handle(Packet packet, Client client) {
-		logger.debug("Handling packet {} from {}", packet.toString(), client.getAddress().toString());
+		server.logger.debug("Handling packet {} from {}", packet.toString(), client.getAddress().toString());
 		IndexMap<Collection<PacketHandler>> map = getHandlersMap(client.getConnectionState(), packet.isServerBound());
 		synchronized (map) {
 			Collection<PacketHandler> handlers = map.get(packet.getId());
