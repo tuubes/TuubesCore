@@ -34,6 +34,7 @@ public final class PhotonServer implements Server {
 	public final InetSocketAddress address;
 	public final NetworkInputThread networkInputThread;
 	public final NetworkOutputThread networkOutputThread;
+	public final ConsoleThread consoleThread = new ConsoleThread();
 	public final PacketsManager packetsManager = new PhotonPacketsManager(this);
 
 	public volatile String motd;
