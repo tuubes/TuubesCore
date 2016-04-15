@@ -31,6 +31,7 @@ public final class NetworkOutputThread extends Thread {
 	 * @param the guard for wakeup (normally it's the NetworkInputThread instance).
 	 */
 	public NetworkOutputThread(Selector selector, Object guard) {
+		super("network-output");
 		this.selector = selector;
 		this.guard = guard;
 	}

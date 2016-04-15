@@ -15,6 +15,10 @@ public class ConsoleThread extends Thread implements Messageable {
 	private volatile boolean run = true;
 	private final Scanner sc = new Scanner(System.in);
 
+	public ConsoleThread() {
+		super("console");
+	}
+
 	/**
 	 * Stops this Thread nicely, as soon as possible but without any forcing.
 	 */

@@ -29,6 +29,7 @@ public final class NetworkInputThread extends Thread {
 	private final ServerSocketChannel ssc;
 
 	public NetworkInputThread(InetSocketAddress serverAddress) throws IOException {
+		super("network-input");
 		this.serverAddress = serverAddress;
 		ssc = ServerSocketChannel.open();
 		selector = Selector.open();
