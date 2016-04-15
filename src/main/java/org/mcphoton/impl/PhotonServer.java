@@ -57,14 +57,9 @@ public final class PhotonServer implements Server {
 	}
 
 	void startThreads() {
-		try {
-			networkInputThread.start();
-			networkOutputThread.start();
-		} catch (Exception ex) {
-			logger.error("Cannot start network threads", ex);
-			System.exit(100);
-		}
-
+		consoleThread.start();
+		networkInputThread.start();
+		networkOutputThread.start();
 	}
 
 	void setShutdownHook() {
