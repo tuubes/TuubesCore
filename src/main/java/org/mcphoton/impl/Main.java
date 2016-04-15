@@ -17,6 +17,8 @@ public class Main {
 		printFramed("Photon server version " + Photon.getVersion(), "For minecraft version " + Photon.getMinecraftVersion());
 		ServerCreator serverCreator = new ServerCreator("PhotonServer");
 		serverInstance = serverCreator.createServer();
+		serverInstance.setShutdownHook();
+		serverInstance.registerCommands();
 		serverInstance.startThreads();
 	}
 
