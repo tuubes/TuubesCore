@@ -12,6 +12,7 @@ import org.mcphoton.impl.network.NetworkInputThread;
 import org.mcphoton.impl.network.NetworkOutputThread;
 import org.mcphoton.world.Location;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.LoggingLevel;
 import org.slf4j.impl.PhotonLogger;
 
 /**
@@ -32,6 +33,7 @@ public class ServerCreator {
 	private KeyPair keyPair;
 	private NetworkInputThread nit;
 	private NetworkOutputThread not;
+	private LoggingLevel loggingLevel;
 
 	public ServerCreator(String loggerName) {
 		this.logger = (PhotonLogger) LoggerFactory.getLogger(loggerName);
@@ -41,6 +43,7 @@ public class ServerCreator {
 		configSpec.defineInt("port", 25565, 0, 65535);
 		configSpec.defineInt("maxPlayers", 10, 1, 1000);
 		configSpec.defineString("motd", "Photon server, version alpha");
+		configSpec.defineString("loggingLevel", "DEBUG", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
 	}
 
 	private void loadConfig() {
@@ -56,6 +59,7 @@ public class ServerCreator {
 				address = new InetSocketAddress(config.getInt("port"));
 				maxPlayers = config.getInt("maxPlayers");
 				motd = config.getString("motd");
+				loggingLevel = LoggingLevel.valueOf(config.getString("loggingLevel"));
 			} else {
 				int corrected = config.correct(configSpec);
 				logger.info("Added {} entries in serverConfig.toml", corrected);
