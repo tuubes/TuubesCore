@@ -64,7 +64,7 @@ public final class PhotonServer implements Server {
 
 	void setShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			LoggingService.close();
+			consoleThread.stopNicely();
 			networkInputThread.stopNicely();
 			networkOutputThread.stopNicely();
 			try {
@@ -75,6 +75,8 @@ public final class PhotonServer implements Server {
 				logger.warn("The network threads will be forcibly stopped!");
 				networkInputThread.stop();
 				networkOutputThread.stop();
+			} finally {
+				LoggingService.close();
 			}
 		}));
 	}
