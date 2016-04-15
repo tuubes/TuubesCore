@@ -14,8 +14,8 @@ import org.mcphoton.network.Packet;
 import org.mcphoton.network.PacketHandler;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.network.ProtocolHelper;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.PhotonLogger;
 
 /**
  * Implementation of the PacketsManager.
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class PhotonPacketsManager implements PacketsManager {
 
-	private static final Logger logger = LoggerFactory.getLogger("PhotonPacketsManager");
+	private static final PhotonLogger logger = (PhotonLogger) LoggerFactory.getLogger("PhotonPacketsManager");
 	private final PhotonServer server;
 
 	//--- ServerBound ---
@@ -37,6 +37,7 @@ public final class PhotonPacketsManager implements PacketsManager {
 
 	public PhotonPacketsManager(PhotonServer server) {
 		this.server = server;
+		logger.setLevel(server.logger.getLevel());
 
 		//TODO set the correct sizes
 		this.serverInitPackets = new IndexMap<>();
@@ -200,6 +201,7 @@ public final class PhotonPacketsManager implements PacketsManager {
 
 	@Override
 	public void handle(Packet packet, Client client) {
+		logger.debug("Handling packet {} from {}", packet.toString(), client.getAddress().toString());
 		IndexMap<Collection<PacketHandler>> map = getHandlersMap(client.getConnectionState(), packet.isServerBound());
 		synchronized (map) {
 			Collection<PacketHandler> handlers = map.get(packet.getId());
@@ -209,6 +211,45 @@ public final class PhotonPacketsManager implements PacketsManager {
 				}
 			}
 		}
+	}
+
+	public void registerGamePackets() {
+		synchronized (serverInitPackets) {
+			serverInitPackets.put(0, org.mcphoton.network.handshaking.serverbound.HandshakePacket.class);
+		}
+		synchronized (serverStatusPackets) {
+			serverStatusPackets.put(0, org.mcphoton.network.status.serverbound.RequestPacket.class);
+			serverStatusPackets.put(1, org.mcphoton.network.status.serverbound.PingPacket.class);
+		}
+		synchronized (serverLoginPackets) {
+			serverLoginPackets.put(0, org.mcphoton.network.login.serverbound.LoginStartPacket.class);
+			serverLoginPackets.put(1, org.mcphoton.network.login.serverbound.EncryptionResponsePacket.class);
+		}
+		/* TODO
+		 * synchronized(serverPlayPackets){
+		 *
+		 * }
+		 */
+		synchronized (clientStatusPackets) {
+			clientStatusPackets.put(0, org.mcphoton.network.status.clientbound.ResponsePacket.class);
+			clientStatusPackets.put(1, org.mcphoton.network.status.clientbound.PongPacket.class);
+		}
+		synchronized (clientLoginPackets) {
+			clientLoginPackets.put(0, org.mcphoton.network.login.clientbound.DisconnectPacket.class);
+			clientLoginPackets.put(1, org.mcphoton.network.login.clientbound.EncryptionRequestPacket.class);
+			clientLoginPackets.put(2, org.mcphoton.network.login.clientbound.LoginSuccessPacket.class);
+			clientLoginPackets.put(3, org.mcphoton.network.login.clientbound.SetCompressionPacket.class);
+		}
+		synchronized (clientPlayPackets) {
+			clientPlayPackets.put(0x20, org.mcphoton.network.play.clientbound.ChunkDataPacket.class);
+			clientPlayPackets.put(0x03, org.mcphoton.network.play.clientbound.ClientStatusPacket.class);
+			clientPlayPackets.put(0x23, org.mcphoton.network.play.clientbound.JoinGamePacket.class);
+			clientPlayPackets.put(0x2E, org.mcphoton.network.play.clientbound.PlayerPositionAndLookPacket.class);
+			clientPlayPackets.put(0x18, org.mcphoton.network.play.clientbound.PluginMessagePacket.class);
+			clientPlayPackets.put(0x0D, org.mcphoton.network.play.clientbound.ServerDifficultyPacket.class);
+			clientPlayPackets.put(0x43, org.mcphoton.network.play.clientbound.SpawnPositionPacket.class);
+		}
+
 	}
 
 }
