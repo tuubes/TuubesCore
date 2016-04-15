@@ -46,6 +46,7 @@ public final class NetworkInputThread extends Thread {
 			ssc.register(selector, SelectionKey.OP_ACCEPT);
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.exit(10);
 		}
 		while (run) {
 			try {
