@@ -14,7 +14,6 @@ import org.mcphoton.impl.command.StopCommand;
 import org.mcphoton.impl.network.NetworkInputThread;
 import org.mcphoton.impl.network.NetworkOutputThread;
 import org.mcphoton.impl.network.PhotonPacketsManager;
-import org.mcphoton.network.PacketsManager;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
@@ -37,7 +36,7 @@ public final class PhotonServer implements Server {
 	public final NetworkInputThread networkInputThread;
 	public final NetworkOutputThread networkOutputThread;
 	public final ConsoleThread consoleThread = new ConsoleThread();
-	public final PacketsManager packetsManager = new PhotonPacketsManager(this);
+	public final PhotonPacketsManager packetsManager = new PhotonPacketsManager(this);
 
 	public volatile String motd;
 
