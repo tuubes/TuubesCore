@@ -64,6 +64,7 @@ public final class PhotonServer implements Server {
 
 	void setShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			logger.info("Stopping threads");
 			consoleThread.stopNicely();
 			networkInputThread.stopNicely();
 			networkOutputThread.stopNicely();
@@ -71,7 +72,7 @@ public final class PhotonServer implements Server {
 				networkInputThread.join(1000);
 				networkOutputThread.join(1000);
 			} catch (InterruptedException ex) {
-				logger.error("Unable to close the network threads in an acceptable time", ex);
+				logger.error("Unable to stop the network threads in an acceptable time", ex);
 				logger.warn("The network threads will be forcibly stopped!");
 				networkInputThread.stop();
 				networkOutputThread.stop();
