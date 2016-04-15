@@ -58,6 +58,7 @@ public final class PhotonServer implements Server {
 	}
 
 	void startThreads() {
+		logger.info("Starting threads");
 		consoleThread.start();
 		networkInputThread.start();
 		networkOutputThread.start();
@@ -84,6 +85,7 @@ public final class PhotonServer implements Server {
 	}
 
 	void registerCommands() {
+		logger.info("Registering photon commands");
 		Photon.getCommandsRegistry().register(new StopCommand(), null);
 	}
 
