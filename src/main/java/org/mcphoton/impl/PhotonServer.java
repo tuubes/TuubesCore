@@ -88,6 +88,11 @@ public final class PhotonServer implements Server {
 		Photon.getCommandsRegistry().register(new StopCommand(), null);
 	}
 
+	void registerPackets() {
+		logger.info("Registering game packets");
+		packetsManager.registerGamePackets();
+	}
+
 	@Override
 	public Collection<Player> getOnlinePlayers() {
 		return Collections.unmodifiableCollection(onlinePlayers);

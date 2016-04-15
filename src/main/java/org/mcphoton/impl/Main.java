@@ -19,6 +19,7 @@ public class Main {
 		serverInstance = serverCreator.createServer();
 		serverInstance.setShutdownHook();
 		serverInstance.registerCommands();
+		serverInstance.registerPackets();
 		serverInstance.startThreads();
 	}
 
