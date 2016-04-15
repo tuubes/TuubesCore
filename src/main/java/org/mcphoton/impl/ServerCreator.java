@@ -64,11 +64,13 @@ public class ServerCreator {
 				int corrected = config.correct(configSpec);
 				logger.info("Added {} entries in serverConfig.toml", corrected);
 				config.writeTo(configFile);
+				loggingLevel = LoggingLevel.DEBUG;
 			}
 		} catch (IOException ex) {
 			logger.error("Cannot load server configuration", ex);
 			System.exit(1);
 		}
+		logger.setLevel(loggingLevel);
 	}
 
 	private void generateRsaKeyPair() {
