@@ -81,6 +81,10 @@ public final class PhotonServer implements Server {
 		}));
 	}
 
+	void registerCommands() {
+		Photon.getCommandsRegistry().register(new StopCommand(), null);
+	}
+
 	@Override
 	public Collection<Player> getOnlinePlayers() {
 		return Collections.unmodifiableCollection(onlinePlayers);
