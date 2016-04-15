@@ -9,7 +9,10 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import org.mcphoton.Photon;
+import org.mcphoton.impl.Main;
+import org.mcphoton.impl.PhotonServer;
 import org.mcphoton.network.Packet;
+import org.mcphoton.network.PacketsManager;
 
 /**
  * The thread that manages all the network input. It accepts new client connections and reads incoming
@@ -48,6 +51,8 @@ public final class NetworkInputThread extends Thread {
 			e.printStackTrace();
 			System.exit(10);
 		}
+		final PacketsManager packetsManager = Photon.getPacketsManager();
+		final PhotonServer server = Main.serverInstance;
 		while (run) {
 			try {
 				synchronized (this) {
@@ -71,13 +76,12 @@ public final class NetworkInputThread extends Thread {
 							ByteBuffer messageData;
 							while ((messageData = messageReader.readMore()) != null) {
 								messageData = client.decodeWithCodecs(messageData);
-								Packet packet = Photon.getPacketsManager().parsePacket(messageData, client.getConnectionState(), true);
-								// TODO packet handling -> some packet need to be handled here, and immediatly, for
-								// example if they change the ConnectionState
+								Packet packet = packetsManager.parsePacket(messageData, client.getConnectionState(), true);
+								packetsManager.handle(packet, client);
 							}
 							if (messageReader.hasReachedEndOfStream()) {// client disconnected
 								key.cancel();
-								// TODO remove from player's list
+								client.getPlayer().ifPresent(server.onlinePlayers::remove);
 							}
 						}
 					} catch (Exception e) {
