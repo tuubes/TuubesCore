@@ -59,12 +59,14 @@ public final class NetworkInputThread extends Thread {
 				synchronized (this) {
 				} // locks to support wakeUp (see NetworkOutputThread.java)
 				int selectedCount = selector.select();
+				Main.serverInstance.logger.trace("The Selector selected {} key(s)", selectedCount);
 				if (selectedCount == 0) {
 					continue;
 				}
 				Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 				while (it.hasNext()) {
 					SelectionKey key = it.next();
+					Main.serverInstance.logger.trace("Selected key {} with ops {}", key, key.readyOps());
 					try {
 						if (key.isAcceptable()) {
 							SocketChannel acceptedChannel = ssc.accept();
@@ -81,6 +83,7 @@ public final class NetworkInputThread extends Thread {
 								packetsManager.handle(packet, client);
 							}
 							if (messageReader.hasReachedEndOfStream()) {// client disconnected
+								Main.serverInstance.logger.debug("END OF STREAM");
 								key.cancel();
 								client.getPlayer().ifPresent(server.onlinePlayers::remove);
 							}
