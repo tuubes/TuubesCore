@@ -50,4 +50,8 @@ public class PhotonBlockRegistry implements BlockRegistry {
 		return nameMap.containsKey(name);
 	}
 
+	public int getBiggestBlockId() {
+		return Math.max(0, idMap.array().length - 1);
+	}
+
 }
