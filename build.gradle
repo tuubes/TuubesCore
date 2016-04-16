@@ -39,4 +39,5 @@ def download(File destDir, String destName, String url) {
 dependencies {
 	compile project(':Photon-API')
 	compile fileTree(dir: "$buildDir/dependLibs", include: '*.jar')
+	compile 'net.magik6k:bitbuffer:1.5.1'
 }
