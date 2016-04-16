@@ -5,13 +5,13 @@ import org.mcphoton.block.BlockRegistry;
 import org.mcphoton.command.CommandsRegistry;
 import org.mcphoton.entity.EntityRegistry;
 import org.mcphoton.event.EventsManager;
-import org.mcphoton.impl.server.Main;
 import org.mcphoton.impl.block.PhotonBlockRegistry;
 import org.mcphoton.impl.command.PhotonCommandsRegistry;
 import org.mcphoton.impl.entity.PhotonEntityRegistry;
 import org.mcphoton.impl.event.PhotonEventsManager;
 import org.mcphoton.impl.item.PhotonItemRegistry;
 import org.mcphoton.impl.plugin.PhotonPluginsManager;
+import org.mcphoton.impl.server.Main;
 import org.mcphoton.impl.world.PhotonBiomeRegistry;
 import org.mcphoton.item.ItemRegistry;
 import org.mcphoton.network.PacketsManager;
@@ -78,7 +78,7 @@ public final class Photon {
 	}
 
 	public static String getVersion() {
-		return "0.3.0-alpha";
+		return "0.3.0-pre_alpha";
 	}
 
 	public static String getMinecraftVersion() {
