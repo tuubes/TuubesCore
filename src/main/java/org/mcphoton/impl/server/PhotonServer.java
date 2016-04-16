@@ -1,13 +1,13 @@
-package org.mcphoton.impl;
+package org.mcphoton.impl.server;
 
 import com.electronwill.utils.SimpleBag;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.mcphoton.Photon;
 import org.mcphoton.entity.living.player.Player;
 import org.mcphoton.impl.command.StopCommand;
@@ -43,7 +43,7 @@ public final class PhotonServer implements Server {
 	public final Collection<Player> onlinePlayers = new SimpleBag<>();
 	public volatile int maxPlayers;
 
-	public final Map<String, World> worlds = new HashMap<>();
+	public final Map<String, World> worlds = new ConcurrentHashMap<>();
 	public volatile Location spawn;
 
 	public PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, NetworkInputThread networkInputThread, NetworkOutputThread networkOutputThread, String motd, int maxPlayers, Location spawn) {

@@ -9,8 +9,8 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import org.mcphoton.Photon;
-import org.mcphoton.impl.Main;
-import org.mcphoton.impl.PhotonServer;
+import org.mcphoton.impl.server.Main;
+import org.mcphoton.impl.server.PhotonServer;
 import org.mcphoton.network.Packet;
 import org.mcphoton.network.PacketsManager;
 

@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.mcphoton.impl.PhotonServer;
+import org.mcphoton.impl.server.PhotonServer;
 import org.mcphoton.network.Client;
 import org.mcphoton.network.ConnectionState;
 import org.mcphoton.network.Packet;

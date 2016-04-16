@@ -1,5 +1,6 @@
-package org.mcphoton.impl;
+package org.mcphoton.impl.server;
 
+import org.mcphoton.impl.server.PhotonServer;
 import org.mcphoton.Photon;
 
 /**

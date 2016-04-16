@@ -5,7 +5,7 @@ import org.mcphoton.block.BlockRegistry;
 import org.mcphoton.command.CommandsRegistry;
 import org.mcphoton.entity.EntityRegistry;
 import org.mcphoton.event.EventsManager;
-import org.mcphoton.impl.Main;
+import org.mcphoton.impl.server.Main;
 import org.mcphoton.impl.block.PhotonBlockRegistry;
 import org.mcphoton.impl.command.PhotonCommandsRegistry;
 import org.mcphoton.impl.entity.PhotonEntityRegistry;

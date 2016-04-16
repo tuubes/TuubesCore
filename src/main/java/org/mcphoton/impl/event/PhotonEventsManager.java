@@ -13,7 +13,7 @@ import org.mcphoton.event.EventHandler;
 import org.mcphoton.event.EventsManager;
 import org.mcphoton.event.Listen;
 import org.mcphoton.event.ListenOrder;
-import org.mcphoton.impl.Main;
+import org.mcphoton.impl.server.Main;
 
 /**
  *

@@ -1,4 +1,4 @@
-package org.mcphoton.impl;
+package org.mcphoton.impl.server;
 
 import java.util.Scanner;
 import org.mcphoton.Photon;
