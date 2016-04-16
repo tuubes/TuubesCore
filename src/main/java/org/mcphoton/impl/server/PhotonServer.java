@@ -37,6 +37,8 @@ public final class PhotonServer implements Server {
 	public final NetworkOutputThread networkOutputThread;
 	public final ConsoleThread consoleThread = new ConsoleThread();
 	public final PhotonPacketsManager packetsManager = new PhotonPacketsManager(this);
+	public final PhotonBansManager bansManager = new PhotonBansManager();
+	public final PhotonWhitelistManager whitelistManager = new PhotonWhitelistManager();
 
 	public volatile String motd;
 
@@ -126,12 +128,12 @@ public final class PhotonServer implements Server {
 
 	@Override
 	public BansManager getBansManager() {
-		return null;//TODO
+		return bansManager;
 	}
 
 	@Override
 	public WhitelistManager getWhitelistManager() {
-		return null; //TODO
+		return whitelistManager;
 	}
 
 	@Override
