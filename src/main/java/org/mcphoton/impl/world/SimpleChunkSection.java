@@ -22,6 +22,7 @@ import net.magik6k.bitbuffer.BitBuffer;
 import org.mcphoton.world.ChunkSection;
 
 /**
+ * A simple implementation of ChunkSection. It is not thread-safe.
  *
  * @author TheElectronWill
  */

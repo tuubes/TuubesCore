@@ -21,6 +21,7 @@ package org.mcphoton.impl.world;
 import net.magik6k.bitbuffer.BitBuffer;
 
 /**
+ * A synchronized (and so thread-safe) implementation of ChunkSection.
  *
  * @author TheElectronWill
  */
