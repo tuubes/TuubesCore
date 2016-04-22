@@ -11,3 +11,6 @@ You can fork this project and send me pull requests :)
 * To contribute to the Photon implementation, you must first understand the Photon API. Please read [the API wiki](https://github.com/mcphoton/Photon-API/wiki) to know about the project's guidelines and architecture.
 * Please also read *the server architecture* (coming soon) to understand how the server is organized.
 * Good java skills are required.
+
+## Branches
+The *develop* branch contains the latest **in development** version of the Photon server. It's probably unstable and may not work at all. More stable releases can be found in the *master* branch.
