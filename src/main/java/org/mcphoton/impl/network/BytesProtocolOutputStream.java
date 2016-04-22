@@ -2,6 +2,7 @@ package org.mcphoton.impl.network;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import org.mcphoton.network.ProtocolHelper;
 import org.mcphoton.network.ProtocolOutputStream;
 
 /**
@@ -13,31 +14,47 @@ import org.mcphoton.network.ProtocolOutputStream;
 public final class BytesProtocolOutputStream extends ProtocolOutputStream {
 
 	private byte[] buff;
-	private int count = 0;
+	private int count = 5;
 
 	/**
-	 * Creates a new stream with the initial capacity of 32 bytes.
+	 * Creates a new stream with the initial capacity of 37 bytes. The first 5 bytes are reserved for the
+	 * varInt that indicate the message's size, so the actual capacity for the data is initially 32 bytes.
 	 */
 	public BytesProtocolOutputStream() {
 		buff = new byte[32];
 	}
 
 	/**
-	 * Creates a new stream with the specified initial capacity.
+	 * Creates a new stream with the specified initial capacity. The first 5 bytes are reserved for the
+	 * varInt that indicate the message's size.
 	 */
 	public BytesProtocolOutputStream(int initialCapacity) {
 		buff = new byte[initialCapacity];
 	}
 
 	/**
-	 * Creates a new stream with the specified data.
+	 * Creates a new stream with the specified data. The first 5 bytes are reserved for the
+	 * varInt that indicate the message's size.
 	 */
 	public BytesProtocolOutputStream(byte[] data) {
 		buff = data;
 	}
 
-	public ByteBuffer asBuffer() {
-		return ByteBuffer.wrap(buff, 0, count);
+	/**
+	 * Returns a ByteBuffer that contains the message's size as a varint, followed by the message's data. The
+	 * message's data is directly shared with the underlying byte array of this stream.
+	 */
+	public ByteBuffer asMessageBuffer() {
+		int messageSize = getMessageSize();
+		int initialPos = 5 - ProtocolHelper.varIntSize(messageSize);
+		ByteBuffer buffer = ByteBuffer.wrap(buff, initialPos, count);
+		ProtocolHelper.writeVarInt(messageSize, buffer);
+		buffer.position(0);//resets the position
+		return buffer;
+	}
+
+	public int getMessageSize() {
+		return count - 5;
 	}
 
 	@Override
@@ -61,8 +78,7 @@ public final class BytesProtocolOutputStream extends ProtocolOutputStream {
 
 	/**
 	 * Resets this ProcotolOutputStream, that is, delete the internal buffer and create a new one with the
-	 * default
-	 * capacity (32 bytes).
+	 * default capacity (32 bytes).
 	 */
 	@Override
 	public void reset() {
@@ -71,8 +87,7 @@ public final class BytesProtocolOutputStream extends ProtocolOutputStream {
 
 	/**
 	 * Resets this ProcotolOutputStream, that is, delete the internal buffer and create a new one with the
-	 * specified
-	 * capacity.
+	 * specified capacity.
 	 */
 	public void reset(int newCapacity) {
 		buff = new byte[newCapacity];
