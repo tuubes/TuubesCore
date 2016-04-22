@@ -5,125 +5,118 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 /**
- * A MessageReader reads messages from a SocketChannel.
- * <h2>What is a "message"</h2>
- * <p>
- * A "messsage" is a block of data sent over the network, by the client to the server, or by the server to the client.
- * This block of data is preceded by its size, encoded as a VarInt number with a variable number of bytes (google
- * "VarInt" for more informations).
- * </p>
- * 
+ * A MessageReader reads messages from a SocketChannel. A message is a block of data (bytes) sent over the
+ * network. In the game protocol, each message is preceded by its size, encoded as a VarInt. The problem is
+ * that the server may read multiple messages in once, or only a part of a message. The MessageReader solves
+ * this problem: it can separate different messages and put several blocks of data together.
+ *
  * @author TheElectronWill
- * 		
+ *
  */
 public final class MessageReader {
-	
-	private final SocketChannel sc;
-	private ByteBuffer buff = ByteBuffer.allocateDirect(256);
-	private int writePosition = 0, readPosition = 0;
-	private int dataSize = -1;
-	private boolean endOfStream;
+
+	private final SocketChannel channel;
+	private ByteBuffer buffer;
+	private final int maxBufferSize;
+	private int messageLength = -1, writePos = 0, readPos = 0;
+	private boolean eos;
 	private boolean readVarIntSucceed = false;
-	
-	public MessageReader(SocketChannel sc) {
-		this.sc = sc;
+
+	public MessageReader(SocketChannel sc, int intialBufferSize, int maxBufferSize) {
+		this.channel = sc;
+		buffer = ByteBuffer.allocateDirect(intialBufferSize);
+		this.maxBufferSize = maxBufferSize;
 	}
-	
+
 	/**
-	 * Tries to read the next message or to continue reading the current incomplete message. Returns <code>null</code>
-	 * if all the message's bytes aren't available yet. In that case, this method should be called again later, when
-	 * more data is available on the <code>SocketChannel</code>.
-	 * <p>
-	 * <b>Caution: </b>This method may reach the end of the stream. That can be checked by calling
+	 * Tries to read the next message or to continue reading the current incomplete message. Returns
+	 * <code>null</code> if all the message's bytes aren't available yet. In that case, this method should be
+	 * called again
+	 * later, when more data is available on the <code>SocketChannel</code>.<br />
+	 * This method may reach the end of the stream. That can be checked by calling
 	 * {@link #hasReachedEndOfStream()}.
-	 * </p>
 	 *
 	 * @return the message's data, or <code>null</code> if there aren't enough bytes yet.
 	 */
-	public ByteBuffer readMore() throws IOException {
-		// --- Reads more bytes ---
-		buff.position(writePosition);
-		int read = sc.read(buff);
-		if (read == -1) {// end of stream
-			endOfStream = true;
+	public ByteBuffer readNext() throws IOException {
+		if (buffer.remaining() < 5) {//5 bytes threshold
+			buffer.position(readPos);//prepare for compacting
+			buffer.limit(writePos);//prepare for compacting
+			buffer.compact();//compacts the buffer
+			readPos = 0;
+			writePos = buffer.position();
+		} else {
+			buffer.limit(buffer.capacity());//prepare to write the data. This is in the "else" because buffer.compact() already changes the limit
+		}
+
+		buffer.position(writePos);//prepare to write in the buffer
+		int read = channel.read(buffer);//reads more data from the channel and writes it to the buffer
+		if (read == -1) {//channel closed
+			eos = true;
 			return null;
-		} else if (read == 0) {// nothing read
+		} else if (read == 0) {//nothing read
 			return null;
 		}
-		writePosition = buff.position();
-		
-		// --- Reads dataSize if needed ---
-		if (dataSize == -1) {
-			buff.position(readPosition);
-			buff.limit(writePosition);// to read only the available bytes
-			int varInt = tryReadVarInt();
-			buff.limit(buff.capacity());// resets the limit to the buffer's capacity
-			
-			if (readVarIntSucceed) {
-				readPosition = buff.position();// readPosition = after the varInt, at the beginning of the message's
-												// data
-			} else {
-				buff.position(readPosition);// resets the position at beginning of the varInt
+		writePos = buffer.position();
+
+		buffer.limit(writePos);//don't read what we didn't write in the buffer
+		buffer.position(readPos);//start reading when we stopped last time
+
+		if (messageLength == -1) {//we must read the message's length
+			messageLength = tryReadVarInt();
+			if (!readVarIntSucceed) {//fail
 				return null;
 			}
-			if (varInt <= 0)
-				throw new IOException("Invalid data size: " + varInt);
-				
-			dataSize = varInt;// updates the data size
-		}
-		
-		// --- Reads the message's data ---
-		buff.position(readPosition);
-		if (writePosition - readPosition >= dataSize) {// all the data of this message has been received
-			buff.limit(readPosition + dataSize);
-			ByteBuffer data = buff.slice();// create a subsequence [readPosition, readPosition + dataSize]
-			buff.limit(buff.capacity());// resets the limit to the buffer's capacity
-			return data;
-		}
-		if (buff.capacity() - readPosition < dataSize) {// not enough remaining space
-			if (buff.capacity() < dataSize) {// buffer too small
-				ByteBuffer buff2 = ByteBuffer.allocateDirect(dataSize);
-				buff.limit(writePosition);
-				buff2.put(buff);
-				buff = buff2;
-			} else {// needs compacting
-				buff.limit(writePosition);
-				buff.compact();
-				writePosition = buff.position();
-				readPosition = 0;
+			readPos = buffer.position();
+			if (buffer.capacity() < messageLength) {//buffer to small
+				if (messageLength > maxBufferSize) {
+					throw new IOException("Message too big. Its size (" + messageLength + " bytes) is over the limit (" + maxBufferSize + " bytes )");
+				}
+				int bufferLength = (int) Math.ceil(messageLength / 32.0) * 32;//round to the next multiple of 32
+				buffer = ByteBuffer.allocateDirect(bufferLength);//create a new ByteBuffer with enough space for the entire message
 			}
-		} // else: not enough space but not enough data
+		}
+		if (buffer.remaining() >= messageLength) {//the message is entirely available
+			int packetEnd = buffer.position() + messageLength;//go to the end of the message
+			readPos = packetEnd;//set the reading position
+			buffer.limit(packetEnd);//set the limit to prevent dataBuffer to access other messages
+			ByteBuffer dataBuffer = buffer.slice();//shares the message's data
+			messageLength = -1;//reset messageLength to -1 to read it the next time this method is called
+			return dataBuffer;
+		}
 		return null;
 	}
-	
+
 	/**
 	 * Checks if the end of the stream has been reached.
 	 */
 	public boolean hasReachedEndOfStream() {
-		return endOfStream;
+		return eos;
 	}
-	
+
 	/**
-	 * Tries to read a varInt, and updates the {@link #readVarIntSucceed} field according to wether it succeed or not.
-	 * 
-	 * @return the varInt value
+	 * Tries to read a varInt, and updates the {@link #readVarIntSucceed} field.
+	 *
+	 * @return the varInt value, or -1 if it failed
 	 */
 	private int tryReadVarInt() {
+		buffer.mark();
 		int shift = 0, i = 0;
 		while (true) {
-			if (!buff.hasRemaining()) {
+			if (!buffer.hasRemaining()) {
+				buffer.reset();
 				readVarIntSucceed = false;
-				return 0;
+				return -1;
 			}
-			byte b = (byte) buff.get();
+			byte b = buffer.get();
 			i |= (b & 0x7F) << shift;// Remove sign bit and shift to get the next 7 bits
 			shift += 7;
 			if (b >= 0) {// VarInt byte prefix is 0, it means that we just decoded the last 7 bits, therefore we've
-							// finished.
+				// finished.
 				readVarIntSucceed = true;
 				return i;
 			}
 		}
 	}
-	
+
 }
