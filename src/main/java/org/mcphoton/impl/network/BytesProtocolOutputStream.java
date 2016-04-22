@@ -78,11 +78,11 @@ public final class BytesProtocolOutputStream extends ProtocolOutputStream {
 
 	/**
 	 * Resets this ProcotolOutputStream, that is, delete the internal buffer and create a new one with the
-	 * default capacity (32 bytes).
+	 * default capacity (37 bytes with 5 reserved).
 	 */
 	@Override
 	public void reset() {
-		buff = new byte[32];
+		buff = new byte[37];
 	}
 
 	/**
