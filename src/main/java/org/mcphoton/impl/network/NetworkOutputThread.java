@@ -1,12 +1,11 @@
 package org.mcphoton.impl.network;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The thread that manages all the network output. It writes outcoming packets.
@@ -16,11 +15,10 @@ import java.util.concurrent.TimeUnit;
  */
 public final class NetworkOutputThread extends Thread {
 
-	// TODO measurements to determine the best queue's capacity
-	private final BlockingQueue<PacketSending> queue = new ArrayBlockingQueue<>(200, false);
-	private final PacketSending POISON = new PacketSending(null, null);
+	private final BlockingQueue<PacketSending> queue = new ArrayBlockingQueue<>(500);
+	private final PacketSending POISON = new PacketSending(null, Collections.emptyList());
 	private final Selector selector;
-	private final Object guard;
+	private final Object selectorLock;
 	private volatile boolean run = true;
 
 	/**
@@ -28,12 +26,13 @@ public final class NetworkOutputThread extends Thread {
 	 * <code>Selector</code> in case of incomplete writing.
 	 *
 	 * @param selector the selector to use in case of incomplete writing
-	 * @param the guard for wakeup (normally it's the NetworkInputThread instance).
+	 * @param selectorLock the objet to synchronize on when a selector's wakeup is needed. (normally it's the
+	 * NetworkInputThread instance).
 	 */
-	public NetworkOutputThread(Selector selector, Object guard) {
+	public NetworkOutputThread(Selector selector, Object selectorLock) {
 		super("network-output");
 		this.selector = selector;
-		this.guard = guard;
+		this.selectorLock = selectorLock;
 	}
 
 	/**
@@ -52,17 +51,14 @@ public final class NetworkOutputThread extends Thread {
 				if (sending == POISON) {
 					return;
 				}
+
 				for (PhotonClient client : sending.clients) {
 					try {
-						BytesProtocolOutputStream out = new BytesProtocolOutputStream();
-						sending.packet.writeTo(out);
-						ByteBuffer data = out.asBuffer();
-						ByteBuffer encodedData = client.encodeWithCodecs(data);
-						boolean completeAndImmediateWrite = client.getMessageWriter().writeASAP(encodedData);
+						boolean completeAndImmediateWrite = client.messageWriter.writeASAP(sending.packet);
 						if (!completeAndImmediateWrite) {
-							synchronized (guard) {
+							synchronized (selectorLock) {
 								selector.wakeup();
-								client.getChannel().register(selector, SelectionKey.OP_WRITE, client);
+								client.channel.register(selector, SelectionKey.OP_WRITE, client);
 							}
 						}
 					} catch (IOException e) {
@@ -75,27 +71,11 @@ public final class NetworkOutputThread extends Thread {
 		}
 	}
 
-	/**
-	 * Adds a <code>PacketSending</code> to the sending queue, waiting if necessary for space to become
-	 * available.
-	 */
-	public void enqueue(PacketSending sending) {
+	public void enqueue(PacketSending ps) {
 		try {
-			queue.put(sending);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Adds a <code>PacketSending</code> to the sending queue, waiting up to the specified wait time if
-	 * necessary for space to become available.
-	 */
-	public void enqueue(PacketSending sending, long timeout, TimeUnit unit) {
-		try {
-			queue.offer(sending, timeout, unit);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			queue.put(ps);
+		} catch (InterruptedException ex) {
+			ex.printStackTrace();
 		}
 	}
 
