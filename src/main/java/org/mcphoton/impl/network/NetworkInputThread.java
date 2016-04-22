@@ -57,7 +57,7 @@ public final class NetworkInputThread extends Thread {
 		while (run) {
 			try {
 				synchronized (this) {
-				} // locks to support wakeUp (see NetworkOutputThread.java)
+				} // to support selector.wakeUp (see NetworkOutputThread.java)
 				int selectedCount = selector.select();
 				Main.serverInstance.logger.trace("The Selector selected {} key(s)", selectedCount);
 				if (selectedCount == 0) {
@@ -69,29 +69,37 @@ public final class NetworkInputThread extends Thread {
 					Main.serverInstance.logger.trace("Selected key {} with ops {}", key, key.readyOps());
 					try {
 						if (key.isAcceptable()) {
-							SocketChannel acceptedChannel = ssc.accept();
-							acceptedChannel.configureBlocking(false);
-							PhotonClient client = new PhotonClient(acceptedChannel);
-							acceptedChannel.register(selector, SelectionKey.OP_READ, client);
+							SocketChannel channel = ssc.accept();
+							channel.configureBlocking(false);
+							PhotonClient client = new PhotonClient(channel, new Codec[] {new NoCodec()});
+							channel.register(selector, SelectionKey.OP_READ, client);
 						} else if (key.isReadable()) {
 							PhotonClient client = (PhotonClient) key.attachment();
-							MessageReader messageReader = client.getMessageReader();
+							MessageReader messageReader = client.messageReader;
 							ByteBuffer messageData;
-							while ((messageData = messageReader.readMore()) != null) {
-								messageData = client.decodeWithCodecs(messageData);
-								Packet packet = packetsManager.parsePacket(messageData, client.getConnectionState(), true);
-								packetsManager.handle(packet, client);
+							while ((messageData = messageReader.readNext()) != null) {
+								for (int i = client.codecs.length; i >= 0; i--) {
+									messageData = client.codecs[i].decode(messageData);
+									Packet packet = packetsManager.parsePacket(messageData, client.getConnectionState(), true);
+									packetsManager.handle(packet, client);
+								}
 							}
 							if (messageReader.hasReachedEndOfStream()) {// client disconnected
 								Main.serverInstance.logger.debug("END OF STREAM");
 								key.cancel();
 								client.getPlayer().ifPresent(server.onlinePlayers::remove);
 							}
+						} else if (key.isWritable()) {
+							PhotonClient client = (PhotonClient) key.attachment();
+							boolean writeComplete = client.messageWriter.doWrite();
+							if (writeComplete) {
+								key.cancel();
+							}
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					} finally {
-						it.remove();// don't process the same key several times!
+						it.remove();// don't process the same key more than once!
 					}
 				}
 			} catch (IOException e) {
