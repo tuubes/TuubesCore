@@ -14,6 +14,7 @@ import org.mcphoton.event.EventsManager;
 import org.mcphoton.event.Listen;
 import org.mcphoton.event.ListenOrder;
 import org.mcphoton.impl.server.Main;
+import org.mcphoton.plugin.Plugin;
 
 /**
  *
@@ -110,13 +111,8 @@ public class PhotonEventsManager implements EventsManager {
 	}
 
 	@Override
-	public <E extends Event> void unregister(Class<E> eventClass, EventHandler<? super E> eventHandler) {
-		//TODO REMOVE FROM API: this method is useless
-	}
-
-	@Override
-	public void unregisterAll(Object listener) {
-		; //TODO REMOVE FROM API: impossible to implement. How to know precisely the EventHandlers registered by this listener???
+	public void unregisterAll(Plugin plugin) {
+		//TODO
 	}
 
 	@Override
