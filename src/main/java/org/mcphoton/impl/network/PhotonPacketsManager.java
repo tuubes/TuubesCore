@@ -5,7 +5,6 @@ import com.electronwill.utils.SimpleBag;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.mcphoton.impl.server.PhotonServer;
 import org.mcphoton.network.Client;
@@ -166,8 +165,7 @@ public final class PhotonPacketsManager implements PacketsManager {
 
 	@Override
 	public void sendPacket(Packet packet, Client client) {
-		List<PhotonClient> clientList = Collections.singletonList((PhotonClient) client);
-		server.networkOutputThread.enqueue(new PacketSending(packet, clientList));
+		server.networkOutputThread.enqueue(new PacketSending(packet, (PhotonClient) client));
 	}
 
 	@Override
