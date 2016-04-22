@@ -3,127 +3,89 @@ package org.mcphoton.impl.network;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayDeque;
+import java.util.LinkedList;
 import java.util.Queue;
-import org.mcphoton.network.ProtocolHelper;
+import org.mcphoton.network.Packet;
 
 /**
- * A MessageWriter is able to writes messages to a SocketChannel, in several times (with multiple incomplete writes) if
- * necessary. <b>A MessageWriter is NOT thread-safe</b>
- * 
+ * A MessageWriter writes messages to a SocketChannel. It handles incomplete writes.
+ *
  * @author TheElectronWill
- * 		
+ *
  */
 public final class MessageWriter {
-	
-	private final ByteBuffer varIntBuff = ByteBuffer.allocateDirect(5);
-	private final SocketChannel sc;
-	private final Queue<ByteBuffer> pendingMessages = new ArrayDeque<>(4);
-	private boolean readyToWriteVarIntBuff = false, needToWriteVarIntBuff = true;
-	
+
+	private final SocketChannel channel;
+	private final Queue<Packet> pendingMessages = new LinkedList<>();
+	private final BytesProtocolOutputStream out = new BytesProtocolOutputStream();
+	private ByteBuffer currentBuffer;
+
 	public MessageWriter(SocketChannel sc) {
-		this.sc = sc;
+		this.channel = sc;
 	}
-	
+
 	/**
-	 * Adds a ByteBuffer that needs to be written to the <code>MessafeWriter</code>'s <code>SocketChannel</code> to an
-	 * internal Queue. The ByteBuffer position should be 0 and its limit must mark the end of the data, so that
-	 * <code>messageData.limit()-messageDara.position() = the size of the data</code>.
-	 * 
-	 * @param messageData the ByteBuffer that contains the data of a message.
+	 * Adds a message to the queue of pending messages, to write it later.
 	 */
-	public void addForWriting(ByteBuffer messageData) {
-		pendingMessages.add(messageData);
+	public boolean enqueue(Packet message) {
+		return pendingMessages.offer(message);
 	}
-	
+
 	/**
-	 * Writes a message as soon as possible. This method first check if they are messages waiting for being completely
-	 * written. If they are, this method simply calls {@link #addForWriting(ByteBuffer)} and returns false. If they
-	 * aren't any message that is waiting for being completely written, this method tries to write it immediatly. If the
-	 * write is complete it returns <code>true</code>, if the write is incomplete it (among other things) calls
-	 * {@link #addForWriting(ByteBuffer)}.
-	 * <h1>Conditions on the ByteBuffer <code>messageData</code></h1>
-	 * <p>
-	 * The ByteBuffer position should be 0 and its limit must mark the end of the data, so that
-	 * <code>messageData.limit()-messageDara.position() = the size of the data</code>.
-	 * </p>
-	 * 
-	 * @param messageData the ByteBuffer that contains the data of a message.
-	 * @return <code>true</code> if the message has been immediatly and completely written, <code>false</code>
-	 *         otherwise.
+	 * Writes a message as soon as possible.
+	 *
+	 * @return true if the message has been completely written immediatly, false otherwise.
 	 * @throws IOException
 	 */
-	public boolean writeASAP(ByteBuffer messageData) throws IOException {
-		if (!pendingMessages.isEmpty()) {
-			addForWriting(messageData);
+	public boolean writeASAP(Packet message) throws IOException {
+		if (!pendingMessages.isEmpty() || currentBuffer != null && currentBuffer.hasRemaining()) {
+			//cannot write now because another message is being written
+			enqueue(message);
 			return false;
 		}
-		
-		// --- Writes the message's length (varIntBuff) ---
-		ProtocolHelper.writeVarInt(messageData.limit(), varIntBuff);
-		varIntBuff.flip();
-		sc.write(varIntBuff);
-		if (varIntBuff.hasRemaining()) {// incomplete write
-			readyToWriteVarIntBuff = needToWriteVarIntBuff = true;
-			addForWriting(messageData);
+
+		message.writeTo(out);
+		currentBuffer = out.asMessageBuffer();
+
+		channel.write(currentBuffer);
+		if (currentBuffer.hasRemaining()) {//incomplete write
 			return false;
 		} else {
-			needToWriteVarIntBuff = false;
-		}
-		
-		// --- Writes the message's data ---
-		sc.write(messageData);
-		if (messageData.hasRemaining()) {// incomplete write
-			addForWriting(messageData);
-			return false;
-		} else {
-			needToWriteVarIntBuff = readyToWriteVarIntBuff = false;
-			varIntBuff.clear();
-			pendingMessages.remove();
+			out.clear();
 			return true;
 		}
 	}
-	
+
 	/**
-	 * Tries to write all the pending messages to the <code>SocketChannel</code>. An attempt is made to write as much
-	 * message's data as possible. The caller of this method should check the returned boolean to determine if it needs
-	 * to be re-called later.
-	 * 
-	 * @return <code>true</code> if all the data has been written, <code>false</code> otherwise.
+	 * Tries to write all the pending messages to the channel.
+	 *
+	 * @return true if all the messages have been written, false otherwise.
 	 * @throws IOException
 	 */
-	public boolean writeMessagesToChannel() throws IOException {
-		while (true) {
-			ByteBuffer pendingMessage = pendingMessages.peek();
-			if (pendingMessage == null)
-				return true;
-				
-			// --- Writes the message's length (varIntBuff) ---
-			if (needToWriteVarIntBuff) {
-				if (!readyToWriteVarIntBuff) {
-					ProtocolHelper.writeVarInt(pendingMessage.limit(), varIntBuff);
-					varIntBuff.flip();
-					readyToWriteVarIntBuff = true;
-				}
-				sc.write(varIntBuff);
-				if (varIntBuff.hasRemaining()) {// incomplete write
-					return false;
-				} else {
-					needToWriteVarIntBuff = false;
-				}
+	public boolean doWrite() throws IOException {
+		if (currentBuffer != null && currentBuffer.hasRemaining()) {//a message is being written
+			channel.write(currentBuffer);
+			if (currentBuffer.hasRemaining()) {//incomplete write
+				return false;//retry later
 			}
-			
-			// --- Writes the message's data ---
-			sc.write(pendingMessage);
-			if (pendingMessage.hasRemaining()) {// incomplete write
-				return false;
-			} else {// complete write of the varIntBuff and of the message's data
-				needToWriteVarIntBuff = readyToWriteVarIntBuff = false;
-				varIntBuff.clear();
-				pendingMessages.remove();
+		}
+		while (true) {
+			Packet message = pendingMessages.poll();
+			if (message == null) {//empty queue: all the messages have been written.
 				return true;
+			}
+
+			message.writeTo(out);
+			currentBuffer = out.asMessageBuffer();
+
+			channel.write(currentBuffer);
+			if (currentBuffer.hasRemaining()) {//incomplete write
+				return false;//retry later
+			} else {
+				out.clear();
+				//continue the loop
 			}
 		}
 	}
-	
+
 }
