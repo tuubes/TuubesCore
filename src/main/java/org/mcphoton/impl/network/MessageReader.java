@@ -3,6 +3,8 @@ package org.mcphoton.impl.network;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import org.mcphoton.impl.server.Main;
+import org.slf4j.Logger;
 
 /**
  * A MessageReader reads messages from a SocketChannel. A message is a block of data (bytes) sent over the
@@ -21,6 +23,7 @@ public final class MessageReader {
 	private int messageLength = -1, writePos = 0, readPos = 0;
 	private boolean eos;
 	private boolean readVarIntSucceed = false;
+	private final Logger logger = Main.serverInstance.logger;
 
 	public MessageReader(SocketChannel sc, int intialBufferSize, int maxBufferSize) {
 		this.channel = sc;
@@ -56,16 +59,20 @@ public final class MessageReader {
 			return null;
 		}
 		writePos = buffer.position();
+		logger.trace("writePos {}", writePos);
 
 		buffer.limit(writePos);//don't read what we didn't write in the buffer
 		buffer.position(readPos);//start reading when we stopped last time
 
 		if (messageLength == -1) {//we must read the message's length
 			messageLength = tryReadVarInt();
+			logger.trace("messageLength {}", messageLength);
 			if (!readVarIntSucceed) {//fail
+				logger.trace("read var int FAIL");
 				return null;
 			}
 			readPos = buffer.position();
+			logger.trace("readPos  {}", readPos);
 			if (buffer.capacity() < messageLength) {//buffer to small
 				if (messageLength > maxBufferSize) {
 					throw new IOException("Message too big. Its size (" + messageLength + " bytes) is over the limit (" + maxBufferSize + " bytes )");
@@ -80,8 +87,10 @@ public final class MessageReader {
 			buffer.limit(packetEnd);//set the limit to prevent dataBuffer to access other messages
 			ByteBuffer dataBuffer = buffer.slice();//shares the message's data
 			messageLength = -1;//reset messageLength to -1 to read it the next time this method is called
+			logger.trace("SUCCESS  -> readPos {} and writePos {}", readPos, writePos);
 			return dataBuffer;
 		}
+		logger.trace("NOT ENOUGH DATA");
 		return null;
 	}
 
@@ -109,8 +118,7 @@ public final class MessageReader {
 			byte b = buffer.get();
 			i |= (b & 0x7F) << shift;// Remove sign bit and shift to get the next 7 bits
 			shift += 7;
-			if (b >= 0) {// VarInt byte prefix is 0, it means that we just decoded the last 7 bits, therefore we've
-				// finished.
+			if (b >= 0) {// VarInt byte prefix is 0, it means that we just decoded the last 7 bits, therefore we've finished.
 				readVarIntSucceed = true;
 				return i;
 			}
