@@ -94,6 +94,8 @@ public final class PhotonServer implements Server {
 	void registerPackets() {
 		logger.info("Registering game packets");
 		packetsManager.registerGamePackets();
+		logger.info("Registering packets handler");
+		packetsManager.registerPacketHandlers();
 	}
 
 	@Override
