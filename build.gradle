@@ -6,7 +6,7 @@ sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'org.mcphoton.impl.Main'
+    ext.mainClass = 'org.mcphoton.impl.server.Main'
 }
 
 build {
