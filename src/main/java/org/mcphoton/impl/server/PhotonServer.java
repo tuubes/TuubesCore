@@ -59,6 +59,14 @@ public final class PhotonServer implements Server {
 		this.spawn = spawn;
 	}
 
+	void loadPlugins() {
+		logger.info("Loading plugins...");
+		if (!Photon.PLUGINS_DIR.isDirectory()) {
+			Photon.PLUGINS_DIR.mkdir();
+		}
+		Photon.getPluginsManager().loadPlugins(Photon.PLUGINS_DIR.listFiles((dir, name) -> name.endsWith(".jar")));
+	}
+
 	void startThreads() {
 		logger.info("Starting threads");
 		consoleThread.start();
@@ -68,13 +76,16 @@ public final class PhotonServer implements Server {
 
 	void setShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			logger.info("Unloading plugins");
+			Photon.getPluginsManager().unloadAllPlugins();
+
 			logger.info("Stopping threads");
 			consoleThread.stopNicely();
 			networkInputThread.stopNicely();
 			networkOutputThread.stopNicely();
 			try {
-				networkInputThread.join(1000);
-				networkOutputThread.join(1000);
+				networkInputThread.join(500);
+				networkOutputThread.join(500);
 			} catch (InterruptedException ex) {
 				logger.error("Unable to stop the network threads in an acceptable time", ex);
 				logger.warn("The network threads will be forcibly stopped!");

@@ -1,6 +1,5 @@
 package org.mcphoton.impl.server;
 
-import org.mcphoton.impl.server.PhotonServer;
 import org.mcphoton.Photon;
 
 /**
@@ -21,6 +20,7 @@ public class Main {
 		serverInstance.setShutdownHook();
 		serverInstance.registerCommands();
 		serverInstance.registerPackets();
+		serverInstance.loadPlugins();
 		serverInstance.startThreads();
 	}
 
