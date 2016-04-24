@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import org.mcphoton.Photon;
 import org.mcphoton.impl.server.PhotonServer;
 import org.mcphoton.network.Client;
 import org.mcphoton.network.ConnectionState;
@@ -13,6 +14,11 @@ import org.mcphoton.network.Packet;
 import org.mcphoton.network.PacketHandler;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.network.ProtocolHelper;
+import org.mcphoton.network.handshaking.serverbound.HandshakePacket;
+import org.mcphoton.network.status.clientbound.PongPacket;
+import org.mcphoton.network.status.clientbound.ResponsePacket;
+import org.mcphoton.network.status.serverbound.PingPacket;
+import org.mcphoton.network.status.serverbound.RequestPacket;
 
 /**
  * Implementation of the PacketsManager.
@@ -123,6 +129,7 @@ public final class PhotonPacketsManager implements PacketsManager {
 			Collection<PacketHandler> handlers = map.get(packetId);
 			if (handlers == null) {
 				handlers = new SimpleBag<>();
+				map.put(packetId, handlers);
 			}
 			handlers.add(handler);
 		}
@@ -182,6 +189,7 @@ public final class PhotonPacketsManager implements PacketsManager {
 
 	@Override
 	public Packet parsePacket(ByteBuffer data, ConnectionState connState, boolean serverBound) {
+		server.logger.debug("parse packet: {}, state: {}, serverBound: {}" + serverBound, data, connState, serverBound);
 		int packetId = ProtocolHelper.readVarInt(data);
 		try {
 			Class<? extends Packet> packetClass = getRegisteredPacket(connState, serverBound, 0);
@@ -244,6 +252,42 @@ public final class PhotonPacketsManager implements PacketsManager {
 			clientPlayPackets.put(0x43, org.mcphoton.network.play.clientbound.SpawnPositionPacket.class);
 		}
 
+	}
+
+	public void registerPacketHandlers() {
+		registerHandler(ConnectionState.INIT, true, 0, (HandshakePacket packet, Client client) -> {
+			server.logger.debug("Set client state to " + packet.nextState);
+			if (packet.nextState == 1) {
+				client.setConnectionState(ConnectionState.STATUS);
+			} else if (packet.nextState == 2) {
+				client.setConnectionState(ConnectionState.LOGIN);
+			} else {
+				//invalid
+			}
+		});
+		registerHandler(ConnectionState.STATUS, true, 0, (RequestPacket packet, Client client) -> {
+			ResponsePacket response = new ResponsePacket();
+			StringBuilder jsonBuilder = new StringBuilder("{");
+			jsonBuilder.append("\"version\":{");
+			jsonBuilder.append("\"name\":\"").append(Photon.getMinecraftVersion()).append("\",");
+			jsonBuilder.append("\"protocol\":").append(HandshakePacket.CURRENT_PROTOCOL_VERSION);
+			jsonBuilder.append("},");
+			jsonBuilder.append("\"players\":{");
+			jsonBuilder.append("\"max\":").append(server.maxPlayers).append(',');
+			jsonBuilder.append("\"online\":").append(server.onlinePlayers.size());
+			jsonBuilder.append("},");
+			jsonBuilder.append("\"description\":{");
+			jsonBuilder.append("\"text\":\"").append(server.motd).append("\"");
+			jsonBuilder.append("}}");
+			response.jsonResponse = jsonBuilder.toString();
+			server.logger.debug("Sending ResponsePacket to the client: {}", jsonBuilder);
+			sendPacket(response, client);
+		});
+		registerHandler(ConnectionState.STATUS, true, 1, (PingPacket packet, Client client) -> {
+			PongPacket pong = new PongPacket();
+			pong.payload = System.currentTimeMillis();
+			sendPacket(pong, client);
+		});
 	}
 
 }
