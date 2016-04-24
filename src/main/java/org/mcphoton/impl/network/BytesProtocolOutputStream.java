@@ -14,47 +14,58 @@ import org.mcphoton.network.ProtocolOutputStream;
 public final class BytesProtocolOutputStream extends ProtocolOutputStream {
 
 	private byte[] buff;
-	private int count = 5;
+	private int count = 10;
 
 	/**
-	 * Creates a new stream with the initial capacity of 37 bytes. The first 5 bytes are reserved for the
-	 * varInt that indicate the message's size, so the actual capacity for the data is initially 32 bytes.
+	 * Creates a new stream with the initial capacity of 42 bytes. The first 10 bytes are reserved for the
+	 * two varInts that indicate the packet's size and the packet's id, so the actual capacity for the data is
+	 * initially 32 bytes.
 	 */
 	public BytesProtocolOutputStream() {
-		buff = new byte[32];
+		buff = new byte[42];
 	}
 
 	/**
-	 * Creates a new stream with the specified initial capacity. The first 5 bytes are reserved for the
-	 * varInt that indicate the message's size.
+	 * Creates a new stream with the specified initial capacity. The first 10 bytes are reserved for the
+	 * two varInts that indicate the packet's size and the packet's id.
 	 */
 	public BytesProtocolOutputStream(int initialCapacity) {
 		buff = new byte[initialCapacity];
 	}
 
 	/**
-	 * Creates a new stream with the specified data. The first 5 bytes are reserved for the
-	 * varInt that indicate the message's size.
+	 * Creates a new stream with the specified data. The first 10 bytes are reserved for the
+	 * two varInts that indicate the packet's size and the packet's id.
 	 */
 	public BytesProtocolOutputStream(byte[] data) {
 		buff = data;
 	}
 
 	/**
-	 * Returns a ByteBuffer that contains the message's size as a varint, followed by the message's data. The
-	 * message's data is directly shared with the underlying byte array of this stream.
+	 * Returns a ByteBuffer that contains the message's size (as a varint) followed by the packet's id (as a
+	 * varint) and the message's data. The message's data is directly shared with the underlying byte
+	 * array of this stream.
 	 */
-	public ByteBuffer asMessageBuffer() {
-		int messageSize = getMessageSize();
-		int initialPos = 5 - ProtocolHelper.varIntSize(messageSize);
-		ByteBuffer buffer = ByteBuffer.wrap(buff, initialPos, count);
+	public ByteBuffer asPacketBuffer(int packetId) {
+		//-- Determines the packet's size --
+		int idIntSize = ProtocolHelper.varIntSize(packetId);
+		int messageSize = getDataSize() + idIntSize;
+		int messageIntSize = ProtocolHelper.varIntSize(messageSize);
+
+		ByteBuffer buffer = ByteBuffer.wrap(buff, 0, count);//puts the data into a ByteBuffer
+
+		//-- Appends the varInts at the beginning of the ByteBuffer --
+		int initialPos = 10 - messageIntSize - idIntSize;
+		buffer.position(initialPos);
 		ProtocolHelper.writeVarInt(messageSize, buffer);
-		buffer.position(0);//resets the position
+		ProtocolHelper.writeVarInt(packetId, buffer);
+		buffer.position(initialPos);//resets the position
+
 		return buffer;
 	}
 
-	public int getMessageSize() {
-		return count - 5;
+	public int getDataSize() {
+		return count - 10;
 	}
 
 	@Override
@@ -78,16 +89,16 @@ public final class BytesProtocolOutputStream extends ProtocolOutputStream {
 
 	/**
 	 * Resets this ProcotolOutputStream, that is, delete the internal buffer and create a new one with the
-	 * default capacity (37 bytes with 5 reserved).
+	 * default capacity (42 bytes with 10 reserved).
 	 */
 	@Override
 	public void reset() {
-		buff = new byte[37];
+		buff = new byte[42];
 	}
 
 	/**
 	 * Resets this ProcotolOutputStream, that is, delete the internal buffer and create a new one with the
-	 * specified capacity.
+	 * specified capacity. 10 bytes will be reserved at the beginning of the buffer.
 	 */
 	public void reset(int newCapacity) {
 		buff = new byte[newCapacity];
@@ -204,6 +215,7 @@ public final class BytesProtocolOutputStream extends ProtocolOutputStream {
 	public void write(byte[] b, int off, int len) {
 		ensureCapacity(buff.length + len);
 		System.arraycopy(b, off, buff, count, len);
+		count += len;
 	}
 
 	@Override

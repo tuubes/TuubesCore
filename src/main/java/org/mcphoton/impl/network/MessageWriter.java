@@ -45,7 +45,8 @@ public final class MessageWriter {
 		}
 
 		message.writeTo(out);
-		currentBuffer = out.asMessageBuffer();
+		currentBuffer = out.asPacketBuffer(message.getId());
+		currentBuffer.position(0);
 
 		channel.write(currentBuffer);
 		if (currentBuffer.hasRemaining()) {//incomplete write
@@ -76,7 +77,7 @@ public final class MessageWriter {
 			}
 
 			message.writeTo(out);
-			currentBuffer = out.asMessageBuffer();
+			currentBuffer = out.asPacketBuffer(message.getId());
 
 			channel.write(currentBuffer);
 			if (currentBuffer.hasRemaining()) {//incomplete write
