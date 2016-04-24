@@ -3,10 +3,12 @@ package org.mcphoton.impl.plugin;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.mcphoton.impl.plugin.DependancyResolver.Solution;
+import org.mcphoton.impl.server.Main;
 import org.mcphoton.plugin.ClassSharer;
 import org.mcphoton.plugin.Plugin;
 import org.mcphoton.plugin.PluginLoader;
@@ -18,6 +20,10 @@ public class PhotonPluginsManager implements PluginsManager {
 	private final Map<String, Plugin> loadedPlugins = new ConcurrentHashMap<>();
 	private final ClassSharer classSharer = new PhotonClassSharer();
 	private volatile PluginLoader defaultPluginLoader;
+
+	public PhotonPluginsManager(PluginLoader defaultPluginLoader) {
+		this.defaultPluginLoader = defaultPluginLoader;
+	}
 
 	@Override
 	public Plugin getPlugin(String name) {
@@ -74,6 +80,18 @@ public class PhotonPluginsManager implements PluginsManager {
 	@Override
 	public void unloadPlugin(String name) {
 		unloadPlugin(getPlugin(name));
+	}
+
+	public void unloadAllPlugins() {
+		Iterator<Plugin> it = loadedPlugins.values().iterator();
+		while (it.hasNext()) {
+			Plugin next = it.next();
+			try {
+				unloadPlugin(next);
+			} catch (Exception e) {
+				Main.serverInstance.logger.error("Error while unloading plugin {}", e, next.getName());
+			}
+		}
 	}
 
 	@Override
