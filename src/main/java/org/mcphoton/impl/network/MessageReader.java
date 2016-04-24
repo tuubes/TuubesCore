@@ -54,8 +54,6 @@ public final class MessageReader {
 		if (read == -1) {//channel closed
 			eos = true;
 			return null;
-		} else if (read == 0) {//nothing read
-			return null;
 		}
 		writePos = buffer.position();
 
