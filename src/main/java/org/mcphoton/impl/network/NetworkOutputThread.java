@@ -6,6 +6,7 @@ import java.nio.channels.Selector;
 import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import org.mcphoton.impl.server.Main;
 
 /**
  * The thread that manages all the network output. It writes outcoming packets.
@@ -51,7 +52,7 @@ public final class NetworkOutputThread extends Thread {
 				if (sending == POISON) {
 					return;
 				}
-
+				Main.serverInstance.logger.debug("Take " + sending);
 				for (PhotonClient client : sending.clients) {
 					try {
 						boolean completeAndImmediateWrite = client.messageWriter.writeASAP(sending.packet);
@@ -72,6 +73,7 @@ public final class NetworkOutputThread extends Thread {
 	}
 
 	public void enqueue(PacketSending ps) {
+		Main.serverInstance.logger.debug("Put " + ps);
 		try {
 			queue.put(ps);
 		} catch (InterruptedException ex) {

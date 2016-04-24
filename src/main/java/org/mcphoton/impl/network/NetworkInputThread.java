@@ -59,14 +59,14 @@ public final class NetworkInputThread extends Thread {
 				synchronized (this) {
 				} // to support selector.wakeUp (see NetworkOutputThread.java)
 				int selectedCount = selector.select();
-				Main.serverInstance.logger.trace("The Selector selected {} key(s)", selectedCount);
+				server.logger.trace("The Selector selected {} key(s)", selectedCount);
 				if (selectedCount == 0) {
 					continue;
 				}
 				Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 				while (it.hasNext()) {
 					SelectionKey key = it.next();
-					Main.serverInstance.logger.trace("Selected key {} with ops {}", key, key.readyOps());
+					server.logger.trace("Selected key {} with ops {}", key, key.readyOps());
 					try {
 						if (key.isAcceptable()) {
 							SocketChannel channel = ssc.accept();
@@ -78,14 +78,15 @@ public final class NetworkInputThread extends Thread {
 							MessageReader messageReader = client.messageReader;
 							ByteBuffer messageData;
 							while ((messageData = messageReader.readNext()) != null) {
-								for (int i = client.codecs.length; i >= 0; i--) {
+								server.logger.trace("messageData {}", messageData);
+								for (int i = client.codecs.length - 1; i >= 0; i--) {
 									messageData = client.codecs[i].decode(messageData);
 									Packet packet = packetsManager.parsePacket(messageData, client.getConnectionState(), true);
 									packetsManager.handle(packet, client);
 								}
 							}
 							if (messageReader.hasReachedEndOfStream()) {// client disconnected
-								Main.serverInstance.logger.debug("END OF STREAM");
+								server.logger.debug("END OF STREAM");
 								key.cancel();
 								client.getPlayer().ifPresent(server.onlinePlayers::remove);
 							}
@@ -97,13 +98,13 @@ public final class NetworkInputThread extends Thread {
 							}
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
+						server.logger.error("Error while handling a java nio SelectionKey", e);
 					} finally {
 						it.remove();// don't process the same key more than once!
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				server.logger.error("Severe IO error in the selector loop", e);
 			}
 		}
 		try {
