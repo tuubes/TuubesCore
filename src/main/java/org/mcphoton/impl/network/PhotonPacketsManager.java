@@ -1,18 +1,18 @@
-/* 
+/*
  * Copyright (c) 2016 MCPhoton <http://mcphoton.org> and contributors.
- * 
+ *
  * This file is part of the Photon Server Implementation <https://github.com/mcphoton/Photon-Server>.
- * 
+ *
  * The Photon Server Implementation is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * The Photon Server Implementation is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -245,11 +245,11 @@ public final class PhotonPacketsManager implements PacketsManager {
 			serverLoginPackets.put(0, org.mcphoton.network.login.serverbound.LoginStartPacket.class);
 			serverLoginPackets.put(1, org.mcphoton.network.login.serverbound.EncryptionResponsePacket.class);
 		}
-		/* TODO
-		 * synchronized(serverPlayPackets){
-		 *
-		 * }
-		 */
+
+		synchronized (serverPlayPackets) {
+			serverPlayPackets.put(0x03, org.mcphoton.network.play.serverbound.ClientStatusPacket.class);
+		}
+
 		synchronized (clientStatusPackets) {
 			clientStatusPackets.put(0, org.mcphoton.network.status.clientbound.ResponsePacket.class);
 			clientStatusPackets.put(1, org.mcphoton.network.status.clientbound.PongPacket.class);
@@ -262,7 +262,6 @@ public final class PhotonPacketsManager implements PacketsManager {
 		}
 		synchronized (clientPlayPackets) {
 			clientPlayPackets.put(0x20, org.mcphoton.network.play.clientbound.ChunkDataPacket.class);
-			clientPlayPackets.put(0x03, org.mcphoton.network.play.clientbound.ClientStatusPacket.class);
 			clientPlayPackets.put(0x23, org.mcphoton.network.play.clientbound.JoinGamePacket.class);
 			clientPlayPackets.put(0x2E, org.mcphoton.network.play.clientbound.PlayerPositionAndLookPacket.class);
 			clientPlayPackets.put(0x18, org.mcphoton.network.play.clientbound.PluginMessagePacket.class);
