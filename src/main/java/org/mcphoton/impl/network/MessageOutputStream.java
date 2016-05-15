@@ -1,18 +1,18 @@
-/* 
+/*
  * Copyright (c) 2016 MCPhoton <http://mcphoton.org> and contributors.
- * 
+ *
  * This file is part of the Photon Server Implementation <https://github.com/mcphoton/Photon-Server>.
- * 
+ *
  * The Photon Server Implementation is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * The Photon Server Implementation is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -29,7 +29,7 @@ import org.mcphoton.network.ProtocolOutputStream;
  * @author TheElectronWill
  *
  */
-public final class BytesProtocolOutputStream extends ProtocolOutputStream {
+public final class MessageOutputStream extends ProtocolOutputStream {
 
 	private byte[] buff;
 	private int count = 10;
@@ -39,7 +39,7 @@ public final class BytesProtocolOutputStream extends ProtocolOutputStream {
 	 * two varInts that indicate the packet's size and the packet's id, so the actual capacity for the data is
 	 * initially 32 bytes.
 	 */
-	public BytesProtocolOutputStream() {
+	public MessageOutputStream() {
 		buff = new byte[42];
 	}
 
@@ -47,7 +47,7 @@ public final class BytesProtocolOutputStream extends ProtocolOutputStream {
 	 * Creates a new stream with the specified initial capacity. The first 10 bytes are reserved for the
 	 * two varInts that indicate the packet's size and the packet's id.
 	 */
-	public BytesProtocolOutputStream(int initialCapacity) {
+	public MessageOutputStream(int initialCapacity) {
 		buff = new byte[initialCapacity];
 	}
 
@@ -55,7 +55,7 @@ public final class BytesProtocolOutputStream extends ProtocolOutputStream {
 	 * Creates a new stream with the specified data. The first 10 bytes are reserved for the
 	 * two varInts that indicate the packet's size and the packet's id.
 	 */
-	public BytesProtocolOutputStream(byte[] data) {
+	public MessageOutputStream(byte[] data) {
 		buff = data;
 	}
 
