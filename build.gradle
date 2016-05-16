@@ -9,35 +9,15 @@ if (!hasProperty('mainClass')) {
     ext.mainClass = 'org.mcphoton.impl.server.Main'
 }
 
-build {
-	dependsOn('downloadJars')
-}
-
 repositories {
 	mavenCentral()
-}
-
-task downloadJars {
-	File dir = new File(buildDir, 'dependLibs')
-	if(!dir.isDirectory()){
-		dir.mkdir()
-	}
-	download(dir, 'TOML_lib.jar', 'https://github.com/TheElectronWill/TOML-javalib/releases/download/v1.2.1/TOML.lib.v1.2.1.by.TheElectronWill.jar')
-	download(dir, 'JSON_lib.jar', 'https://github.com/TheElectronWill/JSON-javalib/releases/download/v1.1/JSON.lib.v1.1.by.TheElectronWill.jar')
-	download(dir, 'NBT_lib.jar', 'https://github.com/TheElectronWill/NBT-javalib/releases/download/v1.0/NBT.lib.v1.0.jar')
-}
-
-//Downloads a file from an url
-def download(File destDir, String destName, String url) {
-	def file = new File(destDir, destName)
-	if(!file.exists()) {
-		println "Downloading ${url} to ${file.absolutePath}"
-		file << new URL(url).openStream()
-	}
+	maven { url "https://jitpack.io" }
 }
 
 dependencies {
 	compile project(':Photon-API')
-	compile fileTree(dir: "$buildDir/dependLibs", include: '*.jar')
 	compile 'net.magik6k:bitbuffer:1.5.1'
+	compile 'com.github.TheElectronWill:NBT-javalib:v2.0'
+	compile 'com.github.TheElectronWill:JSON-javalib:v1.2'
+	compile 'com.github.TheElectronWill:TOML-javalib:v1.2.2'
 }
