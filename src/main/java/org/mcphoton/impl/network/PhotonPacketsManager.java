@@ -213,7 +213,7 @@ public final class PhotonPacketsManager implements PacketsManager {
 			Class<? extends Packet> packetClass = getRegisteredPacket(connState, serverBound, 0);
 			Packet packet = packetClass.newInstance();
 			return packet.readFrom(data);
-		} catch (InstantiationException | IllegalAccessException | NullPointerException ex) {
+		} catch (Exception ex) {
 			server.logger.error("Cannot create packet object with id {}", packetId, ex);
 		}
 		return null;
