@@ -1,24 +1,26 @@
-/* 
+/*
  * Copyright (c) 2016 MCPhoton <http://mcphoton.org> and contributors.
- * 
+ *
  * This file is part of the Photon Server Implementation <https://github.com/mcphoton/Photon-Server>.
- * 
+ *
  * The Photon Server Implementation is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * The Photon Server Implementation is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.mcphoton.impl.world;
 
+import java.io.IOException;
 import net.magik6k.bitbuffer.BitBuffer;
+import org.mcphoton.network.ProtocolOutputStream;
 import org.mcphoton.world.ChunkSection;
 
 /**
@@ -28,16 +30,17 @@ import org.mcphoton.world.ChunkSection;
  */
 public class SimpleChunkSection implements ChunkSection {
 
+	private final byte[] dataBytes;
 	private final BitBuffer data;
 	private final int bitsPerBlock;
+	private static final byte[] EMPTY_LIGHT_DATA = new byte[4096];//1 byte per block
+	//TODO blocklight and skylight
+	//TODO block entities
 
 	public SimpleChunkSection(int bitsPerBlock) {
-		this.data = BitBuffer.allocate(bitsPerBlock * 4096);
-		this.bitsPerBlock = bitsPerBlock;
-	}
-
-	public SimpleChunkSection(BitBuffer data, int bitsPerBlock) {
-		this.data = data;
+		int bits = bitsPerBlock * 4096;
+		this.dataBytes = new byte[(int) Math.ceil(bits / 8)];
+		this.data = BitBuffer.wrap(dataBytes);
 		this.bitsPerBlock = bitsPerBlock;
 	}
 
@@ -55,6 +58,15 @@ public class SimpleChunkSection implements ChunkSection {
 
 	public int getBitsPerBlockNumber() {
 		return bitsPerBlock;
+	}
+
+	@Override
+	public void writeTo(ProtocolOutputStream out) throws IOException {
+		out.writeByte(bitsPerBlock);
+		out.writeVarInt(0);//use the global palette
+		out.writeVarInt((int) (data.limit() / 8));
+		out.write(dataBytes);
+		out.write(EMPTY_LIGHT_DATA);//this writes the skylight data, so it works only in the overworld.
 	}
 
 }
