@@ -5,4 +5,6 @@ and when you're done. You don't have to complete a task entirely before making a
 - [ ] Implement user storage.
 - [ ] Implement world storage. World would not be stored with the minecraft "anvil" format, but with the chunkdata's packet format, to allow better performance.
 - [ ] Implement the Photon API entirely.
+- [ ] Implement basic chunk generation.
+- [ ] Implement world protection.
 - [ ] *WIP (TheElectronWill)* - Rewrite the threading model. **See the discussion group.**
