@@ -6,12 +6,30 @@ sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'org.mcphoton.impl.server.Main'
+	ext.mainClass = 'org.mcphoton.impl.server.Main'
 }
 
 repositories {
 	mavenCentral()
 	maven { url "https://jitpack.io" }
+}
+
+buildscript {
+	repositories {
+		maven { url "https://plugins.gradle.org/m2/"}
+	}
+	dependencies {
+		classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.12.1"
+	}
+}
+
+apply plugin: "com.github.hierynomus.license"
+
+license {
+	header file('HEADER.txt')
+	strictCheck true
+	mapping("java", "SLASHSTAR_STYLE")
+	ext.year = Calendar.getInstance().get(Calendar.YEAR)
 }
 
 dependencies {
