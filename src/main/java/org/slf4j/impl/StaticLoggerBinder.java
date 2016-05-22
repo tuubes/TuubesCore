@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2004-2011 QOS.ch All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -21,39 +21,41 @@ import org.slf4j.ILoggerFactory;
 import org.slf4j.spi.LoggerFactoryBinder;
 
 public class StaticLoggerBinder implements LoggerFactoryBinder {
-	
+
 	private static final StaticLoggerBinder SINGLETON = new StaticLoggerBinder();
-	
+
 	/**
 	 * Gets the singleton of this class.
 	 */
 	public static final StaticLoggerBinder getSingleton() {
 		return SINGLETON;
 	}
-	
+
 	/**
-	 * Declare the version of the SLF4J API this implementation is compiled against. The value of this field is usually
+	 * Declare the version of the SLF4J API this implementation is compiled against. The value of this field
+	 * is usually
 	 * modified with each release.
 	 */
 	// to avoid constant folding by the compiler, this field must *not* be final
 	public static String REQUESTED_API_VERSION = "1.6.99"; // !final
-	
+
 	private static final String loggerFactoryClassStr = PhotonLoggerFactory.class.getName();
-	
+
 	/**
-	 * The ILoggerFactory instance returned by the {@link #getLoggerFactory} method should always be the same object
+	 * The ILoggerFactory instance returned by the {@link #getLoggerFactory} method should always be the same
+	 * object
 	 */
 	private final ILoggerFactory loggerFactory;
-	
+
 	private StaticLoggerBinder() {
 		loggerFactory = new PhotonLoggerFactory();
 	}
-	
+
 	@Override
 	public ILoggerFactory getLoggerFactory() {
 		return loggerFactory;
 	}
-	
+
 	@Override
 	public String getLoggerFactoryClassStr() {
 		return loggerFactoryClassStr;

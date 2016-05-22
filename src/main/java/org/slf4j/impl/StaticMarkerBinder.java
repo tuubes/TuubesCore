@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2004-2011 QOS.ch All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -15,7 +15,6 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-
 package org.slf4j.impl;
 
 import org.slf4j.IMarkerFactory;
@@ -24,23 +23,25 @@ import org.slf4j.helpers.BasicMarkerFactory;
 import org.slf4j.spi.MarkerFactoryBinder;
 
 /**
- * 
- * The binding of {@link MarkerFactory} class with an actual instance of {@link IMarkerFactory} is performed using
+ *
+ * The binding of {@link MarkerFactory} class with an actual instance of {@link IMarkerFactory} is performed
+ * using
  * information returned by this class.
- * 
+ *
  * @author Ceki G&uuml;lc&uuml;
  */
 public class StaticMarkerBinder implements MarkerFactoryBinder {
-	
+
 	/**
 	 * The unique instance of this class.
 	 */
 	public static final StaticMarkerBinder SINGLETON = new StaticMarkerBinder();
-	
+
 	final IMarkerFactory markerFactory = new BasicMarkerFactory();
-	
-	private StaticMarkerBinder() {}
-	
+
+	private StaticMarkerBinder() {
+	}
+
 	/**
 	 * Currently this method always returns an instance of {@link BasicMarkerFactory}.
 	 */
@@ -48,7 +49,7 @@ public class StaticMarkerBinder implements MarkerFactoryBinder {
 	public IMarkerFactory getMarkerFactory() {
 		return markerFactory;
 	}
-	
+
 	/**
 	 * Currently, this method returns the class name of {@link BasicMarkerFactory}.
 	 */
@@ -56,5 +57,5 @@ public class StaticMarkerBinder implements MarkerFactoryBinder {
 	public String getMarkerFactoryClassStr() {
 		return BasicMarkerFactory.class.getName();
 	}
-	
+
 }
