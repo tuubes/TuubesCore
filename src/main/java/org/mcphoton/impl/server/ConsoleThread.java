@@ -52,7 +52,7 @@ public class ConsoleThread extends Thread implements Messageable {
 			Command cmd = Photon.getCommandsRegistry().getRegistered(parts[0]);
 			if (cmd == null) {
 				System.out.println("Unknown command.");
-				return;
+				continue;
 			}
 			if (parts.length == 1) {
 				cmd.execute(this, new String[0]);
