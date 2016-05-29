@@ -97,12 +97,12 @@ public final class MessageOutputStream extends ProtocolOutputStream {
 	}
 
 	/**
-	 * Clears this ProtocolOutputStream, that is, sets it size (internal counter) to 0. The capacity does not
-	 * change.
+	 * Clears this ProtocolOutputStream: sets its data size to 0, that is, its actual size to 10 (the first
+	 * ten bytes are reserved). The capacity does not change.
 	 */
 	@Override
 	public void clear() {
-		count = 0;
+		count = 10;
 	}
 
 	/**
