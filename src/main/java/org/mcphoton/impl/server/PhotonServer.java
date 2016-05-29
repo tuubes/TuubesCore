@@ -19,6 +19,8 @@
 package org.mcphoton.impl.server;
 
 import com.electronwill.utils.SimpleBag;
+
+import java.awt.image.BufferedImage;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.util.Collection;
@@ -35,6 +37,7 @@ import org.mcphoton.impl.network.PhotonPacketsManager;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
+import org.mcphoton.utils.PhotonFavicon;
 import org.mcphoton.world.Location;
 import org.mcphoton.world.World;
 import org.slf4j.impl.LoggingService;
@@ -58,7 +61,7 @@ public final class PhotonServer implements Server {
 	public final PhotonBansManager bansManager = new PhotonBansManager();
 	public final PhotonWhitelistManager whitelistManager = new PhotonWhitelistManager();
 
-	public volatile String motd;
+	public volatile String motd, encodedFavicon;
 
 	public final Collection<Player> onlinePlayers = new SimpleBag<>();
 	public volatile int maxPlayers;
@@ -66,13 +69,14 @@ public final class PhotonServer implements Server {
 	public final Map<String, World> worlds = new ConcurrentHashMap<>();
 	public volatile Location spawn;
 
-	public PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, NetworkInputThread networkInputThread, NetworkOutputThread networkOutputThread, String motd, int maxPlayers, Location spawn) {
+	public PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, NetworkInputThread networkInputThread, NetworkOutputThread networkOutputThread, String motd, String encodedFavicon, int maxPlayers, Location spawn) {
 		this.logger = logger;
 		this.keyPair = keyPair;
 		this.address = address;
 		this.networkInputThread = networkInputThread;
 		this.networkOutputThread = networkOutputThread;
 		this.motd = motd;
+		this.encodedFavicon = encodedFavicon;
 		this.maxPlayers = maxPlayers;
 		this.spawn = spawn;
 	}
@@ -127,6 +131,21 @@ public final class PhotonServer implements Server {
 		packetsManager.registerPacketHandlers();
 	}
 
+	void setFavicon(BufferedImage image){
+		PhotonFavicon favicon =  new PhotonFavicon();
+		try {
+			favicon.encode(image);
+		} catch (Exception e) {
+			logger.error("The image is not in 64 by 64 pixels");
+			e.printStackTrace();
+		}
+		encodedFavicon = favicon.getEncodedFavicon();
+	}
+	
+	void setFavicon(String encoded){
+		encodedFavicon = encoded;
+	}
+	
 	@Override
 	public Collection<Player> getOnlinePlayers() {
 		return Collections.unmodifiableCollection(onlinePlayers);
