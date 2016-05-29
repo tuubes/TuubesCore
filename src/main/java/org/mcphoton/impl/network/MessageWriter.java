@@ -23,7 +23,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
 import java.util.Queue;
+import org.mcphoton.impl.server.Main;
 import org.mcphoton.network.Packet;
+import org.slf4j.Logger;
 
 /**
  * A MessageWriter writes messages to a SocketChannel. It handles incomplete writes.
@@ -37,6 +39,7 @@ public final class MessageWriter {
 	private final Queue<Packet> pendingMessages = new LinkedList<>();
 	private final MessageOutputStream out = new MessageOutputStream();
 	private ByteBuffer currentBuffer;
+	private final Logger logger = Main.serverInstance.logger;
 
 	public MessageWriter(SocketChannel sc) {
 		this.channel = sc;
@@ -64,7 +67,7 @@ public final class MessageWriter {
 
 		message.writeTo(out);
 		currentBuffer = out.asPacketBuffer(message.getId());
-		currentBuffer.position(0);
+		logger.trace("currentBuffer {}", currentBuffer);
 
 		channel.write(currentBuffer);
 		if (currentBuffer.hasRemaining()) {//incomplete write
