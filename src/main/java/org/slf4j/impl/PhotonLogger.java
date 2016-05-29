@@ -54,7 +54,7 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 			.appendValue(SECOND_OF_MINUTE, 2)
 			.toFormatter();
 
-	private static final String[] LEVEL_STRINGS = {"ERROR", " WARN", " INFO", "DEBUG", " TRACE"};// aligned names
+	private static final String[] LEVEL_STRINGS = {"ERROR", " WARN", " INFO", "DEBUG", "TRACE"};// aligned names
 	private static final boolean USE_COLORS = !System.getProperty("os.name").toLowerCase().contains("windows") && System.console() != null;
 
 	private volatile LoggingLevel level;
