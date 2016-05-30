@@ -100,7 +100,7 @@ public final class Photon {
 	}
 
 	public static String getMinecraftVersion() {
-		return "1.9.2";
+		return "1.9.4";
 	}
 
 	public static File getMainDirectory() {
