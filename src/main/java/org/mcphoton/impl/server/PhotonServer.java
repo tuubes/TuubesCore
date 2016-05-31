@@ -18,8 +18,6 @@
  */
 package org.mcphoton.impl.server;
 
-import com.electronwill.utils.SimpleBag;
-
 import java.awt.image.BufferedImage;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
@@ -28,8 +26,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.mcphoton.Photon;
 import org.mcphoton.entity.living.Player;
+import org.mcphoton.impl.command.ListCommand;
 import org.mcphoton.impl.command.StopCommand;
 import org.mcphoton.impl.network.NetworkInputThread;
 import org.mcphoton.impl.network.NetworkOutputThread;
@@ -42,6 +42,8 @@ import org.mcphoton.world.Location;
 import org.mcphoton.world.World;
 import org.slf4j.impl.LoggingService;
 import org.slf4j.impl.PhotonLogger;
+
+import com.electronwill.utils.SimpleBag;
 
 /**
  * The game server.
@@ -122,6 +124,7 @@ public final class PhotonServer implements Server {
 	void registerCommands() {
 		logger.info("Registering photon commands");
 		Photon.getCommandsRegistry().register(new StopCommand(), null);
+		Photon.getCommandsRegistry().register(new ListCommand(), null);
 	}
 
 	void registerPackets() {
