@@ -35,7 +35,7 @@ import org.mcphoton.world.protection.WorldAccessManager;
 public class PhotonWorld implements World {
 
 	protected volatile String name;
-	protected volatile File directory = new File(Photon.WORLD_DIR, name);
+	protected volatile File directory = new File(Photon.WORLDS_DIR, name);
 	protected volatile double spawnX = 0, spawnY = 0, spawnZ = 0;
 	protected final WorldType type;
 	protected final Collection<Player> players = new SimpleBag<>();
@@ -52,7 +52,7 @@ public class PhotonWorld implements World {
 
 	@Override
 	public synchronized void renameTo(String name) {
-		boolean renameSuccess = directory.renameTo(new File(Photon.WORLD_DIR, name));
+		boolean renameSuccess = directory.renameTo(new File(Photon.WORLDS_DIR, name));
 		if (renameSuccess) {
 			this.name = name;
 		}
