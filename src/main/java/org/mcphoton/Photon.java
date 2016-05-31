@@ -43,7 +43,7 @@ import org.mcphoton.world.BiomeRegistry;
  */
 public final class Photon {
 
-	public static final File MAIN_DIR = new File(System.getProperty("user.dir")), PLUGINS_DIR = new File(MAIN_DIR, "plugins"), WORLD_DIR = new File(MAIN_DIR, "worlds");
+	public static final File MAIN_DIR = new File(System.getProperty("user.dir")), PLUGINS_DIR = new File(MAIN_DIR, "plugins"), WORLDS_DIR = new File(MAIN_DIR, "worlds");
 	private static final BlockRegistry BLOCK_REGISTRY = new PhotonBlockRegistry();
 	private static final ItemRegistry ITEM_REGISTRY = new PhotonItemRegistry();
 	private static final EntityRegistry ENTITY_REGISTRY = new PhotonEntityRegistry();

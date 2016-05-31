@@ -65,6 +65,7 @@ public class ServerCreator {
 	private void specifyConfig() {
 		configSpec.defineInt("port", 25565, 0, 65535);
 		configSpec.defineInt("maxPlayers", 10, 1, 1000);
+		configSpec.defineString("default-level", "world");
 		configSpec.defineString("motd", "Photon server, version alpha");
 		configSpec.defineString("loggingLevel", "DEBUG", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
 	}
