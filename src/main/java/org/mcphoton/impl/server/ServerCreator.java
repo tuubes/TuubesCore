@@ -27,10 +27,12 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.imageio.ImageIO;
 
+import org.mcphoton.Photon;
 import org.mcphoton.config.ConfigurationSpecification;
 import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.impl.network.NetworkInputThread;
 import org.mcphoton.impl.network.NetworkOutputThread;
+import org.mcphoton.impl.world.PhotonWorld;
 import org.mcphoton.utils.PhotonFavicon;
 import org.mcphoton.world.Location;
 import org.slf4j.LoggerFactory;
@@ -131,14 +133,45 @@ public class ServerCreator {
 			System.exit(3);
 		}
 	}
+	
+	private void loadDefaultWorlds() {
+		logger.info("Creating threads");
+		if(!Photon.WORLDS_DIR.isDirectory()) {
+			Photon.WORLDS_DIR.mkdir();
+		}
+		File overworldDir = new File(Photon.WORLDS_DIR  + "/" + config.getString("default-level"));
+		File netherWorldDir = new File(Photon.WORLDS_DIR + "/" + config.getString("default-level") + "_nether");
+		File theEndWorldDir = new File(Photon.WORLDS_DIR + "/" + config.getString("default-level") + "_the_end");
+		
+		// ** OVERWORLD **
+		if(!overworldDir.isDirectory()) {
+			overworldDir.mkdir();
+		}
+		//TODO Load spawn location from level file
+		
+		// ** NETHER **
+		if(!netherWorldDir.isDirectory()) {
+			netherWorldDir.mkdir();
+		}
+		//TODO Load spawn location from level file
+		
+		// ** THE END **
+		if(!theEndWorldDir.isDirectory()) {
+			theEndWorldDir.mkdir();
+		}
+		//TODO Load spawn location from level file
+		
+	}
 
 	PhotonServer createServer() {
-		Location spawn = null;//TODO load from config
 		specifyConfig();
 		loadConfig();
 		loadFavicon();
 		generateRsaKeyPair();
 		createThreads();
+		loadDefaultWorlds();
+		PhotonWorld overworld = new PhotonWorld(config.getString("default-level") ,null); //TODO WorldType
+		Location spawn = new Location(overworld.getSpawn().getX(), overworld.getSpawn().getY(), overworld.getSpawn().getZ(), overworld);
 		return new PhotonServer(logger, keyPair, address, nit, not, motd, encodedFavicon, maxPlayers, spawn);
 	}
 
