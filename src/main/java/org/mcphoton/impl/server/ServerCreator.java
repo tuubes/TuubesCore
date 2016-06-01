@@ -43,6 +43,7 @@ import org.slf4j.impl.PhotonLogger;
  * Configures and creates a server instance.
  *
  * @author TheElectronWill
+ * @author Maaattt
  */
 public class ServerCreator {
 
@@ -59,6 +60,8 @@ public class ServerCreator {
 	private NetworkInputThread nit;
 	private NetworkOutputThread not;
 	private LoggingLevel loggingLevel;
+	
+	private PhotonWorld overworld, nether, theEnd;
 
 	public ServerCreator(String loggerName) {
 		this.logger = (PhotonLogger) LoggerFactory.getLogger(loggerName);
@@ -135,7 +138,7 @@ public class ServerCreator {
 	}
 	
 	private void loadDefaultWorlds() {
-		logger.info("Creating threads");
+		logger.info("Loading worlds");
 		if(!Photon.WORLDS_DIR.isDirectory()) {
 			Photon.WORLDS_DIR.mkdir();
 		}
@@ -147,19 +150,24 @@ public class ServerCreator {
 		if(!overworldDir.isDirectory()) {
 			overworldDir.mkdir();
 		}
-		//TODO Load spawn location from level file
+		
+		overworld = new PhotonWorld(config.getString("default-level"),null); //TODO WorldType and WorldMetadata
+		Photon.getServer().registerWorld(overworld);
 		
 		// ** NETHER **
 		if(!netherWorldDir.isDirectory()) {
 			netherWorldDir.mkdir();
 		}
-		//TODO Load spawn location from level file
+		nether = new PhotonWorld(config.getString("default-level")+"_nether" , null); //TODO WorldType and WorldMetadata
+		Photon.getServer().registerWorld(nether);
+
 		
 		// ** THE END **
 		if(!theEndWorldDir.isDirectory()) {
 			theEndWorldDir.mkdir();
 		}
-		//TODO Load spawn location from level file
+		theEnd = new PhotonWorld(config.getString("default-level")+"_the_end" , null); //TODO WorldType and WorldMetadata
+		Photon.getServer().registerWorld(theEnd);
 		
 	}
 
@@ -170,8 +178,7 @@ public class ServerCreator {
 		generateRsaKeyPair();
 		createThreads();
 		loadDefaultWorlds();
-		PhotonWorld overworld = new PhotonWorld(config.getString("default-level") ,null); //TODO WorldType
-		Location spawn = new Location(overworld.getSpawn().getX(), overworld.getSpawn().getY(), overworld.getSpawn().getZ(), overworld);
+		Location spawn = new Location(Photon.getServer().getWorld(config.getString("default-level")).getSpawn().getX(), Photon.getServer().getWorld(config.getString("default-level")).getSpawn().getY(), Photon.getServer().getWorld(config.getString("default-level")).getSpawn().getZ(), Photon.getServer().getWorld(config.getString("default-level")));
 		return new PhotonServer(logger, keyPair, address, nit, not, motd, encodedFavicon, maxPlayers, spawn);
 	}
 
