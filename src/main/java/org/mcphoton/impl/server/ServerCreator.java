@@ -27,10 +27,12 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.imageio.ImageIO;
 
+import org.mcphoton.Photon;
 import org.mcphoton.config.ConfigurationSpecification;
 import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.impl.network.NetworkInputThread;
 import org.mcphoton.impl.network.NetworkOutputThread;
+import org.mcphoton.impl.world.PhotonWorld;
 import org.mcphoton.utils.PhotonFavicon;
 import org.mcphoton.world.Location;
 import org.slf4j.LoggerFactory;
@@ -41,6 +43,7 @@ import org.slf4j.impl.PhotonLogger;
  * Configures and creates a server instance.
  *
  * @author TheElectronWill
+ * @author Maaattt
  */
 public class ServerCreator {
 
@@ -57,6 +60,8 @@ public class ServerCreator {
 	private NetworkInputThread nit;
 	private NetworkOutputThread not;
 	private LoggingLevel loggingLevel;
+	
+	private PhotonWorld overworld, nether, theEnd;
 
 	public ServerCreator(String loggerName) {
 		this.logger = (PhotonLogger) LoggerFactory.getLogger(loggerName);
@@ -131,14 +136,49 @@ public class ServerCreator {
 			System.exit(3);
 		}
 	}
+	
+	private void loadDefaultWorlds() {
+		logger.info("Loading worlds");
+		if(!Photon.WORLDS_DIR.isDirectory()) {
+			Photon.WORLDS_DIR.mkdir();
+		}
+		File overworldDir = new File(Photon.WORLDS_DIR  + "/" + config.getString("default-level"));
+		File netherWorldDir = new File(Photon.WORLDS_DIR + "/" + config.getString("default-level") + "_nether");
+		File theEndWorldDir = new File(Photon.WORLDS_DIR + "/" + config.getString("default-level") + "_the_end");
+		
+		// ** OVERWORLD **
+		if(!overworldDir.isDirectory()) {
+			overworldDir.mkdir();
+		}
+		
+		overworld = new PhotonWorld(config.getString("default-level"),null); //TODO WorldType and WorldMetadata
+		Photon.getServer().registerWorld(overworld);
+		
+		// ** NETHER **
+		if(!netherWorldDir.isDirectory()) {
+			netherWorldDir.mkdir();
+		}
+		nether = new PhotonWorld(config.getString("default-level")+"_nether" , null); //TODO WorldType and WorldMetadata
+		Photon.getServer().registerWorld(nether);
+
+		
+		// ** THE END **
+		if(!theEndWorldDir.isDirectory()) {
+			theEndWorldDir.mkdir();
+		}
+		theEnd = new PhotonWorld(config.getString("default-level")+"_the_end" , null); //TODO WorldType and WorldMetadata
+		Photon.getServer().registerWorld(theEnd);
+		
+	}
 
 	PhotonServer createServer() {
-		Location spawn = null;//TODO load from config
 		specifyConfig();
 		loadConfig();
 		loadFavicon();
 		generateRsaKeyPair();
 		createThreads();
+		loadDefaultWorlds();
+		Location spawn = new Location(Photon.getServer().getWorld(config.getString("default-level")).getSpawn().getX(), Photon.getServer().getWorld(config.getString("default-level")).getSpawn().getY(), Photon.getServer().getWorld(config.getString("default-level")).getSpawn().getZ(), Photon.getServer().getWorld(config.getString("default-level")));
 		return new PhotonServer(logger, keyPair, address, nit, not, motd, encodedFavicon, maxPlayers, spawn);
 	}
 

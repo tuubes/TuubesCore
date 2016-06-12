@@ -31,6 +31,7 @@ import org.mcphoton.impl.item.PhotonItemRegistry;
 import org.mcphoton.impl.plugin.JavaPluginLoader;
 import org.mcphoton.impl.plugin.PhotonPluginsManager;
 import org.mcphoton.impl.server.Main;
+import org.mcphoton.impl.server.PhotonServer;
 import org.mcphoton.impl.world.PhotonBiomeRegistry;
 import org.mcphoton.item.ItemRegistry;
 import org.mcphoton.network.PacketsManager;
@@ -109,6 +110,10 @@ public final class Photon {
 
 	public static File getPluginsDirectory() {
 		return PLUGINS_DIR;
+	}
+	
+	public static PhotonServer getServer() {
+		return Main.serverInstance;
 	}
 
 }
