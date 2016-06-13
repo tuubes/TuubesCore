@@ -35,19 +35,25 @@ import org.mcphoton.network.ConnectionState;
 public final class PhotonClient implements Client {
 
 	final InetSocketAddress address;
-	final Codec[] codecs;//the codecs, in the output order (server -> client).
 	final SocketChannel channel;
-	final MessageReader messageReader;
-	final MessageWriter messageWriter;
+	final PacketReader packetReader;
+	final PacketWriter packetWriter;
 	volatile Optional<Player> player = Optional.empty();
 	volatile int authVerifyToken = -1;
 	volatile ConnectionState state = ConnectionState.INIT;
+	volatile Codec cipherCodec;
+	volatile Codec compressionCodec;
 
-	public PhotonClient(SocketChannel channel, Codec[] codecs) throws IOException {
+	public PhotonClient(SocketChannel channel) throws IOException {
+		this(channel, new NoCodec(), new NoCodec());
+	}
+
+	public PhotonClient(SocketChannel channel, Codec cipherCodec, Codec compressionCodec) throws IOException {
 		this.channel = channel;
-		this.codecs = codecs;
-		this.messageReader = new MessageReader(channel, 256, 512);
-		this.messageWriter = new MessageWriter(channel);
+		this.cipherCodec = cipherCodec;
+		this.compressionCodec = compressionCodec;
+		this.packetReader = new PacketReader(channel, 128, 512);
+		this.packetWriter = new PacketWriter(channel);
 		this.address = (InetSocketAddress) channel.getRemoteAddress();
 	}
 
