@@ -29,7 +29,7 @@ import org.mcphoton.network.ProtocolOutputStream;
  * @author TheElectronWill
  *
  */
-public final class MessageOutputStream extends ProtocolOutputStream {
+public final class ArrayProtocolOutputStream extends ProtocolOutputStream {
 
 	private byte[] buff;
 	private int count = 10;
@@ -39,7 +39,7 @@ public final class MessageOutputStream extends ProtocolOutputStream {
 	 * two varInts that indicate the packet's size and the packet's id, so the actual capacity for the data is
 	 * initially 32 bytes.
 	 */
-	public MessageOutputStream() {
+	public ArrayProtocolOutputStream() {
 		buff = new byte[42];
 	}
 
@@ -47,7 +47,7 @@ public final class MessageOutputStream extends ProtocolOutputStream {
 	 * Creates a new stream with the specified initial capacity. The first 10 bytes are reserved for the
 	 * two varInts that indicate the packet's size and the packet's id.
 	 */
-	public MessageOutputStream(int initialCapacity) {
+	public ArrayProtocolOutputStream(int initialCapacity) {
 		buff = new byte[initialCapacity];
 	}
 
@@ -55,7 +55,7 @@ public final class MessageOutputStream extends ProtocolOutputStream {
 	 * Creates a new stream with the specified data. The first 10 bytes are reserved for the
 	 * two varInts that indicate the packet's size and the packet's id.
 	 */
-	public MessageOutputStream(byte[] data) {
+	public ArrayProtocolOutputStream(byte[] data) {
 		buff = data;
 	}
 

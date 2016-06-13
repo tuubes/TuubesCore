@@ -25,15 +25,14 @@ import org.mcphoton.impl.server.Main;
 import org.slf4j.Logger;
 
 /**
- * A MessageReader reads messages from a SocketChannel. A message is a block of data (bytes) sent over the
- * network. In the game protocol, each message is preceded by its size, encoded as a VarInt. The problem is
- * that the server may read multiple messages in once, or only a part of a message. The MessageReader solves
- * this problem: it can separate different messages and put several blocks of data together.
+ * A PacketReader reads packets from a SocketChannel. In the minecraft protocol, a packet is a block of data
+ * (bytes) sent over the network, preceded by its size (encoded as a VarInt). With a SocketChannel's read, the
+ * server may get multiple packets in once, or only a part of a packet. The PacketReader solves this problem:
+ * it can separate different messages and regroup all the different parts of a message.
  *
  * @author TheElectronWill
- *
  */
-public final class MessageReader {
+public final class PacketReader {
 
 	private final SocketChannel channel;
 	private ByteBuffer buffer;
@@ -43,21 +42,30 @@ public final class MessageReader {
 	private boolean readVarIntSucceed = false;
 	private final Logger logger = Main.serverInstance.logger;
 
-	public MessageReader(SocketChannel sc, int intialBufferSize, int maxBufferSize) {
+	/**
+	 * Creates a new PacketReader with the given parameters.
+	 *
+	 * @param sc the SocketChannel to read the data from.
+	 * @param intialBufferSize the initial size of the internal buffer, which contains the read packet(s)
+	 * @param maxBufferSize the maximum size of the internal buffer. This limit the size of the incoming
+	 * packets.
+	 */
+	public PacketReader(SocketChannel sc, int intialBufferSize, int maxBufferSize) {
 		this.channel = sc;
 		buffer = ByteBuffer.allocateDirect(intialBufferSize);
 		this.maxBufferSize = maxBufferSize;
 	}
 
 	/**
-	 * Tries to read the next message or to continue reading the current incomplete message. Returns
-	 * <code>null</code> if all the message's bytes aren't available yet. In that case, this method should be
-	 * called again
-	 * later, when more data is available on the <code>SocketChannel</code>.<br />
+	 * Tries to read the next packet or to continue reading the current incomplete packet. Returns
+	 * <code>null</code> if all the packet's bytes aren't available yet. In that case, this method should be
+	 * called again later, when more data is available on the <code>SocketChannel</code>.
+	 * <p>
 	 * This method may reach the end of the stream. That can be checked by calling
 	 * {@link #hasReachedEndOfStream()}.
+	 * </p>
 	 *
-	 * @return the message's data, or <code>null</code> if there aren't enough bytes yet.
+	 * @return the packet's data, or <code>null</code> if there aren't enough bytes yet.
 	 */
 	public ByteBuffer readNext() throws IOException {
 		if (buffer.remaining() < 5) {//5 bytes threshold

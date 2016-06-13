@@ -28,38 +28,40 @@ import org.mcphoton.network.Packet;
 import org.slf4j.Logger;
 
 /**
- * A MessageWriter writes messages to a SocketChannel. It handles incomplete writes.
+ * A PacketWriter writes packets to a SocketChannel. In the minecraft protocol, a packet is a block of data
+ * (bytes) sent over the network, preceded by its size (encoded as a VarInt). With a non-blocking
+ * SocketChannel's write, the write may be incomplete. The PacketWriter detects this situation and reports it
+ * to the caller, while keeping in memory the remaining data to write, so that we can finish writing it later.
  *
  * @author TheElectronWill
- *
  */
-public final class MessageWriter {
+public final class PacketWriter {
 
 	private final SocketChannel channel;
-	private final Queue<Packet> pendingMessages = new LinkedList<>();
-	private final MessageOutputStream out = new MessageOutputStream();
+	private final Queue<Packet> pendingQueue = new LinkedList<>();
+	private final ArrayProtocolOutputStream out = new ArrayProtocolOutputStream();
 	private ByteBuffer currentBuffer;
 	private final Logger logger = Main.serverInstance.logger;
 
-	public MessageWriter(SocketChannel sc) {
+	public PacketWriter(SocketChannel sc) {
 		this.channel = sc;
 	}
 
 	/**
-	 * Adds a message to the queue of pending messages, to write it later.
+	 * Adds a packet to the queue of pending messages, to write it later.
 	 */
-	public boolean enqueue(Packet message) {
-		return pendingMessages.offer(message);
+	public boolean enqueue(Packet packet) {
+		return pendingQueue.offer(packet);
 	}
 
 	/**
-	 * Writes a message as soon as possible.
+	 * Writes a packet as soon as possible.
 	 *
 	 * @return true if the message has been completely written immediatly, false otherwise.
 	 * @throws IOException
 	 */
 	public boolean writeASAP(Packet message) throws IOException {
-		if (!pendingMessages.isEmpty() || currentBuffer != null && currentBuffer.hasRemaining()) {
+		if (!pendingQueue.isEmpty() || currentBuffer != null && currentBuffer.hasRemaining()) {
 			//cannot write now because another message is being written
 			enqueue(message);
 			return false;
@@ -79,9 +81,10 @@ public final class MessageWriter {
 	}
 
 	/**
-	 * Tries to write all the pending messages to the channel.
+	 * Tries to write all the pending packets to the channel. If this method returns <code>false</code>, then
+	 * it should be called again later, when a write operation on the SocketChannel becomes possible again.
 	 *
-	 * @return true if all the messages have been written, false otherwise.
+	 * @return true if all the packets have been written, false otherwise.
 	 * @throws IOException
 	 */
 	public boolean doWrite() throws IOException {
@@ -92,7 +95,7 @@ public final class MessageWriter {
 			}
 		}
 		while (true) {
-			Packet message = pendingMessages.poll();
+			Packet message = pendingQueue.poll();
 			if (message == null) {//empty queue: all the messages have been written.
 				return true;
 			}
