@@ -24,10 +24,14 @@ import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+
+import javax.imageio.ImageIO;
+
 import org.mcphoton.config.ConfigurationSpecification;
 import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.impl.network.NetworkInputThread;
 import org.mcphoton.impl.network.NetworkOutputThread;
+import org.mcphoton.utils.PhotonFavicon;
 import org.mcphoton.world.Location;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.LoggingLevel;
@@ -41,13 +45,14 @@ import org.slf4j.impl.PhotonLogger;
 public class ServerCreator {
 
 	private final File configFile = new File("serverConfig.toml");
+	private final File faviconFile = new File("server-icon.png");
 	private final ConfigurationSpecification configSpec = new ConfigurationSpecification();
 	private final TomlConfiguration config = new TomlConfiguration();
 	private final PhotonLogger logger;
 
 	private InetSocketAddress address;
 	private int maxPlayers;
-	private String motd;
+	private String motd, encodedFavicon;
 	private KeyPair keyPair;
 	private NetworkInputThread nit;
 	private NetworkOutputThread not;
@@ -60,6 +65,7 @@ public class ServerCreator {
 	private void specifyConfig() {
 		configSpec.defineInt("port", 25565, 0, 65535);
 		configSpec.defineInt("maxPlayers", 10, 1, 1000);
+		configSpec.defineString("default-level", "world");
 		configSpec.defineString("motd", "Photon server, version alpha");
 		configSpec.defineString("loggingLevel", "DEBUG", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
 	}
@@ -90,6 +96,18 @@ public class ServerCreator {
 		}
 		logger.setLevel(loggingLevel);
 	}
+	
+	private void loadFavicon() {
+		PhotonFavicon favicon = new PhotonFavicon();
+		if(faviconFile.exists()){
+			try {
+				favicon.encode(ImageIO.read(faviconFile));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		encodedFavicon = favicon.getEncodedFavicon();
+	}
 
 	private void generateRsaKeyPair() {
 		logger.info("Generating RSA keypair");
@@ -118,9 +136,10 @@ public class ServerCreator {
 		Location spawn = null;//TODO load from config
 		specifyConfig();
 		loadConfig();
+		loadFavicon();
 		generateRsaKeyPair();
 		createThreads();
-		return new PhotonServer(logger, keyPair, address, nit, not, motd, maxPlayers, spawn);
+		return new PhotonServer(logger, keyPair, address, nit, not, motd, encodedFavicon, maxPlayers, spawn);
 	}
 
 }

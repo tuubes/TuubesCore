@@ -207,10 +207,10 @@ public final class PhotonPacketsManager implements PacketsManager {
 
 	@Override
 	public Packet parsePacket(ByteBuffer data, ConnectionState connState, boolean serverBound) {
-		server.logger.debug("parse packet: {}, state: {}, serverBound: {}" + serverBound, data, connState, serverBound);
+		server.logger.debug("parse packet: {}, state: {}, serverBound: {}", data, connState, serverBound);
 		int packetId = ProtocolHelper.readVarInt(data);
 		try {
-			Class<? extends Packet> packetClass = getRegisteredPacket(connState, serverBound, 0);
+			Class<? extends Packet> packetClass = getRegisteredPacket(connState, serverBound, packetId);
 			Packet packet = packetClass.newInstance();
 			return packet.readFrom(data);
 		} catch (Exception ex) {
@@ -295,14 +295,16 @@ public final class PhotonPacketsManager implements PacketsManager {
 			jsonBuilder.append("},");
 			jsonBuilder.append("\"description\":{");
 			jsonBuilder.append("\"text\":\"").append(server.motd).append("\"");
-			jsonBuilder.append("}}");
+			jsonBuilder.append("},");
+			jsonBuilder.append("\"favicon\":\"").append(server.encodedFavicon).append("\"");
+			jsonBuilder.append("}");
 			response.jsonResponse = jsonBuilder.toString();
 			server.logger.debug("Sending ResponsePacket to the client: {}", jsonBuilder);
 			sendPacket(response, client);
 		});
 		registerHandler(ConnectionState.STATUS, true, 1, (PingPacket packet, Client client) -> {
 			PongPacket pong = new PongPacket();
-			pong.payload = System.currentTimeMillis();
+			pong.payload = packet.payload;
 			sendPacket(pong, client);
 		});
 	}
