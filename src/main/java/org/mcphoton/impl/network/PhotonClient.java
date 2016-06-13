@@ -71,4 +71,9 @@ public final class PhotonClient implements Client {
 		this.state = state;
 	}
 
+	@Override
+	public void closeConnection() throws IOException {
+		channel.close();
+	}
+
 }
