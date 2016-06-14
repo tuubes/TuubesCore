@@ -112,7 +112,7 @@ public final class ArrayProtocolOutputStream extends ProtocolOutputStream {
 
 	private void ensureCapacity(int cap) {
 		if (buff.length < cap) {
-			byte[] buff2 = new byte[Math.max(cap, buff.length * 2)];
+			byte[] buff2 = new byte[Math.max(cap, buff.length * 3 / 2 + 1)];
 			System.arraycopy(buff, 0, buff2, 0, count);
 			buff = buff2;
 		}
@@ -137,27 +137,27 @@ public final class ArrayProtocolOutputStream extends ProtocolOutputStream {
 
 	@Override
 	public void writeByte(int b) {
-		ensureCapacity(buff.length + 1);
+		ensureCapacity(count + 1);
 		directWrite(b);
 	}
 
 	@Override
 	public void writeShort(int s) {
-		ensureCapacity(buff.length + 2);
+		ensureCapacity(count + 2);
 		directWrite(s >> 8);
 		directWrite(s);
 	}
 
 	@Override
 	public void writeChar(int c) {
-		ensureCapacity(buff.length + 2);
+		ensureCapacity(count + 2);
 		directWrite(c >> 8);
 		directWrite(c);
 	}
 
 	@Override
 	public void writeInt(int i) {
-		ensureCapacity(buff.length + 4);
+		ensureCapacity(count + 4);
 		directWrite(i >> 24);
 		directWrite(i >> 16);
 		directWrite(i >> 8);
@@ -166,7 +166,7 @@ public final class ArrayProtocolOutputStream extends ProtocolOutputStream {
 
 	@Override
 	public void writeLong(long l) {
-		ensureCapacity(buff.length + 8);
+		ensureCapacity(count + 8);
 		directWrite((byte) (l >> 56));
 		directWrite((byte) (l >> 48));
 		directWrite((byte) (l >> 40));
@@ -219,7 +219,7 @@ public final class ArrayProtocolOutputStream extends ProtocolOutputStream {
 
 	@Override
 	public void write(byte[] b, int off, int len) {
-		ensureCapacity(buff.length + len);
+		ensureCapacity(count + len);
 		System.arraycopy(b, off, buff, count, len);
 		count += len;
 	}
