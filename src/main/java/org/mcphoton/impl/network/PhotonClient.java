@@ -28,6 +28,17 @@ import org.mcphoton.network.ConnectionState;
 
 /**
  * Implementation of the Client interface.
+ * <h2>How codecs work</h2>
+ * <p>
+ * Codecs modify the content of a ByteBuffer. There are 2 codecs associated with a client: a compression
+ * codec and a cipher codec. The compression codec is used just before parsing the packet (input) or just
+ * after serializing it (output). The cipher codec is used just after a channel's read (input) or just before
+ * a channel's write (output). See the schema below: <br />
+ * <li>Packet input (client to server): SocketChannel -> CipherCodec -> PacketReader -> CompressionCodec ->
+ * Packet object</li>
+ * <li>Packet output (server to client): Packet object -> PacketWriter and CompressionCodec-> CipherCodec ->
+ * SocketChannel</li>
+ * </p>
  *
  * @author TheElectronWill
  *
@@ -41,8 +52,7 @@ public final class PhotonClient implements Client {
 	volatile Optional<Player> player = Optional.empty();
 	volatile int authVerifyToken = -1;
 	volatile ConnectionState state = ConnectionState.INIT;
-	volatile Codec cipherCodec;
-	volatile Codec compressionCodec;
+	volatile Codec cipherCodec, compressionCodec;
 
 	public PhotonClient(SocketChannel channel) throws IOException {
 		this(channel, new NoCodec(), new NoCodec());
@@ -52,7 +62,7 @@ public final class PhotonClient implements Client {
 		this.channel = channel;
 		this.cipherCodec = cipherCodec;
 		this.compressionCodec = compressionCodec;
-		this.packetReader = new PacketReader(channel, 128, 512);
+		this.packetReader = new PacketReader(channel, 128, 1024);
 		this.packetWriter = new PacketWriter(channel);
 		this.address = (InetSocketAddress) channel.getRemoteAddress();
 	}
@@ -80,6 +90,26 @@ public final class PhotonClient implements Client {
 	@Override
 	public void closeConnection() throws IOException {
 		channel.close();
+	}
+
+	@Override
+	public String toString() {
+		return "PhotonClient{" + "address=" + address + ", player=" + player + ", state=" + state + '}';
+	}
+
+	/**
+	 * Enable encrypted communication between the client and the server. This method must be called in the
+	 * network thread.
+	 *
+	 * @param cipherCodec the codec to use.
+	 */
+	public void enableEncryption(AESCodec cipherCodec) {
+		this.cipherCodec = cipherCodec;
+		packetWriter.setCipherCodec(cipherCodec);
+	}
+
+	public void setPlayer(Player player) {
+		this.player = Optional.of(player);
 	}
 
 }
