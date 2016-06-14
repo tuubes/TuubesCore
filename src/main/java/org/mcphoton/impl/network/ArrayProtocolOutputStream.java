@@ -60,11 +60,11 @@ public final class ArrayProtocolOutputStream extends ProtocolOutputStream {
 	}
 
 	/**
-	 * Returns a ByteBuffer that contains the message's size (as a varint) followed by the packet's id (as a
-	 * varint) and the message's data. The message's data is directly shared with the underlying byte
+	 * Constructs a ByteBuffer that contains the message's size (as a varint) followed by the packet's id (as
+	 * a varint) and the message's data. The message's data is directly shared with the underlying byte
 	 * array of this stream.
 	 */
-	public ByteBuffer asPacketBuffer(int packetId) {
+	public ByteBuffer constructPacketBuffer(int packetId) {
 		//-- Determines the packet's size --
 		int idIntSize = ProtocolHelper.varIntSize(packetId);
 		int messageSize = getDataSize() + idIntSize;
