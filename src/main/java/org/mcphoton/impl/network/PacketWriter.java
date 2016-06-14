@@ -25,7 +25,10 @@ import java.util.LinkedList;
 import java.util.Queue;
 import org.mcphoton.impl.server.Main;
 import org.mcphoton.network.Packet;
+import org.mcphoton.network.ProtocolOutputStream;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.PhotonLogger;
 
 /**
  * A PacketWriter writes packets to a SocketChannel. In the minecraft protocol, a packet is a block of data
@@ -43,42 +46,63 @@ public final class PacketWriter {
 	private final SocketChannel channel;
 	private final Queue<Packet> pendingQueue = new LinkedList<>();
 	private final ArrayProtocolOutputStream out = new ArrayProtocolOutputStream();
+	private Codec cipherCodec;
 	private ByteBuffer currentBuffer;
-	private final Logger logger = Main.serverInstance.logger;
+	private static final Logger logger = LoggerFactory.getLogger("PacketWriter");
 
-	public PacketWriter(SocketChannel sc) {
-		this.channel = sc;
+	public PacketWriter(SocketChannel channel) {
+		this(channel, new NoCodec());
+	}
+
+	public PacketWriter(SocketChannel channel, Codec cipherCodec) {
+		this.channel = channel;
+		this.cipherCodec = cipherCodec;
+		((PhotonLogger) logger).setLevel(Main.serverInstance.logger.getLevel());
 	}
 
 	/**
-	 * Adds a packet to the queue of pending messages, to write it later.
+	 * Adds a packet to the queue of pending packets, to write it later.
+	 *
+	 * @return true if the operation succeed.
 	 */
 	public boolean enqueue(Packet packet) {
 		return pendingQueue.offer(packet);
 	}
 
 	/**
-	 * Writes a packet as soon as possible.
+	 * Sets the cipher codec for every packet enqueued from now on.
 	 *
-	 * @return true if the message has been completely written immediatly, false otherwise.
-	 * @throws IOException
+	 * @return true if the operation succeed.
 	 */
-	public boolean writeASAP(Packet message) throws IOException {
-		if (!pendingQueue.isEmpty() || currentBuffer != null && currentBuffer.hasRemaining()) {
-			//cannot write now because another message is being written
-			enqueue(message);
+	public boolean setCipherCodec(Codec newCipherCodec) {
+		return pendingQueue.offer(new SetCipherCodec(newCipherCodec));
+	}
+
+	/**
+	 * Writes a packet as soon as possible. If this method returns <code>false</code>, the SocketChannel
+	 * should be registered with the Selector for OP_WRITE operation, so that the write operation continue as
+	 * soon as possible.
+	 *
+	 * @return true if the packet has been completely written, false otherwise.
+	 */
+	public boolean writeASAP(Packet packet) throws IOException {
+		logger.trace("--------------------{");
+		logger.trace("packet to write: {}", packet);
+		logger.trace("currentBuffer: {}", currentBuffer);
+		logger.trace("output stream: {}", out);
+		logger.trace("pending queue: {}", pendingQueue);
+		if (!pendingQueue.isEmpty() || currentBuffer != null) {
+			//cannot write now because an other packet must be written before
+			enqueue(packet);
 			return false;
 		}
 
-		message.writeTo(out);
-		currentBuffer = out.asPacketBuffer(message.getId());
-		logger.trace("currentBuffer {}", currentBuffer);
-
-		channel.write(currentBuffer);
+		writePacket(packet);
+		logger.trace("}--------------------");
 		if (currentBuffer.hasRemaining()) {//incomplete write
 			return false;
 		} else {
-			out.clear();
+			currentBuffer = null;
 			return true;
 		}
 	}
@@ -88,32 +112,84 @@ public final class PacketWriter {
 	 * it should be called again later, when a write operation on the SocketChannel becomes possible again.
 	 *
 	 * @return true if all the packets have been written, false otherwise.
-	 * @throws IOException
 	 */
 	public boolean doWrite() throws IOException {
-		if (currentBuffer != null && currentBuffer.hasRemaining()) {//a message is being written
-			channel.write(currentBuffer);
+		if (currentBuffer != null) {//write pending
+			channel.write(currentBuffer);//write more data
 			if (currentBuffer.hasRemaining()) {//incomplete write
 				return false;//retry later
 			}
+			currentBuffer = null;
 		}
 		while (true) {
-			Packet message = pendingQueue.poll();
-			if (message == null) {//empty queue: all the messages have been written.
+			Packet packet = pendingQueue.poll();
+			if (packet == null) {//empty queue: all the packets have been written.
 				return true;
 			}
-
-			message.writeTo(out);
-			currentBuffer = out.asPacketBuffer(message.getId());
-
-			channel.write(currentBuffer);
+			if (packet instanceof SetCipherCodec) {//not a real packet, set the cipher codec
+				SetCipherCodec setCipherCodec = (SetCipherCodec) packet;
+				this.cipherCodec = setCipherCodec.newCipherCodec;
+				continue;
+			}
+			writePacket(packet);
 			if (currentBuffer.hasRemaining()) {//incomplete write
-				return false;//retry later
+				return false;
 			} else {
-				out.clear();
-				//continue the loop
+				currentBuffer = null;
 			}
 		}
+	}
+
+	/**
+	 * Writes the packet's data to {@link #out}, constructs a ByteBuffer with this data, encrypts it with the
+	 * cipher codec, and writes it to the socket channel.
+	 *
+	 * @param packet the packet to write.
+	 * @throws IOException
+	 */
+	private void writePacket(Packet packet) throws IOException {
+		packet.writeTo(out);
+		currentBuffer = out.constructPacketBuffer(packet.getId());
+		out.reset();//resets the position without discarding the data bytes
+		try {
+			currentBuffer = cipherCodec.encode(currentBuffer);
+		} catch (Exception ex) {
+			logger.error("Unable to encrypt outbound packet {}", packet);
+			throw new IOException("Encryption error while writing outbound packet", ex);
+		}
+		logger.trace("currentBuffer before write: {}", currentBuffer);
+		channel.write(currentBuffer);
+		logger.trace("currentBuffer after write: {}", currentBuffer);
+	}
+
+	private class SetCipherCodec implements Packet {
+
+		private final Codec newCipherCodec;
+
+		public SetCipherCodec(Codec newCipherCodec) {
+			this.newCipherCodec = newCipherCodec;
+		}
+
+		@Override
+		public int getId() {
+			return -1;
+		}
+
+		@Override
+		public boolean isServerBound() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void writeTo(ProtocolOutputStream out) throws IOException {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public Packet readFrom(ByteBuffer buff) throws IOException {
+			throw new UnsupportedOperationException();
+		}
+
 	}
 
 }
