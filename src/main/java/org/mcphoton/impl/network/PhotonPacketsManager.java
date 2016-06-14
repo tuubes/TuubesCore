@@ -18,13 +18,16 @@
  */
 package org.mcphoton.impl.network;
 
-import com.electronwill.utils.IndexMap;
+import com.electronwill.utils.ConcurrentIndexMap;
 import com.electronwill.utils.SimpleBag;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import org.mcphoton.Photon;
+import java.util.Random;
+import org.mcphoton.impl.network.handlers.EncryptionResponseHandler;
+import org.mcphoton.impl.network.handlers.HandshakeHandler;
+import org.mcphoton.impl.network.handlers.LoginStartHandler;
+import org.mcphoton.impl.network.handlers.PingHandler;
+import org.mcphoton.impl.network.handlers.RequestHandler;
 import org.mcphoton.impl.server.PhotonServer;
 import org.mcphoton.network.Client;
 import org.mcphoton.network.ConnectionState;
@@ -32,11 +35,6 @@ import org.mcphoton.network.Packet;
 import org.mcphoton.network.PacketHandler;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.network.ProtocolHelper;
-import org.mcphoton.network.handshaking.serverbound.HandshakePacket;
-import org.mcphoton.network.status.clientbound.PongPacket;
-import org.mcphoton.network.status.clientbound.ResponsePacket;
-import org.mcphoton.network.status.serverbound.PingPacket;
-import org.mcphoton.network.status.serverbound.RequestPacket;
 
 /**
  * Implementation of the PacketsManager.
@@ -46,41 +44,43 @@ import org.mcphoton.network.status.serverbound.RequestPacket;
 public final class PhotonPacketsManager implements PacketsManager {
 
 	private final PhotonServer server;
+	private final Authenticator authenticator;
 
 	//--- ServerBound ---
-	private final IndexMap<Class<? extends Packet>> serverInitPackets, serverStatusPackets, serverLoginPackets, serverPlayPackets;
-	private final IndexMap<Collection<PacketHandler>> serverInitHandlers, serverStatusHandlers, serverLoginHandlers, serverPlayHandlers;
+	private final ConcurrentIndexMap<Class<? extends Packet>> serverInitPackets, serverStatusPackets, serverLoginPackets, serverPlayPackets;
+	private final ConcurrentIndexMap<Collection<PacketHandler>> serverInitHandlers, serverStatusHandlers, serverLoginHandlers, serverPlayHandlers;
 
 	//--- ClientBound ---
-	private final IndexMap<Class<? extends Packet>> clientInitPackets, clientStatusPackets, clientLoginPackets, clientPlayPackets;
-	private final IndexMap<Collection<PacketHandler>> clientInitHandlers, clientStatusHandlers, clientLoginHandlers, clientPlayHandlers;
+	private final ConcurrentIndexMap<Class<? extends Packet>> clientInitPackets, clientStatusPackets, clientLoginPackets, clientPlayPackets;
+	private final ConcurrentIndexMap<Collection<PacketHandler>> clientInitHandlers, clientStatusHandlers, clientLoginHandlers, clientPlayHandlers;
 
 	public PhotonPacketsManager(PhotonServer server) {
 		this.server = server;
+		this.authenticator = new Authenticator(server.keyPair);
 
 		//TODO set the correct sizes
-		this.serverInitPackets = new IndexMap<>();
-		this.serverStatusPackets = new IndexMap<>();
-		this.serverLoginPackets = new IndexMap<>();
-		this.serverPlayPackets = new IndexMap<>();
+		this.serverInitPackets = new ConcurrentIndexMap<>();
+		this.serverStatusPackets = new ConcurrentIndexMap<>();
+		this.serverLoginPackets = new ConcurrentIndexMap<>();
+		this.serverPlayPackets = new ConcurrentIndexMap<>();
 
-		this.serverInitHandlers = new IndexMap<>();
-		this.serverStatusHandlers = new IndexMap<>();
-		this.serverLoginHandlers = new IndexMap<>();
-		this.serverPlayHandlers = new IndexMap<>();
+		this.serverInitHandlers = new ConcurrentIndexMap<>();
+		this.serverStatusHandlers = new ConcurrentIndexMap<>();
+		this.serverLoginHandlers = new ConcurrentIndexMap<>();
+		this.serverPlayHandlers = new ConcurrentIndexMap<>();
 
-		this.clientInitPackets = new IndexMap<>();
-		this.clientStatusPackets = new IndexMap<>();
-		this.clientLoginPackets = new IndexMap<>();
-		this.clientPlayPackets = new IndexMap<>();
+		this.clientInitPackets = new ConcurrentIndexMap<>();
+		this.clientStatusPackets = new ConcurrentIndexMap<>();
+		this.clientLoginPackets = new ConcurrentIndexMap<>();
+		this.clientPlayPackets = new ConcurrentIndexMap<>();
 
-		this.clientInitHandlers = new IndexMap<>();
-		this.clientStatusHandlers = new IndexMap<>();
-		this.clientLoginHandlers = new IndexMap<>();
-		this.clientPlayHandlers = new IndexMap<>();
+		this.clientInitHandlers = new ConcurrentIndexMap<>();
+		this.clientStatusHandlers = new ConcurrentIndexMap<>();
+		this.clientLoginHandlers = new ConcurrentIndexMap<>();
+		this.clientPlayHandlers = new ConcurrentIndexMap<>();
 	}
 
-	private IndexMap<Class<? extends Packet>> getPacketsMap(ConnectionState state, boolean serverBound) {
+	private ConcurrentIndexMap<Class<? extends Packet>> getPacketsMap(ConnectionState state, boolean serverBound) {
 		if (serverBound) {
 			switch (state) {
 				case LOGIN:
@@ -106,7 +106,7 @@ public final class PhotonPacketsManager implements PacketsManager {
 		}
 	}
 
-	private IndexMap<Collection<PacketHandler>> getHandlersMap(ConnectionState state, boolean serverBound) {
+	private ConcurrentIndexMap<Collection<PacketHandler>> getHandlersMap(ConnectionState state, boolean serverBound) {
 		if (serverBound) {
 			switch (state) {
 				case LOGIN:
@@ -134,39 +134,28 @@ public final class PhotonPacketsManager implements PacketsManager {
 
 	@Override
 	public void registerPacket(ConnectionState state, boolean serverBound, int packetId, Class<? extends Packet> packetClass) {
-		IndexMap<Class<? extends Packet>> map = getPacketsMap(state, serverBound);
-		synchronized (map) {
-			map.put(packetId, packetClass);
-		}
+		getPacketsMap(state, serverBound).put(packetId, packetClass);
 	}
 
 	@Override
 	public void registerHandler(ConnectionState state, boolean serverBound, int packetId, PacketHandler<? extends Packet> handler) {
-		IndexMap<Collection<PacketHandler>> map = getHandlersMap(state, serverBound);
-		synchronized (map) {
-			Collection<PacketHandler> handlers = map.get(packetId);
-			if (handlers == null) {
-				handlers = new SimpleBag<>();
-				map.put(packetId, handlers);
-			}
+		ConcurrentIndexMap<Collection<PacketHandler>> map = getHandlersMap(state, serverBound);
+		Collection<PacketHandler> handlers = map.computeIfAbsent(packetId, (key) -> new SimpleBag<>());
+		synchronized (handlers) {
 			handlers.add(handler);
 		}
 	}
 
 	@Override
 	public void unregisterPacket(ConnectionState state, boolean serverBound, int packetId) {
-		IndexMap<Class<? extends Packet>> map = getPacketsMap(state, serverBound);
-		synchronized (map) {
-			map.remove(packetId);
-		}
+		getPacketsMap(state, serverBound).remove(packetId);
 	}
 
 	@Override
 	public void unregisterHandler(ConnectionState state, boolean serverBound, int packetId, PacketHandler<? extends Packet> handler) {
-		IndexMap<Collection<PacketHandler>> map = getHandlersMap(state, serverBound);
-		synchronized (map) {
-			Collection<PacketHandler> handlers = map.get(packetId);
-			if (handlers != null) {
+		Collection<PacketHandler> handlers = getHandlersMap(state, serverBound).get(packetId);
+		if (handlers != null) {
+			synchronized (handlers) {
 				handlers.remove(handler);
 			}
 		}
@@ -174,35 +163,32 @@ public final class PhotonPacketsManager implements PacketsManager {
 
 	@Override
 	public Class<? extends Packet> getRegisteredPacket(ConnectionState state, boolean serverBound, int packetId) {
-		IndexMap<Class<? extends Packet>> map = getPacketsMap(state, serverBound);
-		synchronized (map) {
-			return map.get(packetId);
-		}
+		return getPacketsMap(state, serverBound).get(packetId);
 	}
 
 	@Override
 	public Collection<PacketHandler> getRegisteredHandlers(ConnectionState state, boolean serverBound, int packetId) {
-		IndexMap<Collection<PacketHandler>> map = getHandlersMap(state, serverBound);
-		synchronized (map) {
-			return map.get(packetId);
-		}
+		return getHandlersMap(state, serverBound).get(packetId);
 	}
 
 	@Override
 	public void sendPacket(Packet packet, Client client) {
-		server.networkOutputThread.enqueue(new PacketSending(packet, (PhotonClient) client));
+		server.logger.debug("Send packet {} to the client {}", packet, client);
+		server.networkThread.outboundQueue().add(new PacketSending(packet, (PhotonClient) client));
 	}
 
 	@Override
 	public void sendPacket(Packet packet, Client... clients) {
-		List clientList = Arrays.asList(clients);
-		server.networkOutputThread.enqueue(new PacketSending(packet, clientList));
+		server.logger.debug("Send packet {} to multiple clients: {}", packet, clients);
+		for (Client client : clients) {
+			server.networkThread.outboundQueue().add(new PacketSending(packet, (PhotonClient) client));
+		}
 	}
 
 	@Override
-	public void sendPacket(Packet packet, Client client, Runnable onSendingCompleted) {
-		//TODO
-		throw new UnsupportedOperationException("Not yet implemented, sorry");
+	public void sendPacket(Packet packet, Client client, Runnable completionAction) {
+		server.logger.debug("Send packet {} to the client {} with a completion action {}", packet, client, completionAction);
+		server.networkThread.outboundQueue().add(new PacketSending(packet, (PhotonClient) client, completionAction));
 	}
 
 	@Override
@@ -222,91 +208,50 @@ public final class PhotonPacketsManager implements PacketsManager {
 	@Override
 	public void handle(Packet packet, Client client) {
 		server.logger.debug("Handling packet {} from {}", packet.toString(), client.getAddress().toString());
-		IndexMap<Collection<PacketHandler>> map = getHandlersMap(client.getConnectionState(), packet.isServerBound());
-		synchronized (map) {
-			Collection<PacketHandler> handlers = map.get(packet.getId());
-			if (handlers != null) {
-				for (PacketHandler handler : handlers) {
-					handler.handle(packet, client);
-				}
+		ConcurrentIndexMap<Collection<PacketHandler>> handlersMap = getHandlersMap(client.getConnectionState(), packet.isServerBound());
+		Collection<PacketHandler> handlers = handlersMap.get(packet.getId());
+		if (handlers != null) {
+			for (PacketHandler handler : handlers) {
+				handler.handle(packet, client);
 			}
 		}
 	}
 
 	public void registerGamePackets() {
-		synchronized (serverInitPackets) {
-			serverInitPackets.put(0, org.mcphoton.network.handshaking.serverbound.HandshakePacket.class);
-		}
-		synchronized (serverStatusPackets) {
-			serverStatusPackets.put(0, org.mcphoton.network.status.serverbound.RequestPacket.class);
-			serverStatusPackets.put(1, org.mcphoton.network.status.serverbound.PingPacket.class);
-		}
-		synchronized (serverLoginPackets) {
-			serverLoginPackets.put(0, org.mcphoton.network.login.serverbound.LoginStartPacket.class);
-			serverLoginPackets.put(1, org.mcphoton.network.login.serverbound.EncryptionResponsePacket.class);
-		}
+		serverInitPackets.put(0, org.mcphoton.network.handshaking.serverbound.HandshakePacket.class);
 
-		synchronized (serverPlayPackets) {
-			serverPlayPackets.put(0x03, org.mcphoton.network.play.serverbound.ClientStatusPacket.class);
-		}
+		serverStatusPackets.put(0, org.mcphoton.network.status.serverbound.RequestPacket.class);
+		serverStatusPackets.put(1, org.mcphoton.network.status.serverbound.PingPacket.class);
 
-		synchronized (clientStatusPackets) {
-			clientStatusPackets.put(0, org.mcphoton.network.status.clientbound.ResponsePacket.class);
-			clientStatusPackets.put(1, org.mcphoton.network.status.clientbound.PongPacket.class);
-		}
-		synchronized (clientLoginPackets) {
-			clientLoginPackets.put(0, org.mcphoton.network.login.clientbound.DisconnectPacket.class);
-			clientLoginPackets.put(1, org.mcphoton.network.login.clientbound.EncryptionRequestPacket.class);
-			clientLoginPackets.put(2, org.mcphoton.network.login.clientbound.LoginSuccessPacket.class);
-			clientLoginPackets.put(3, org.mcphoton.network.login.clientbound.SetCompressionPacket.class);
-		}
-		synchronized (clientPlayPackets) {
-			clientPlayPackets.put(0x20, org.mcphoton.network.play.clientbound.ChunkDataPacket.class);
-			clientPlayPackets.put(0x23, org.mcphoton.network.play.clientbound.JoinGamePacket.class);
-			clientPlayPackets.put(0x2E, org.mcphoton.network.play.clientbound.PlayerPositionAndLookPacket.class);
-			clientPlayPackets.put(0x18, org.mcphoton.network.play.clientbound.PluginMessagePacket.class);
-			clientPlayPackets.put(0x0D, org.mcphoton.network.play.clientbound.ServerDifficultyPacket.class);
-			clientPlayPackets.put(0x43, org.mcphoton.network.play.clientbound.SpawnPositionPacket.class);
-		}
+		serverLoginPackets.put(0, org.mcphoton.network.login.serverbound.LoginStartPacket.class);
+		serverLoginPackets.put(1, org.mcphoton.network.login.serverbound.EncryptionResponsePacket.class);
 
+		serverPlayPackets.put(0x03, org.mcphoton.network.play.serverbound.ClientStatusPacket.class);
+
+		clientStatusPackets.put(0, org.mcphoton.network.status.clientbound.ResponsePacket.class);
+		clientStatusPackets.put(1, org.mcphoton.network.status.clientbound.PongPacket.class);
+
+		clientLoginPackets.put(0, org.mcphoton.network.login.clientbound.DisconnectPacket.class);
+		clientLoginPackets.put(1, org.mcphoton.network.login.clientbound.EncryptionRequestPacket.class);
+		clientLoginPackets.put(2, org.mcphoton.network.login.clientbound.LoginSuccessPacket.class);
+		clientLoginPackets.put(3, org.mcphoton.network.login.clientbound.SetCompressionPacket.class);
+
+		clientPlayPackets.put(0x20, org.mcphoton.network.play.clientbound.ChunkDataPacket.class);
+		clientPlayPackets.put(0x23, org.mcphoton.network.play.clientbound.JoinGamePacket.class);
+		clientPlayPackets.put(0x2E, org.mcphoton.network.play.clientbound.PlayerPositionAndLookPacket.class);
+		clientPlayPackets.put(0x18, org.mcphoton.network.play.clientbound.PluginMessagePacket.class);
+		clientPlayPackets.put(0x0D, org.mcphoton.network.play.clientbound.ServerDifficultyPacket.class);
+		clientPlayPackets.put(0x43, org.mcphoton.network.play.clientbound.SpawnPositionPacket.class);
 	}
 
 	public void registerPacketHandlers() {
-		registerHandler(ConnectionState.INIT, true, 0, (HandshakePacket packet, Client client) -> {
-			server.logger.debug("Set client state to " + packet.nextState);
-			if (packet.nextState == 1) {
-				client.setConnectionState(ConnectionState.STATUS);
-			} else if (packet.nextState == 2) {
-				client.setConnectionState(ConnectionState.LOGIN);
-			} else {
-				//invalid
-			}
-		});
-		registerHandler(ConnectionState.STATUS, true, 0, (RequestPacket packet, Client client) -> {
-			ResponsePacket response = new ResponsePacket();
-			StringBuilder jsonBuilder = new StringBuilder("{");
-			jsonBuilder.append("\"version\":{");
-			jsonBuilder.append("\"name\":\"").append(Photon.getMinecraftVersion()).append("\",");
-			jsonBuilder.append("\"protocol\":").append(HandshakePacket.CURRENT_PROTOCOL_VERSION);
-			jsonBuilder.append("},");
-			jsonBuilder.append("\"players\":{");
-			jsonBuilder.append("\"max\":").append(server.maxPlayers).append(',');
-			jsonBuilder.append("\"online\":").append(server.onlinePlayers.size());
-			jsonBuilder.append("},");
-			jsonBuilder.append("\"description\":{");
-			jsonBuilder.append("\"text\":\"").append(server.motd).append("\"");
-			jsonBuilder.append("},");
-			jsonBuilder.append("\"favicon\":\"").append(server.encodedFavicon).append("\"");
-			jsonBuilder.append("}");
-			response.jsonResponse = jsonBuilder.toString();
-			server.logger.debug("Sending ResponsePacket to the client: {}", jsonBuilder);
-			sendPacket(response, client);
-		});
-		registerHandler(ConnectionState.STATUS, true, 1, (PingPacket packet, Client client) -> {
-			PongPacket pong = new PongPacket();
-			pong.payload = packet.payload;
-			sendPacket(pong, client);
-		});
+		serverInitHandlers.put(0, new SimpleBag(new HandshakeHandler()));
+
+		serverStatusHandlers.put(0, new SimpleBag(new RequestHandler(server)));
+		serverStatusHandlers.put(1, new SimpleBag(new PingHandler(this)));
+
+		serverLoginHandlers.put(0, new SimpleBag(new LoginStartHandler(new Random(), authenticator, this)));
+		serverLoginHandlers.put(1, new SimpleBag(new EncryptionResponseHandler(authenticator, this)));
 	}
 
 }
