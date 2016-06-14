@@ -18,7 +18,9 @@
  */
 package org.mcphoton.impl.server;
 
+import com.electronwill.utils.SimpleBag;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.util.Collection;
@@ -26,13 +28,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.mcphoton.Photon;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.impl.command.ListCommand;
 import org.mcphoton.impl.command.StopCommand;
-import org.mcphoton.impl.network.NetworkInputThread;
-import org.mcphoton.impl.network.NetworkOutputThread;
+import org.mcphoton.impl.network.NioNetworkThread;
 import org.mcphoton.impl.network.PhotonPacketsManager;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
@@ -42,8 +42,6 @@ import org.mcphoton.world.Location;
 import org.mcphoton.world.World;
 import org.slf4j.impl.LoggingService;
 import org.slf4j.impl.PhotonLogger;
-
-import com.electronwill.utils.SimpleBag;
 
 /**
  * The game server.
@@ -56,10 +54,9 @@ public final class PhotonServer implements Server {
 	public final PhotonLogger logger;
 	public final KeyPair keyPair;
 	public final InetSocketAddress address;
-	public final NetworkInputThread networkInputThread;
-	public final NetworkOutputThread networkOutputThread;
+	public final NioNetworkThread networkThread;
 	public final ConsoleThread consoleThread = new ConsoleThread();
-	public final PhotonPacketsManager packetsManager = new PhotonPacketsManager(this);
+	public final PhotonPacketsManager packetsManager;
 	public final PhotonBansManager bansManager = new PhotonBansManager();
 	public final PhotonWhitelistManager whitelistManager = new PhotonWhitelistManager();
 
@@ -71,16 +68,16 @@ public final class PhotonServer implements Server {
 	public final Map<String, World> worlds = new ConcurrentHashMap<>();
 	public volatile Location spawn;
 
-	public PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, NetworkInputThread networkInputThread, NetworkOutputThread networkOutputThread, String motd, String encodedFavicon, int maxPlayers, Location spawn) {
+	public PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, String motd, String encodedFavicon, int maxPlayers, Location spawn) throws IOException {
 		this.logger = logger;
 		this.keyPair = keyPair;
 		this.address = address;
-		this.networkInputThread = networkInputThread;
-		this.networkOutputThread = networkOutputThread;
+		this.networkThread = new NioNetworkThread(address, this);
 		this.motd = motd;
 		this.encodedFavicon = encodedFavicon;
 		this.maxPlayers = maxPlayers;
 		this.spawn = spawn;
+		this.packetsManager = new PhotonPacketsManager(this);
 	}
 
 	void loadPlugins() {
@@ -92,29 +89,24 @@ public final class PhotonServer implements Server {
 	}
 
 	void startThreads() {
-		logger.info("Starting threads");
+		logger.info("Starting threads...");
 		consoleThread.start();
-		networkInputThread.start();
-		networkOutputThread.start();
+		networkThread.start();
 	}
 
 	void setShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			logger.info("Unloading plugins");
+			logger.info("Unloading plugins...");
 			Photon.getPluginsManager().unloadAllPlugins();
 
-			logger.info("Stopping threads");
+			logger.info("Stopping threads...");
 			consoleThread.stopNicely();
-			networkInputThread.stopNicely();
-			networkOutputThread.stopNicely();
+			networkThread.stopNicely();
 			try {
-				networkInputThread.join(500);
-				networkOutputThread.join(500);
+				networkThread.join(500);
 			} catch (InterruptedException ex) {
-				logger.error("Unable to stop the network threads in an acceptable time", ex);
-				logger.warn("The network threads will be forcibly stopped!");
-				networkInputThread.stop();
-				networkOutputThread.stop();
+				logger.error("Interrupted while waiting for the network thread to terminate.", ex);
+				networkThread.stop();
 			} finally {
 				LoggingService.close();
 			}
@@ -122,33 +114,33 @@ public final class PhotonServer implements Server {
 	}
 
 	void registerCommands() {
-		logger.info("Registering photon commands");
+		logger.info("Registering photon commands...");
 		Photon.getCommandsRegistry().register(new StopCommand(), null);
 		Photon.getCommandsRegistry().register(new ListCommand(), null);
 	}
 
 	void registerPackets() {
-		logger.info("Registering game packets");
+		logger.info("Registering game packets...");
 		packetsManager.registerGamePackets();
-		logger.info("Registering packets handler");
+		logger.info("Registering packets handler...");
 		packetsManager.registerPacketHandlers();
 	}
 
-	void setFavicon(BufferedImage image){
-		PhotonFavicon favicon =  new PhotonFavicon();
+	void setFavicon(BufferedImage image) {
+		PhotonFavicon favicon = new PhotonFavicon();
 		try {
 			favicon.encode(image);
 		} catch (Exception e) {
-			logger.error("The image is not in 64 by 64 pixels");
+			logger.error("The image is not in the right format: it should be 64x64 pixels.");
 			e.printStackTrace();
 		}
 		encodedFavicon = favicon.getEncodedFavicon();
 	}
-	
-	void setFavicon(String encoded){
+
+	void setFavicon(String encoded) {
 		encodedFavicon = encoded;
 	}
-	
+
 	@Override
 	public Collection<Player> getOnlinePlayers() {
 		return Collections.unmodifiableCollection(onlinePlayers);

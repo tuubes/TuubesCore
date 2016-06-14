@@ -24,13 +24,9 @@ import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-
 import javax.imageio.ImageIO;
-
 import org.mcphoton.config.ConfigurationSpecification;
 import org.mcphoton.config.TomlConfiguration;
-import org.mcphoton.impl.network.NetworkInputThread;
-import org.mcphoton.impl.network.NetworkOutputThread;
 import org.mcphoton.utils.PhotonFavicon;
 import org.mcphoton.world.Location;
 import org.slf4j.LoggerFactory;
@@ -54,8 +50,6 @@ public class ServerCreator {
 	private int maxPlayers;
 	private String motd, encodedFavicon;
 	private KeyPair keyPair;
-	private NetworkInputThread nit;
-	private NetworkOutputThread not;
 	private LoggingLevel loggingLevel;
 
 	public ServerCreator(String loggerName) {
@@ -71,7 +65,7 @@ public class ServerCreator {
 	}
 
 	private void loadConfig() {
-		logger.info("Loading server configuration (serverConfig.toml)");
+		logger.info("Loading server configuration (serverConfig.toml).");
 		try {
 			if (configFile.exists()) {
 				config.readFrom(configFile);
@@ -91,15 +85,15 @@ public class ServerCreator {
 				loggingLevel = LoggingLevel.DEBUG;
 			}
 		} catch (IOException ex) {
-			logger.error("Cannot load server configuration", ex);
+			logger.error("Cannot load server configuration.", ex);
 			System.exit(1);
 		}
 		logger.setLevel(loggingLevel);
 	}
-	
+
 	private void loadFavicon() {
 		PhotonFavicon favicon = new PhotonFavicon();
-		if(faviconFile.exists()){
+		if (faviconFile.exists()) {
 			try {
 				favicon.encode(ImageIO.read(faviconFile));
 			} catch (Exception e) {
@@ -116,19 +110,8 @@ public class ServerCreator {
 			generator.initialize(512);
 			keyPair = generator.genKeyPair();
 		} catch (NoSuchAlgorithmException ex) {
-			logger.error("Cannot generate RSA keypair", ex);
+			logger.error("Cannot generate RSA keypair.", ex);
 			System.exit(2);
-		}
-	}
-
-	private void createThreads() {
-		logger.info("Creating threads");
-		try {
-			nit = new NetworkInputThread(address);
-			not = new NetworkOutputThread(nit.getSelector(), nit);
-		} catch (IOException ex) {
-			logger.error("Cannot create network threads", ex);
-			System.exit(3);
 		}
 	}
 
@@ -138,8 +121,13 @@ public class ServerCreator {
 		loadConfig();
 		loadFavicon();
 		generateRsaKeyPair();
-		createThreads();
-		return new PhotonServer(logger, keyPair, address, nit, not, motd, encodedFavicon, maxPlayers, spawn);
+		try {
+			return new PhotonServer(logger, keyPair, address, motd, encodedFavicon, maxPlayers, spawn);
+		} catch (IOException ex) {
+			logger.error("Cannot create the server instance.", ex);
+			System.exit(3);
+			return null;
+		}
 	}
 
 }
