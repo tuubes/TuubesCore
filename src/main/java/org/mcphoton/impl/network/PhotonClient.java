@@ -106,6 +106,7 @@ public final class PhotonClient implements Client {
 	public void enableEncryption(AESCodec cipherCodec) {
 		this.cipherCodec = cipherCodec;
 		packetWriter.setCipherCodec(cipherCodec);
+		packetReader.setCipherCodec(cipherCodec);
 	}
 
 	public void setPlayer(Player player) {

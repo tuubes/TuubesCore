@@ -39,26 +39,24 @@ import org.slf4j.impl.PhotonLogger;
  */
 public final class PacketReader {
 
-	private final SocketChannel channel;
-	private ByteBuffer buffer;
-	private final int maxBufferSize;
-	private int messageLength = -1, writePos = 0, readPos = 0;
-	private boolean eos;
-	private boolean readVarIntSucceed = false;
 	private static final Logger logger = LoggerFactory.getLogger("PacketReader");
 
-	/**
-	 * Creates a new PacketReader with the given parameters.
-	 *
-	 * @param sc the SocketChannel to read the data from.
-	 * @param intialBufferSize the initial size of the internal buffer, which contains the read packet(s)
-	 * @param maxBufferSize the maximum size of the internal buffer. This limit the size of the incoming
-	 * packets.
-	 */
-	public PacketReader(SocketChannel sc, int intialBufferSize, int maxBufferSize) {
-		this.channel = sc;
-		this.buffer = ByteBuffer.allocateDirect(intialBufferSize);
+	private final SocketChannel channel;
+	private final int maxBufferSize;
+	private int messageLength = -1, writePos = 0, readPos = 0;
+	private boolean eos = false, readVarIntSucceed = false;
+	private ByteBuffer buffer;
+	private Codec cipherCodec;
+
+	public PacketReader(SocketChannel channel, int initialBufferSize, int maxBufferSize) {
+		this(channel, initialBufferSize, maxBufferSize, new NoCodec());
+	}
+
+	public PacketReader(SocketChannel channel, int initialBufferSize, int maxBufferSize, Codec cipherCodec) {
+		this.channel = channel;
+		this.cipherCodec = cipherCodec;
 		this.maxBufferSize = maxBufferSize;
+		this.buffer = ByteBuffer.allocateDirect(initialBufferSize);
 		((PhotonLogger) logger).setLevel(Main.serverInstance.logger.getLevel());
 	}
 
@@ -89,6 +87,11 @@ public final class PacketReader {
 		if (read == -1) {//channel closed
 			eos = true;
 			return null;
+		}
+		try {
+			buffer = cipherCodec.decode(buffer);
+		} catch (Exception ex) {
+			throw new IOException("Decryption error while reading inbound packet", ex);
 		}
 		writePos = buffer.position();
 		logger.trace("writePos {}", writePos);
@@ -131,6 +134,13 @@ public final class PacketReader {
 	 */
 	public boolean hasReachedEndOfStream() {
 		return eos;
+	}
+
+	/**
+	 * Sets the cipher codec for every packet read from now on.
+	 */
+	public void setCipherCodec(Codec cipherCodec) {
+		this.cipherCodec = cipherCodec;
 	}
 
 	/**
