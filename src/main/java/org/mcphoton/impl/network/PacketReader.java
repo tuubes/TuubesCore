@@ -29,6 +29,9 @@ import org.slf4j.Logger;
  * (bytes) sent over the network, preceded by its size (encoded as a VarInt). With a SocketChannel's read, the
  * server may get multiple packets in once, or only a part of a packet. The PacketReader solves this problem:
  * it can separate different messages and regroup all the different parts of a message.
+ * <p>
+ * This class isn't thread-safe. A client's PacketReader should only be used in the NIO network thread.
+ * </p>
  *
  * @author TheElectronWill
  */
