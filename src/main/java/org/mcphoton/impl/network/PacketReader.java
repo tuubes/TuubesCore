@@ -23,6 +23,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import org.mcphoton.impl.server.Main;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.PhotonLogger;
 
 /**
  * A PacketReader reads packets from a SocketChannel. In the minecraft protocol, a packet is a block of data
@@ -43,7 +45,7 @@ public final class PacketReader {
 	private int messageLength = -1, writePos = 0, readPos = 0;
 	private boolean eos;
 	private boolean readVarIntSucceed = false;
-	private final Logger logger = Main.serverInstance.logger;
+	private static final Logger logger = LoggerFactory.getLogger("PacketReader");
 
 	/**
 	 * Creates a new PacketReader with the given parameters.
@@ -55,8 +57,9 @@ public final class PacketReader {
 	 */
 	public PacketReader(SocketChannel sc, int intialBufferSize, int maxBufferSize) {
 		this.channel = sc;
-		buffer = ByteBuffer.allocateDirect(intialBufferSize);
+		this.buffer = ByteBuffer.allocateDirect(intialBufferSize);
 		this.maxBufferSize = maxBufferSize;
+		((PhotonLogger) logger).setLevel(Main.serverInstance.logger.getLevel());
 	}
 
 	/**
