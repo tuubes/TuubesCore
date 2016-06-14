@@ -43,12 +43,14 @@ import org.slf4j.impl.PhotonLogger;
  */
 public final class PacketWriter {
 
+	private static final Logger logger = LoggerFactory.getLogger("PacketWriter");
+
 	private final SocketChannel channel;
-	private final Queue<Packet> pendingQueue = new LinkedList<>();
+	private final Queue<PacketSending> pendingQueue = new LinkedList<>();
 	private final ArrayProtocolOutputStream out = new ArrayProtocolOutputStream();
 	private Codec cipherCodec;
 	private ByteBuffer currentBuffer;
-	private static final Logger logger = LoggerFactory.getLogger("PacketWriter");
+	private Runnable pendingCompletionAction;
 
 	public PacketWriter(SocketChannel channel) {
 		this(channel, new NoCodec());
@@ -65,8 +67,8 @@ public final class PacketWriter {
 	 *
 	 * @return true if the operation succeed.
 	 */
-	public boolean enqueue(Packet packet) {
-		return pendingQueue.offer(packet);
+	public boolean enqueue(PacketSending packetSending) {
+		return pendingQueue.offer(packetSending);
 	}
 
 	/**
@@ -75,7 +77,7 @@ public final class PacketWriter {
 	 * @return true if the operation succeed.
 	 */
 	public boolean setCipherCodec(Codec newCipherCodec) {
-		return pendingQueue.offer(new SetCipherCodec(newCipherCodec));
+		return pendingQueue.offer(new PacketSending(new SetCipherCodec(newCipherCodec), null));
 	}
 
 	/**
@@ -85,24 +87,26 @@ public final class PacketWriter {
 	 *
 	 * @return true if the packet has been completely written, false otherwise.
 	 */
-	public boolean writeASAP(Packet packet) throws IOException {
+	public boolean writeASAP(PacketSending packetSending) throws IOException {
 		logger.trace("--------------------{");
-		logger.trace("packet to write: {}", packet);
+		logger.trace("packet to write: {}", packetSending);
 		logger.trace("currentBuffer: {}", currentBuffer);
 		logger.trace("output stream: {}", out);
 		logger.trace("pending queue: {}", pendingQueue);
 		if (!pendingQueue.isEmpty() || currentBuffer != null) {
 			//cannot write now because an other packet must be written before
-			enqueue(packet);
+			enqueue(packetSending);
 			return false;
 		}
 
-		writePacket(packet);
+		writePacket(packetSending.packet);
 		logger.trace("}--------------------");
 		if (currentBuffer.hasRemaining()) {//incomplete write
+			pendingCompletionAction = packetSending.completionAction;
 			return false;
 		} else {
 			currentBuffer = null;
+			packetSending.completionAction.run();
 			return true;
 		}
 	}
@@ -120,12 +124,15 @@ public final class PacketWriter {
 				return false;//retry later
 			}
 			currentBuffer = null;
+			pendingCompletionAction.run();
+			pendingCompletionAction = null;
 		}
 		while (true) {
-			Packet packet = pendingQueue.poll();
-			if (packet == null) {//empty queue: all the packets have been written.
+			PacketSending packetSending = pendingQueue.poll();
+			if (packetSending == null) {//empty queue: all the packets have been written.
 				return true;
 			}
+			Packet packet = packetSending.packet;
 			if (packet instanceof SetCipherCodec) {//not a real packet, set the cipher codec
 				SetCipherCodec setCipherCodec = (SetCipherCodec) packet;
 				this.cipherCodec = setCipherCodec.newCipherCodec;
@@ -136,6 +143,7 @@ public final class PacketWriter {
 				return false;
 			} else {
 				currentBuffer = null;
+				packetSending.completionAction.run();
 			}
 		}
 	}

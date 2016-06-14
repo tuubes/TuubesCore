@@ -202,7 +202,7 @@ public class NioNetworkThread extends Thread {
 		for (PacketSending sending : packetsProcessingList) {
 			try {
 				PhotonClient recipient = sending.recipient;
-				boolean complete = recipient.packetWriter.writeASAP(sending.packet);
+				boolean complete = recipient.packetWriter.writeASAP(sending);
 				if (!complete) {
 					server.logger.trace("Incomplete write -> put into the queue");
 					recipient.channel.register(selector, OP_READ | OP_WRITE, recipient);
