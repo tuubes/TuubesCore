@@ -32,6 +32,9 @@ import org.slf4j.Logger;
  * (bytes) sent over the network, preceded by its size (encoded as a VarInt). With a non-blocking
  * SocketChannel's write, the write may be incomplete. The PacketWriter detects this situation and reports it
  * to the caller, while keeping in memory the remaining data to write, so that we can finish writing it later.
+ * <p>
+ * This class isn't thread-safe. A client's PacketWriter should only be used in the NIO network thread.
+ * </p>
  *
  * @author TheElectronWill
  */
