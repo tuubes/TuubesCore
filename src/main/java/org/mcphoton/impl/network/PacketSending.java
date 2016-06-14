@@ -18,28 +18,62 @@
  */
 package org.mcphoton.impl.network;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.Objects;
 import org.mcphoton.network.Packet;
 
 /**
- * Contains informations about a packet to send to some clients.
+ * Contains informations about a packet to send to a client.
  *
  * @author TheElectronWill
  */
 public final class PacketSending {
 
-	public final Packet packet;
-	public final Collection<PhotonClient> clients;
+	private static final Runnable NO_ACTION = () -> {
+	};
 
-	public PacketSending(Packet packet, PhotonClient client) {
+	/**
+	 * The packet to send.
+	 */
+	public final Packet packet;
+
+	/**
+	 * The client to send the packet.
+	 */
+	public final PhotonClient recipient;
+
+	/**
+	 * The action to execute when the sending completes.
+	 */
+	public final Runnable completionAction;
+
+	/**
+	 * Creates a new PacketSending. The completionAction may not be null, use the other constructor to specify
+	 * "no action".
+	 *
+	 * @param packet the packet to send.
+	 * @param recipient the client to send the packet.
+	 * @param completionAction the action to execute when the sending completes.
+	 */
+	public PacketSending(Packet packet, PhotonClient recipient, Runnable completionAction) {
+		Objects.requireNonNull(completionAction);
 		this.packet = packet;
-		this.clients = Collections.singletonList(client);
+		this.recipient = recipient;
+		this.completionAction = completionAction;
 	}
 
-	public PacketSending(Packet packet, Collection<PhotonClient> clients) {
-		this.packet = packet;
-		this.clients = clients;
+	/**
+	 * Creates a new PacketSending.
+	 *
+	 * @param packet the packet to send.
+	 * @param recipient the client to send the packet.
+	 */
+	public PacketSending(Packet packet, PhotonClient recipient) {
+		this(packet, recipient, NO_ACTION);
+	}
+
+	@Override
+	public String toString() {
+		return "PacketSending{" + "packet=" + packet + ", recipient=" + recipient + ", completionAction=" + completionAction + '}';
 	}
 
 }
