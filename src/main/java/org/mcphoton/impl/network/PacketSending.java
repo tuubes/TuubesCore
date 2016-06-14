@@ -55,10 +55,9 @@ public final class PacketSending {
 	 * @param completionAction the action to execute when the sending completes.
 	 */
 	public PacketSending(Packet packet, PhotonClient recipient, Runnable completionAction) {
-		Objects.requireNonNull(completionAction);
 		this.packet = packet;
 		this.recipient = recipient;
-		this.completionAction = completionAction;
+		this.completionAction = Objects.requireNonNull(completionAction);
 	}
 
 	/**
