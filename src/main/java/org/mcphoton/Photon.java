@@ -96,11 +96,11 @@ public final class Photon {
 	}
 
 	public static String getVersion() {
-		return "0.3.0-pre_alpha";
+		return "dev-alpha";
 	}
 
 	public static String getMinecraftVersion() {
-		return "1.9.4";
+		return "1.10";
 	}
 
 	public static File getMainDirectory() {
