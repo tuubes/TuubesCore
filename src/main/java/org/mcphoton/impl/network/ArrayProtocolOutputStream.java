@@ -243,4 +243,9 @@ public final class ArrayProtocolOutputStream extends ProtocolOutputStream {
 	public void flush() {
 	}
 
+	@Override
+	public String toString() {
+		return "ArrayProtocolOutputStream{" + "capacity=" + buff.length + ", size=" + count + '}';
+	}
+
 }
