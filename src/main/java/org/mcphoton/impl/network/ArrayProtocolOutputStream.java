@@ -96,30 +96,18 @@ public final class ArrayProtocolOutputStream extends ProtocolOutputStream {
 		return buff.length;
 	}
 
-	/**
-	 * Clears this ProtocolOutputStream: sets its data size to 0, that is, its actual size to 10 (the first
-	 * ten bytes are reserved). The capacity does not change.
-	 */
 	@Override
 	public void clear() {
-		count = 10;
+		buff = new byte[buff.length];
 	}
 
 	/**
-	 * Resets this ProcotolOutputStream, that is, delete the internal buffer and create a new one with the
-	 * default capacity (42 bytes with 10 reserved).
+	 * Resets the stream size and position to 10 (because the first 10 bytes are reserved for the packet
+	 * header).
 	 */
 	@Override
 	public void reset() {
-		buff = new byte[42];
-	}
-
-	/**
-	 * Resets this ProcotolOutputStream, that is, delete the internal buffer and create a new one with the
-	 * specified capacity. 10 bytes will be reserved at the beginning of the buffer.
-	 */
-	public void reset(int newCapacity) {
-		buff = new byte[newCapacity];
+		count = 10;
 	}
 
 	private void ensureCapacity(int cap) {
