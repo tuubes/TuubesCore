@@ -30,7 +30,7 @@ public final class NoCodec implements Codec {
 	/**
 	 * Does nothing.
 	 *
-	 * @return the data buffer, as it is
+	 * @return the data buffer, as it is.
 	 */
 	@Override
 	public ByteBuffer encode(ByteBuffer data) {
@@ -40,7 +40,7 @@ public final class NoCodec implements Codec {
 	/**
 	 * Does nothing.
 	 *
-	 * @return the data buffer, as it is
+	 * @return the data buffer, as it is.
 	 */
 	@Override
 	public ByteBuffer decode(ByteBuffer data) {
