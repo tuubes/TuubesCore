@@ -29,14 +29,7 @@ public class PhotonLoggerFactory implements ILoggerFactory {
 
 	@Override
 	public Logger getLogger(String name) {
-		Logger logger = loggerMap.get(name);
-		if (logger != null) {
-			return logger;
-		} else {
-			Logger newInstance = new PhotonLogger(name);
-			Logger oldInstance = loggerMap.putIfAbsent(name, newInstance);
-			return oldInstance == null ? newInstance : oldInstance;
-		}
+		return loggerMap.computeIfAbsent(name, (k) -> new PhotonLogger(name));
 	}
 
 }
