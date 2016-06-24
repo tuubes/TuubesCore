@@ -44,7 +44,7 @@ public class Authenticator {
 	/**
 	 * The ExecutorService that executes http requests in the background.
 	 */
-	private final ExecutorService backgroundHttpService = Executors.newSingleThreadExecutor();
+	private final ExecutorService backgroundHttpService = Executors.newSingleThreadExecutor(new NamedThreadFactory());
 	private final Map<Client, byte[]> verifyTokens = new HashMap<>();
 	private final Map<Client, String> usernames = new HashMap<>();
 	private final KeyPair rsaKeyPair;
@@ -102,6 +102,12 @@ public class Authenticator {
 			}
 
 		});
+	private class NamedThreadFactory implements ThreadFactory {
+
+		@Override
+		public Thread newThread(Runnable r) {
+			return new Thread(r, "http-auth");
+		}
 
 	}
 
