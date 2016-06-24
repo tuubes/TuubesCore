@@ -140,10 +140,12 @@ public final class PacketWriter {
 			}
 			writePacket(packet);
 			if (currentBuffer.hasRemaining()) {//incomplete write
+				pendingCompletionAction = packetSending.completionAction;
 				return false;
 			} else {
 				currentBuffer = null;
 				packetSending.completionAction.run();
+				pendingCompletionAction = null;
 			}
 		}
 	}
