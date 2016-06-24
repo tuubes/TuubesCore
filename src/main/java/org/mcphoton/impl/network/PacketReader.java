@@ -41,10 +41,14 @@ public final class PacketReader {
 
 	private static final Logger logger = LoggerFactory.getLogger("PacketReader");
 
+	/**
+	 * An empty ByteBuffer with a capacity of 0, used to indicate that the end of the stream has been reached.
+	 */
+	public static final ByteBuffer END_OF_STREAM = ByteBuffer.allocate(0);
+
 	private final SocketChannel channel;
 	private final int maxBufferSize;
-	private int messageLength = -1, writePos = 0, readPos = 0;
-	private boolean eos = false, readVarIntSucceed = false;
+	private int packetLength = -1, writePos = 0, readPos = 0;
 	private ByteBuffer buffer;
 	private Codec cipherCodec;
 
@@ -61,79 +65,143 @@ public final class PacketReader {
 	}
 
 	/**
-	 * Tries to read the next packet or to continue reading the current incomplete packet. Returns
-	 * <code>null</code> if all the packet's bytes aren't available yet. In that case, this method should be
-	 * called again later, when more data is available on the <code>SocketChannel</code>.
+	 * Compacts the buffer, that is, moves the bytes between readPos and writePos to the beginning of the
+	 * buffer. Then, sets readPos to 0 and update writePos accordingly.
+	 */
+	private void compactBuffer() {
+		logger.trace("compactBuffer()");
+		buffer.position(readPos);
+		buffer.limit(writePos);
+		buffer.compact();
+		readPos = 0;
+		writePos = buffer.position();
+	}
+
+	/**
+	 * Allocates a bigger buffer with a capacity up to {@link #maxBufferSize}. If the packet's length is
+	 * greater than <code>maxBufferSize</code>, an IOException is thrown.
+	 *
+	 * @throws IOException if an I/O error occurs, or if the packet's length is greater than the maximum
+	 * buffer size.
+	 */
+	private void allocateBiggerBuffer() throws IOException {
+		logger.trace("allocateBiggerBuffer()");
+		if (packetLength > maxBufferSize) {
+			throw new IOException("Packet too big: size is " + packetLength + ", maximum is " + maxBufferSize);
+		}
+		ByteBuffer newBuffer = ByteBuffer.allocateDirect(packetLength);
+		buffer.position(readPos);
+		newBuffer.put(buffer);
+		readPos = 0;
+		writePos = newBuffer.position();
+		buffer = newBuffer;
+	}
+
+	/**
+	 * Reads more data from the socket channel and puts it in the buffer at the writePos position.
+	 *
+	 * @return the number of bytes read, of -1 if the end of the stream has been reached.
+	 * @throws IOException if an I/O error occurs.
+	 */
+	private int readFromSocketChannel() throws IOException {
+		logger.trace("readFromSocketChannel() begins with writePos={}", writePos);
+		buffer.position(writePos);
+		int read = channel.read(buffer);
+		writePos += read;
+		logger.trace("readFromSocketChannel() ends with writePos={}", writePos);
+		return read;
+	}
+
+	/**
+	 * Reads the next available VarInt and sets the value of the {@link #packetLength} field.
+	 * {@link #packetLength} will be -1 if the end of stream is reached, and -2 if not enough bytes are
+	 * available.
+	 *
+	 * @throws IOException if an I/O error occurs.
+	 */
+	private void readPacketLength() throws IOException {
+		packetLength = tryReadVarInt();
+		if (packetLength == -2) {
+			if (buffer.capacity() - writePos < 5) {
+				compactBuffer();
+			}
+			int read = readFromSocketChannel();
+			if (read == -1) {//end of stream
+				packetLength = -1;
+			} else {
+				packetLength = tryReadVarInt();
+			}
+		}
+	}
+
+	/**
+	 * Reads the packet's data, assuming the packet's length is already known.
+	 *
+	 * @param tryReadingFromSocketChannel true to read more data from the socket if needed, false to return
+	 * null if there isn't enough data.
+	 * @return a ByteBuffer containing the packet's data, or <code>null</code> if more data is needed, or
+	 * {@link #END_OF_STREAM} if the end of the stream has been reached.
+	 * @throws IOException IOException if an I/O error occurs.
+	 */
+	private ByteBuffer readPacketData(boolean tryReadingFromSocketChannel) throws IOException {
+		if (writePos - readPos >= packetLength) {//all the data is available
+			//Prepare to slice the buffer:
+			buffer.position(readPos);
+			buffer.limit(readPos + packetLength);
+			ByteBuffer dataBuffer = buffer.slice();//dataBuffer can only access to the data of this packet.
+
+			//Decrypt data with the cipher codec:
+			try {
+				cipherCodec.decode(dataBuffer);
+			} catch (Exception ex) {
+				throw new IOException("Error while decrypting incomig packet", ex);
+			}
+
+			//Prepare to read the next packet:
+			readPos += packetLength;
+			packetLength = -1;
+			buffer.limit(buffer.capacity());
+
+			return dataBuffer;//return the packet's data.
+		} else if (tryReadingFromSocketChannel) {
+			if (buffer.capacity() < packetLength) {//need a bigger buffer
+				allocateBiggerBuffer();
+			} else if (buffer.capacity() - readPos < packetLength) {//need to compact the buffer
+				compactBuffer();
+			}
+			int read = readFromSocketChannel();
+			if (read == -1) {//end of stream
+				return END_OF_STREAM;
+			}
+			return readPacketData(false);//retry
+		}
+		return null;
+	}
+
+	/**
+	 * Tries to read the next packet from the SocketChannel. If all the packet's bytes aren't available yet,
+	 * this method returns <code>null</code> and should be called again later, when more data is available on
+	 * the <code>SocketChannel</code>.
 	 * <p>
 	 * This method may reach the end of the stream. That can be checked by calling
 	 * {@link #hasReachedEndOfStream()}.
 	 * </p>
 	 *
-	 * @return the packet's data, or <code>null</code> if there aren't enough bytes yet.
+	 * @return a ByteBuffer containing the packet's data, or <code>null</code>.
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public ByteBuffer readNext() throws IOException {
-		if (buffer.remaining() < 5) {//5 bytes threshold
-			buffer.position(readPos);//prepare for compacting
-			buffer.limit(writePos);//prepare for compacting
-			buffer.compact();//compacts the buffer
-			readPos = 0;
-			writePos = buffer.position();
-		} else {
-			buffer.limit(buffer.capacity());//prepare to write the data. This is in the "else" because buffer.compact() already changes the limit
-		}
-
-		buffer.position(writePos);//prepare to write in the buffer
-		int read = channel.read(buffer);//reads more data from the channel and writes it to the buffer
-		if (read == -1) {//channel closed
-			eos = true;
-			return null;
-		}
-		try {
-			buffer = cipherCodec.decode(buffer);
-		} catch (Exception ex) {
-			throw new IOException("Decryption error while reading inbound packet", ex);
-		}
-		writePos = buffer.position();
-		logger.trace("writePos {}", writePos);
-
-		buffer.limit(writePos);//don't read what we didn't write in the buffer
-		buffer.position(readPos);//start reading when we stopped last time
-
-		if (messageLength == -1) {//we must read the message's length
-			messageLength = tryReadVarInt();
-			logger.trace("messageLength {}", messageLength);
-			if (!readVarIntSucceed) {//fail
-				logger.trace("read var int FAIL");
+		logger.trace("readNext() with packetLength={} writePos={} and readPos={}", packetLength, writePos, readPos);
+		if (packetLength < 0) {//need to read the packet's length
+			readPacketLength();
+			if (packetLength == -1) {//end of stream
+				return END_OF_STREAM;
+			} else if (packetLength == -2) {//not enough bytes available
 				return null;
 			}
-			readPos = buffer.position();
-			logger.trace("readPos  {}", readPos);
-			if (buffer.capacity() < messageLength) {//buffer to small
-				if (messageLength > maxBufferSize) {
-					throw new IOException("Message too big. Its size (" + messageLength + " bytes) is over the limit (" + maxBufferSize + " bytes )");
-				}
-				int bufferLength = (int) Math.ceil(messageLength / 32.0) * 32;//round to the next multiple of 32
-				buffer = ByteBuffer.allocateDirect(bufferLength);//create a new ByteBuffer with enough space for the entire message
-			}
 		}
-		if (buffer.remaining() >= messageLength) {//the message is entirely available
-			int packetEnd = buffer.position() + messageLength;//go to the end of the message
-			readPos = packetEnd;//set the reading position
-			buffer.limit(packetEnd);//set the limit to prevent dataBuffer to access other messages
-			ByteBuffer dataBuffer = buffer.slice();//shares the message's data
-			messageLength = -1;//reset messageLength to -1 to read it the next time this method is called
-			logger.trace("SUCCESS  -> readPos {} and writePos {}", readPos, writePos);
-			return dataBuffer;
-		}
-		logger.trace("NOT ENOUGH DATA");
-		return null;
-	}
-
-	/**
-	 * Checks if the end of the stream has been reached.
-	 */
-	public boolean hasReachedEndOfStream() {
-		return eos;
+		logger.trace("packetLength={}", packetLength);
+		return readPacketData(true);//reads the packet's data
 	}
 
 	/**
@@ -144,24 +212,23 @@ public final class PacketReader {
 	}
 
 	/**
-	 * Tries to read a varInt, and updates the {@link #readVarIntSucceed} field.
+	 * Tries to read a VarInt.
 	 *
-	 * @return the varInt value, or -1 if it failed
+	 * @return the VarInt value, or -2 if the operation failed.
 	 */
 	private int tryReadVarInt() {
-		buffer.mark();
+		buffer.position(readPos);
 		int shift = 0, i = 0;
 		while (true) {
-			if (!buffer.hasRemaining()) {
-				buffer.reset();
-				readVarIntSucceed = false;
-				return -1;
+			if (buffer.position() >= writePos) {//no more bytes available
+				buffer.position(readPos);//reset the position
+				return -2;
 			}
 			byte b = buffer.get();
 			i |= (b & 0x7F) << shift;// Remove sign bit and shift to get the next 7 bits
 			shift += 7;
 			if (b >= 0) {// VarInt byte prefix is 0, it means that we just decoded the last 7 bits, therefore we've finished.
-				readVarIntSucceed = true;
+				readPos = buffer.position();//take the read of the VarInt into account
 				return i;
 			}
 		}

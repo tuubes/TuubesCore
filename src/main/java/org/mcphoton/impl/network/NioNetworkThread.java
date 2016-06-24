@@ -158,15 +158,19 @@ public class NioNetworkThread extends Thread {
 	private void readData(SelectionKey key) {
 		PhotonClient client = (PhotonClient) key.attachment();
 		try {
-			ByteBuffer packetData;
-			while ((packetData = client.packetReader.readNext()) != null) {
-				Packet packet = server.packetsManager.parsePacket(packetData, client.state, true);
-				server.packetsManager.handle(packet, client);
-			}
-			if (client.packetReader.hasReachedEndOfStream()) {// client disconnected
-				server.logger.debug("END OF STREAM for {}", client.address);
-				key.cancel();
-				client.getPlayer().ifPresent(server.onlinePlayers::remove);
+			while (true) {
+				ByteBuffer packetData = client.packetReader.readNext();
+				if (packetData == PacketReader.END_OF_STREAM) {//client disconnected
+					server.logger.debug("END OF STREAM for {}", client.address);
+					key.cancel();
+					client.getPlayer().ifPresent(server.onlinePlayers::remove);
+					return;
+				} else if (packetData == null) {//not enough bytes available to read the packet
+					return;
+				} else {//read operation succeed
+					Packet packet = server.packetsManager.parsePacket(packetData, client.state, true);
+					server.packetsManager.handle(packet, client);
+				}
 			}
 		} catch (Exception ex) {
 			server.logger.error("Unable to read data from client {}", client, ex);
