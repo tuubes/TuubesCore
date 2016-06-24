@@ -20,11 +20,13 @@ package org.mcphoton.impl.network;
 
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
@@ -37,14 +39,14 @@ public class AESCodec implements Codec {
 	private final SecretKey key;
 	private final Cipher encryptCipher, decryptCipher;
 
-	public AESCodec(byte[] keyBytes) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
+	public AESCodec(byte[] keyBytes) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
 		key = new SecretKeySpec(keyBytes, "AES");
 
-		encryptCipher = Cipher.getInstance("AES");
-		encryptCipher.init(Cipher.ENCRYPT_MODE, key);
+		encryptCipher = Cipher.getInstance("AES/CFB8/NoPadding");
+		encryptCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(key.getEncoded()));
 
-		decryptCipher = Cipher.getInstance("AES");
-		decryptCipher.init(Cipher.DECRYPT_MODE, key);
+		decryptCipher = Cipher.getInstance("AES/CFB8/NoPadding");
+		decryptCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(key.getEncoded()));
 	}
 
 	@Override
