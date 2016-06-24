@@ -19,10 +19,14 @@
 package org.mcphoton.impl.network.handlers;
 
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import org.mcphoton.impl.entity.PhotonPlayer;
 import org.mcphoton.impl.network.AESCodec;
@@ -45,6 +49,7 @@ import org.mcphoton.world.Location;
 public class EncryptionResponseHandler implements PacketHandler<EncryptionResponsePacket> {
 
 	private static final org.mcphoton.network.login.clientbound.DisconnectPacket BAD_VERIFY_TOKEN = new DisconnectPacket(), AUTH_FAILED = new DisconnectPacket();
+	private static final Pattern UUID_FIXER = Pattern.compile("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})");
 
 	static {
 		BAD_VERIFY_TOKEN.reason = new TextChatMessage("Bad verify token.");
@@ -61,55 +66,79 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 
 	@Override
 	public void handle(EncryptionResponsePacket packet, Client client) {
-		if (!authenticator.checkAndForgetToken(packet.verifyToken, client)) {
+		//--- Check the token ---
+		byte[] verifyToken;
+		try {
+			verifyToken = authenticator.decryptWithRsaPrivateKey(packet.verifyToken);
+		} catch (IllegalBlockSizeException | BadPaddingException ex) {
+			Main.serverInstance.logger.error("Unable to decrypt the verify token sent by client {}.", client, ex);
+			return;
+		}
+		if (!authenticator.checkAndForgetToken(verifyToken, client)) {
 			pm.sendPacket(BAD_VERIFY_TOKEN, client);
 			return;
 		}
+
+		//--- Authenticate the player ---
+		byte[] sharedKey;
+		try {
+			sharedKey = authenticator.decryptWithRsaPrivateKey(packet.sharedKey);
+		} catch (IllegalBlockSizeException | BadPaddingException ex) {
+			Main.serverInstance.logger.error("Unable to decrypt the shared key sent by client {}.", client, ex);
+			return;
+		}
 		String username = authenticator.getAndForgetUsername(client);
-		authenticator.authenticate(username, packet.sharedKey,
-				(Map<String, Object> response) -> {//on success
-					if (response.isEmpty()) {//bad auth
-						pm.sendPacket(AUTH_FAILED, client);
-						return;
-					}
-					PhotonClient pc = (PhotonClient) client;
-					//--- Get informations about the player ---
-					/* TODO read skin. See wiki.vg for a description of the format used.
-					 * TODO set the last player location if available
-					 * TODO check if player whitelister and not banned
-					 */
+		authenticator.authenticate(username, sharedKey, (Map<String, Object> response) -> {//on success
+			if (response.isEmpty()) {//bad auth
+				pm.sendPacket(AUTH_FAILED, client);
+				return;
+			}
+			PhotonClient pc = (PhotonClient) client;
+			//--- Get informations about the player ---
+			/* TODO read skin. See wiki.vg for a description of the format used.
+			 * TODO set the last player location if available
+			 * TODO check if player whitelister and not banned
+			 */
 
-					String playerUuid = (String) response.get("id");
-					String playerName = (String) response.get("name");
-					UUID accountId = UUID.fromString(playerUuid);
-					Location location = Main.serverInstance.spawn;
+			String playerUuid = (String) response.get("id");
+			String playerName = (String) response.get("name");
+			Main.serverInstance.logger.trace("Got id={} from auth server", playerUuid);
+			Main.serverInstance.logger.trace("Got name={} from auth server", playerName);
 
-					PhotonPlayer player = new PhotonPlayer(username, accountId, location);
-					Main.serverInstance.logger.debug("Player instance created: {}", player);
-					pc.setPlayer(player);
+			if (playerUuid.indexOf('-') == -1) {//uuid without hyphens
+				playerUuid = UUID_FIXER.matcher(playerUuid).replaceFirst("$1-$2-$3-$4-$5");
+				Main.serverInstance.logger.debug("Fixed UUID: {}", playerUuid);
+			}
+			UUID accountId = UUID.fromString(playerUuid);
 
-					//--- Enable encryption ---
+			Location location = Main.serverInstance.spawn;
+
+			PhotonPlayer player = new PhotonPlayer(username, accountId, location);
+			Main.serverInstance.logger.debug("Player instance created: {}", player);
+			pc.setPlayer(player);
+
+			//--- Enable encryption ---
+			try {
+				AESCodec cipherCodec = new AESCodec(sharedKey);
+				pc.enableEncryption(cipherCodec);
+			} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException ex) {
+				Main.serverInstance.logger.error("Failed to enable encryption for client {}.", client, ex);
+				pm.sendPacket(AUTH_FAILED, client, () -> {
 					try {
-						AESCodec cipherCodec = new AESCodec(packet.sharedKey);
-						pc.enableEncryption(cipherCodec);
-					} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException ex) {
-						Main.serverInstance.logger.error("Failed to enable encryption. Client: {}.", client, ex);
-						pm.sendPacket(AUTH_FAILED, client, () -> {
-							try {
-								client.closeConnection();
-							} catch (IOException ex1) {
-								ex1.printStackTrace();
-							}
-						});
-						return;
+						client.closeConnection();
+					} catch (IOException ex1) {
+						ex1.printStackTrace();
 					}
+				});
+				return;
+			}
 
-					//--- Send LoginSuccess packet ---
-					LoginSuccessPacket loginSuccessPacket = new LoginSuccessPacket();
-					loginSuccessPacket.username = playerName;
-					loginSuccessPacket.uuid = playerUuid;
-					pm.sendPacket(loginSuccessPacket, client);
-				},
+			//--- Send LoginSuccess packet ---
+			LoginSuccessPacket loginSuccessPacket = new LoginSuccessPacket();
+			loginSuccessPacket.username = playerName;
+			loginSuccessPacket.uuid = playerUuid;
+			pm.sendPacket(loginSuccessPacket, client);
+		},
 				(Exception ex) -> {//on failure
 					pm.sendPacket(AUTH_FAILED, client);
 					Main.serverInstance.logger.error("Unable to authenticate {}.", username, ex);
