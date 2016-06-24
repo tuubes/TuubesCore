@@ -48,6 +48,7 @@ public class LoginStartHandler implements PacketHandler<LoginStartPacket> {
 		byte[] randomBytes = new byte[4];
 		random.nextBytes(randomBytes);
 		authenticator.store(randomBytes, client);
+		authenticator.store(packet.username, client);
 
 		requestPacket.serverId = "";
 		requestPacket.verifyToken = randomBytes;
