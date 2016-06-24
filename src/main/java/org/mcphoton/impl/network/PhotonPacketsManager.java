@@ -21,6 +21,7 @@ package org.mcphoton.impl.network;
 import com.electronwill.utils.ConcurrentIndexMap;
 import com.electronwill.utils.SimpleBag;
 import java.nio.ByteBuffer;
+import java.security.GeneralSecurityException;
 import java.util.Collection;
 import java.util.Random;
 import org.mcphoton.impl.network.handlers.EncryptionResponseHandler;
@@ -54,7 +55,7 @@ public final class PhotonPacketsManager implements PacketsManager {
 	private final ConcurrentIndexMap<Class<? extends Packet>> clientInitPackets, clientStatusPackets, clientLoginPackets, clientPlayPackets;
 	private final ConcurrentIndexMap<Collection<PacketHandler>> clientInitHandlers, clientStatusHandlers, clientLoginHandlers, clientPlayHandlers;
 
-	public PhotonPacketsManager(PhotonServer server) {
+	public PhotonPacketsManager(PhotonServer server) throws GeneralSecurityException {
 		this.server = server;
 		this.authenticator = new Authenticator(server.keyPair);
 

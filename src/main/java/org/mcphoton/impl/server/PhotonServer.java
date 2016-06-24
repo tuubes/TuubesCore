@@ -20,7 +20,6 @@ package org.mcphoton.impl.server;
 
 import com.electronwill.utils.SimpleBag;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.util.Collection;
@@ -68,7 +67,7 @@ public final class PhotonServer implements Server {
 	public final Map<String, World> worlds = new ConcurrentHashMap<>();
 	public volatile Location spawn;
 
-	public PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, String motd, String encodedFavicon, int maxPlayers, Location spawn) throws IOException {
+	public PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, String motd, String encodedFavicon, int maxPlayers, Location spawn) throws Exception {
 		this.logger = logger;
 		this.keyPair = keyPair;
 		this.address = address;

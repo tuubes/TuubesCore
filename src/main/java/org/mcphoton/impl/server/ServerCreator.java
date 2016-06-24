@@ -123,7 +123,7 @@ public class ServerCreator {
 		generateRsaKeyPair();
 		try {
 			return new PhotonServer(logger, keyPair, address, motd, encodedFavicon, maxPlayers, spawn);
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			logger.error("Cannot create the server instance.", ex);
 			System.exit(3);
 			return null;

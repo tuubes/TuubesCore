@@ -23,14 +23,22 @@ import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import org.mcphoton.impl.server.Main;
 import org.mcphoton.network.Client;
 
 /**
@@ -49,10 +57,13 @@ public class Authenticator {
 	private final Map<Client, String> usernames = new HashMap<>();
 	private final KeyPair rsaKeyPair;
 	private final byte[] publicKey;
+	private final Cipher decryptCipher;
 
-	public Authenticator(KeyPair rsaKeyPair) {
+	public Authenticator(KeyPair rsaKeyPair) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException {
 		this.rsaKeyPair = rsaKeyPair;
 		this.publicKey = rsaKeyPair.getPublic().getEncoded();
+		this.decryptCipher = Cipher.getInstance("RSA");
+		this.decryptCipher.init(Cipher.DECRYPT_MODE, rsaKeyPair.getPrivate());
 	}
 
 	public void store(String username, Client client) {
@@ -103,6 +114,12 @@ public class Authenticator {
 			}
 
 		});
+	}
+
+	public byte[] decryptWithRsaPrivateKey(byte[] data) throws IllegalBlockSizeException, BadPaddingException {
+		return decryptCipher.doFinal(data);
+	}
+
 	private class NamedThreadFactory implements ThreadFactory {
 
 		@Override
