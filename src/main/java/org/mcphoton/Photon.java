@@ -20,16 +20,10 @@ package org.mcphoton;
 
 import java.io.File;
 import org.mcphoton.block.BlockRegistry;
-import org.mcphoton.command.CommandsRegistry;
 import org.mcphoton.entity.EntityRegistry;
-import org.mcphoton.event.EventsManager;
 import org.mcphoton.impl.block.PhotonBlockRegistry;
-import org.mcphoton.impl.command.PhotonCommandsRegistry;
 import org.mcphoton.impl.entity.PhotonEntityRegistry;
-import org.mcphoton.impl.event.PhotonEventsManager;
 import org.mcphoton.impl.item.PhotonItemRegistry;
-import org.mcphoton.impl.plugin.JavaPluginLoader;
-import org.mcphoton.impl.plugin.PhotonPluginsManager;
 import org.mcphoton.impl.server.Main;
 import org.mcphoton.impl.world.PhotonBiomeRegistry;
 import org.mcphoton.item.ItemRegistry;
@@ -48,9 +42,6 @@ public final class Photon {
 	private static final ItemRegistry ITEM_REGISTRY = new PhotonItemRegistry();
 	private static final EntityRegistry ENTITY_REGISTRY = new PhotonEntityRegistry();
 	private static final BiomeRegistry BIOME_REGISTRY = new PhotonBiomeRegistry();
-	private static final CommandsRegistry CMD_REGISTRY = new PhotonCommandsRegistry();
-	private static final EventsManager EVENTS_MANAGER = new PhotonEventsManager();
-	private static final PhotonPluginsManager PLUGINS_MANAGER = new PhotonPluginsManager(new JavaPluginLoader());
 
 	private Photon() {
 	}
@@ -59,20 +50,8 @@ public final class Photon {
 		return Main.serverInstance.packetsManager;
 	}
 
-	public static PhotonPluginsManager getPluginsManager() {
-		return PLUGINS_MANAGER;
-	}
-
-	public static EventsManager getEventsManager() {
-		return EVENTS_MANAGER;
-	}
-
 	public static EntityRegistry getEntityRegistry() {
 		return ENTITY_REGISTRY;
-	}
-
-	public static CommandsRegistry getCommandsRegistry() {
-		return CMD_REGISTRY;
 	}
 
 	public static BlockRegistry getBlockRegistry() {
