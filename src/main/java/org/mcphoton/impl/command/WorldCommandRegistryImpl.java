@@ -28,6 +28,7 @@ import org.mcphoton.command.WorldCommandRegistry;
 import org.mcphoton.plugin.Plugin;
 
 /**
+ * Implementation of {@link WorldCommandRegistry}.
  *
  * @author TheElectronWill
  */
