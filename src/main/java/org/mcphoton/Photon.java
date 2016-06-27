@@ -28,6 +28,7 @@ import org.mcphoton.impl.server.Main;
 import org.mcphoton.impl.world.PhotonBiomeRegistry;
 import org.mcphoton.item.ItemRegistry;
 import org.mcphoton.network.PacketsManager;
+import org.mcphoton.server.Server;
 import org.mcphoton.world.BiomeRegistry;
 
 /**
@@ -42,6 +43,7 @@ public final class Photon {
 	private static final ItemRegistry ITEM_REGISTRY = new PhotonItemRegistry();
 	private static final EntityRegistry ENTITY_REGISTRY = new PhotonEntityRegistry();
 	private static final BiomeRegistry BIOME_REGISTRY = new PhotonBiomeRegistry();
+	private static final boolean consoleAdvanced = !System.getProperty("os.name").toLowerCase().contains("windows");
 
 	private Photon() {
 	}
@@ -74,6 +76,10 @@ public final class Photon {
 		return true;
 	}
 
+	public static boolean isConsoleAdvanced() {
+		return consoleAdvanced;
+	}
+
 	public static String getVersion() {
 		return "dev-alpha";
 	}
@@ -90,4 +96,7 @@ public final class Photon {
 		return PLUGINS_DIR;
 	}
 
+	public static Server getServer() {
+		return Main.serverInstance;
+	}
 }
