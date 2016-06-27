@@ -24,14 +24,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.mcphoton.command.Command;
-import org.mcphoton.command.CommandsRegistry;
+import org.mcphoton.command.WorldCommandRegistry;
 import org.mcphoton.plugin.Plugin;
 
 /**
  *
  * @author TheElectronWill
  */
-public class PhotonCommandsRegistry implements CommandsRegistry {
+public class WorldCommandRegistryImpl implements WorldCommandRegistry {
 
 	private final Map<String, Command> nameMap = new HashMap<>();
 	private final Map<Plugin, List<Command>> pluginMap = new HashMap<>();
@@ -45,6 +45,9 @@ public class PhotonCommandsRegistry implements CommandsRegistry {
 			pluginMap.put(plugin, list);
 		}
 		list.add(cmd);
+		for (String alias : cmd.getAliases()) {
+			nameMap.putIfAbsent(alias, cmd);
+		}
 	}
 
 	@Override
@@ -53,6 +56,9 @@ public class PhotonCommandsRegistry implements CommandsRegistry {
 		List<Command> list = pluginMap.get(plugin);
 		if (list != null) {
 			list.remove(cmd);
+		}
+		for (String alias : cmd.getAliases()) {
+			nameMap.remove(alias, cmd);
 		}
 	}
 
