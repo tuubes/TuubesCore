@@ -35,6 +35,9 @@ import org.mcphoton.event.WorldEventsManager;
 import org.mcphoton.impl.server.Main;
 
 /**
+ * Implementation of the {@link WorldEventsManager}. This class is thread-safe because all the operations are
+ * guarded by synchronized blocks. In particular, only one event can be posted at a time, therefore the event
+ * handlers don't need to be thread-safe.
  *
  * @author TheElectronWill
  */
@@ -44,15 +47,12 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 
 	@Override
 	public <E extends Event> void register(Class<E> eventClass, EventHandler<? super E> eventHandler, ListenOrder listenOrder) {
-		EnumMap<ListenOrder, Bag<EventHandler>> orderMap;
 		synchronized (handlersMap) {
-			orderMap = handlersMap.get(eventClass);
+			EnumMap<ListenOrder, Bag<EventHandler>> orderMap = handlersMap.get(eventClass);
 			if (orderMap == null) {
 				orderMap = new EnumMap(ListenOrder.class);
 				handlersMap.put(eventClass, orderMap);
 			}
-		}
-		synchronized (orderMap) {
 			Bag<EventHandler> handlers = orderMap.get(listenOrder);
 			if (handlers == null) {
 				handlers = new SimpleBag();
@@ -64,14 +64,11 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 
 	@Override
 	public <E extends Event> void unregister(Class<E> eventClass, EventHandler<? super E> eventHandler, ListenOrder listenOrder) {
-		final EnumMap<ListenOrder, Bag<EventHandler>> orderMap;
 		synchronized (handlersMap) {
-			orderMap = handlersMap.get(eventClass);
+			EnumMap<ListenOrder, Bag<EventHandler>> orderMap = handlersMap.get(eventClass);
 			if (orderMap == null) {
 				return;
 			}
-		}
-		synchronized (orderMap) {
 			Bag<EventHandler> handlers = orderMap.get(listenOrder);
 			if (handlers == null) {
 				return;
@@ -142,9 +139,8 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 
 			//--- Unregisters the event handler ---
 			ListenOrder order = listenAnnotation.order();
-			EnumMap<ListenOrder, Bag<EventHandler>> orderMap;
 			synchronized (handlersMap) {
-				orderMap = handlersMap.get(pClass);
+				EnumMap<ListenOrder, Bag<EventHandler>> orderMap = handlersMap.get(pClass);
 				if (orderMap == null) {//nothing to unregister for this event type
 					return;
 				}
@@ -159,20 +155,16 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 					}
 				}
 			}
-
 		}
 	}
 
 	@Override
 	public void post(Event event) {
-		final EnumMap<ListenOrder, Bag<EventHandler>> orderMap;
 		synchronized (handlersMap) {
-			orderMap = handlersMap.get(event.getClass());
+			EnumMap<ListenOrder, Bag<EventHandler>> orderMap = handlersMap.get(event.getClass());
 			if (orderMap == null) {
 				return;
 			}
-		}
-		synchronized (orderMap) {
 			for (Bag<EventHandler> handlers : orderMap.values()) {
 				if (handlers != null) {
 					for (EventHandler handler : handlers) {
@@ -183,6 +175,9 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 		}
 	}
 
+	/**
+	 * An event handler that invokes a {@link Method}.
+	 */
 	private static class ReflectionEventHandler<E extends Event> implements EventHandler<E> {
 
 		protected final Method handlerMethod;
@@ -201,6 +196,10 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 		}
 	}
 
+	/**
+	 * An event handler that invokes a {@link Method} if the event isn't cancelled (ie cancelled events are
+	 * ignored).
+	 */
 	private static class IgnoreCancelledReflectionEventHandler<E extends CancellableEvent> extends ReflectionEventHandler<E> {
 
 		public IgnoreCancelledReflectionEventHandler(Method handlerMethod) {
@@ -217,7 +216,6 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 				}
 			}
 		}
-
 	}
 
 }
