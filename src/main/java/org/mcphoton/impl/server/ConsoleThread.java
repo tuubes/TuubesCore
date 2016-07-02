@@ -23,12 +23,18 @@ import org.mcphoton.Photon;
 import org.mcphoton.command.Command;
 import org.mcphoton.messaging.ChatMessage;
 import org.mcphoton.messaging.Messageable;
+import org.mcphoton.world.World;
 
 /**
  *
  * @author TheElectronWill
  */
 public class ConsoleThread extends Thread implements Messageable {
+
+	/**
+	 * The world currently used for the command registry.
+	 */
+	public volatile World world = Photon.getServer().getSpawn().getWorld();
 
 	private volatile boolean run = true;
 	private final Scanner sc = new Scanner(System.in);
@@ -49,7 +55,7 @@ public class ConsoleThread extends Thread implements Messageable {
 		while (run) {
 			String line = sc.nextLine();
 			String[] parts = line.split(" ", 2);
-			Command cmd = Photon.getCommandsRegistry().getRegistered(parts[0]);
+			Command cmd = world.getCommandRegistry().getRegistered(parts[0]);
 			if (cmd == null) {
 				System.out.println("Unknown command.");
 				continue;
