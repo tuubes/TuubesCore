@@ -26,15 +26,14 @@ import org.mcphoton.plugin.ClassSharer;
 import org.mcphoton.plugin.SharedClassLoader;
 
 /**
- * Shares classes across plugins.
+ * Implementation of ClassSharer.
  *
  * @author TheElectronWill
- *
  */
-public class PhotonClassSharer implements ClassSharer {
+public final class ClassSharerImpl implements ClassSharer {
 
 	private final Map<String, Class<?>> classMap = new HashMap<>();
-	private final Collection<SharedClassLoader> sharedFinders = new SimpleBag<>();
+	private final Collection<SharedClassLoader> sharedClassLoaders = new SimpleBag<>();
 
 	@Override
 	public synchronized Class<?> getClass(String name) {
@@ -45,9 +44,9 @@ public class PhotonClassSharer implements ClassSharer {
 			System.out.println("classMap returned " + c);
 			return c;
 		}
-		for (SharedClassLoader finder : sharedFinders) {
+		for (SharedClassLoader classLoader : sharedClassLoaders) {
 			try {
-				c = finder.findClass(name, false);
+				c = classLoader.findClass(name, false);
 			} catch (ClassNotFoundException e) {
 				// ignore
 			}
@@ -60,13 +59,13 @@ public class PhotonClassSharer implements ClassSharer {
 	}
 
 	@Override
-	public synchronized void addClassLoader(SharedClassLoader finder) {
-		sharedFinders.add(finder);
+	public synchronized void addClassLoader(SharedClassLoader classLoader) {
+		sharedClassLoaders.add(classLoader);
 	}
 
 	@Override
-	public synchronized void removeClassLoader(SharedClassLoader finder) {
-		sharedFinders.remove(finder);
+	public synchronized void removeClassLoader(SharedClassLoader classLoader) {
+		sharedClassLoaders.remove(classLoader);
 	}
 
 }
