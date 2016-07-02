@@ -22,13 +22,20 @@ import com.electronwill.utils.SimpleBag;
 import java.io.File;
 import java.util.Collection;
 import org.mcphoton.Photon;
+import org.mcphoton.command.WorldCommandRegistry;
 import org.mcphoton.entity.living.Player;
+import org.mcphoton.event.WorldEventsManager;
+import org.mcphoton.impl.command.WorldCommandRegistryImpl;
+import org.mcphoton.impl.event.WorldEventsManagerImpl;
+import org.mcphoton.impl.plugin.WorldPluginsManagerImpl;
+import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.world.Location;
 import org.mcphoton.world.World;
 import org.mcphoton.world.WorldType;
 import org.mcphoton.world.protection.WorldAccessManager;
 
 /**
+ * Basic implementation of World.
  *
  * @author TheElectronWill
  */
@@ -37,8 +44,13 @@ public class PhotonWorld implements World {
 	protected volatile String name;
 	protected volatile File directory = new File(Photon.WORLDS_DIR, name);
 	protected volatile double spawnX = 0, spawnY = 0, spawnZ = 0;
+
 	protected final WorldType type;
 	protected final Collection<Player> players = new SimpleBag<>();
+
+	protected final WorldPluginsManager pluginsManager = new WorldPluginsManagerImpl(this);
+	protected final WorldEventsManager eventsManager = new WorldEventsManagerImpl();
+	protected final WorldCommandRegistry commandRegistry = new WorldCommandRegistryImpl();
 
 	public PhotonWorld(String name, WorldType type) {
 		this.name = name;
@@ -110,6 +122,21 @@ public class PhotonWorld implements World {
 	@Override
 	public void setAccessManager(WorldAccessManager manager) {
 		; //TODO
+	}
+
+	@Override
+	public WorldCommandRegistry getCommandRegistry() {
+		return commandRegistry;
+	}
+
+	@Override
+	public WorldEventsManager getEventsManager() {
+		return eventsManager;
+	}
+
+	@Override
+	public WorldPluginsManager getPluginsManager() {
+		return pluginsManager;
 	}
 
 }
