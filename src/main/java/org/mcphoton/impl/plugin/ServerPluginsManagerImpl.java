@@ -31,6 +31,7 @@ import org.mcphoton.plugin.ServerPlugin;
 import org.mcphoton.plugin.ServerPluginsManager;
 import org.mcphoton.plugin.SharedClassLoader;
 import org.mcphoton.plugin.WorldPlugin;
+import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.world.World;
 
 /**
@@ -75,7 +76,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		plugin.init(loader, worlds);
 		SharedClassLoader classLoader = (SharedClassLoader) plugin.getClass().getClassLoader();
 		for (World world : worlds) {
-			WorldPluginsManagerImpl pluginsManager = (WorldPluginsManagerImpl) world.getPluginsManager();
+			WorldPluginsManager pluginsManager = world.getPluginsManager();
 			pluginsManager.registerPlugin(plugin);
 			pluginsManager.getClassSharer().addClassLoader(classLoader);
 		}
@@ -86,7 +87,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		SharedClassLoader classLoader = (SharedClassLoader) plugin.getClass().getClassLoader();
 		for (World world : worlds) {
 			plugin.init(loader, world);
-			WorldPluginsManagerImpl pluginsManager = (WorldPluginsManagerImpl) world.getPluginsManager();
+			WorldPluginsManager pluginsManager = world.getPluginsManager();
 			pluginsManager.registerPlugin(plugin);
 			pluginsManager.getClassSharer().addClassLoader(classLoader);
 		}
@@ -95,7 +96,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	private void loadOtherPlugin(Plugin plugin, PluginLoader loader, Collection<World> worlds) {
 		ClassLoader classLoader = plugin.getClass().getClassLoader();
 		for (World world : worlds) {
-			WorldPluginsManagerImpl pluginsManager = (WorldPluginsManagerImpl) world.getPluginsManager();
+			WorldPluginsManager pluginsManager = world.getPluginsManager();
 			pluginsManager.registerPlugin(plugin);
 			if (classLoader instanceof SharedClassLoader) {
 				pluginsManager.getClassSharer().addClassLoader((SharedClassLoader) classLoader);
@@ -110,7 +111,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		} finally {
 			SharedClassLoader classLoader = (SharedClassLoader) plugin.getClass().getClassLoader();
 			for (World world : plugin.getActiveWorlds()) {
-				WorldPluginsManagerImpl pluginsManager = (WorldPluginsManagerImpl) world.getPluginsManager();
+				WorldPluginsManager pluginsManager = world.getPluginsManager();
 				pluginsManager.unregisterPlugin(plugin);
 				pluginsManager.getClassSharer().removeClassLoader(classLoader);
 			}
