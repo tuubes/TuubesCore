@@ -106,11 +106,13 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 		}
 	}
 
-	void registerPlugin(Plugin plugin) {
+	@Override
+	public void registerPlugin(Plugin plugin) {
 		loadedPlugins.put(plugin.getName(), plugin);
 	}
 
-	void unregisterPlugin(Plugin plugin) {
+	@Override
+	public void unregisterPlugin(Plugin plugin) {
 		loadedPlugins.remove(plugin.getName(), plugin);
 	}
 
