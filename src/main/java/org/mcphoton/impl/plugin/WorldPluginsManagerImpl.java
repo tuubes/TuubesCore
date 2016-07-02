@@ -20,6 +20,7 @@ package org.mcphoton.impl.plugin;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -31,16 +32,26 @@ import org.mcphoton.plugin.ClassSharer;
 import org.mcphoton.plugin.Plugin;
 import org.mcphoton.plugin.PluginLoader;
 import org.mcphoton.plugin.PluginLoadingException;
-import org.mcphoton.plugin.PluginsManager;
+import org.mcphoton.plugin.ServerPlugin;
+import org.mcphoton.plugin.WorldPlugin;
+import org.mcphoton.plugin.WorldPluginsManager;
+import org.mcphoton.world.World;
 
-public class PhotonPluginsManager implements PluginsManager {
+/**
+ * Implementation of WorldPluginsManager.
+ *
+ * @author TheElectronWill
+ */
+public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 
 	private final Map<String, Plugin> loadedPlugins = new ConcurrentHashMap<>();
-	private final ClassSharer classSharer = new PhotonClassSharer();
+	private final ClassSharer classSharer = new ClassSharerImpl();
 	private volatile PluginLoader defaultPluginLoader;
+	private final World world;
 
-	public PhotonPluginsManager(PluginLoader defaultPluginLoader) {
-		this.defaultPluginLoader = defaultPluginLoader;
+	public WorldPluginsManagerImpl(World world) {
+		this.world = world;
+		this.defaultPluginLoader = new JavaPluginLoader(classSharer);
 	}
 
 	@Override
@@ -56,6 +67,7 @@ public class PhotonPluginsManager implements PluginsManager {
 	@Override
 	public <T extends Plugin> T loadPlugin(File file, PluginLoader<T> loader) throws PluginLoadingException {
 		T plugin = loader.loadPlugin(file);
+		initialize(plugin, loader);
 		plugin.onLoad();
 		loadedPlugins.put(plugin.getName(), plugin);
 		return plugin;
@@ -75,6 +87,7 @@ public class PhotonPluginsManager implements PluginsManager {
 		for (String name : solution.resolvedOrder) {
 			T plugin = namesMap.get(name);
 			try {
+				initialize(plugin, loader);
 				plugin.onLoad();
 				result.add(plugin);
 				loadedPlugins.put(name, plugin);
@@ -83,6 +96,22 @@ public class PhotonPluginsManager implements PluginsManager {
 			}
 		}
 		return result;
+	}
+
+	private void initialize(Plugin plugin, PluginLoader loader) {
+		if (plugin instanceof WorldPlugin) {//WorldPlugin loaded in this world
+			((WorldPlugin) plugin).init(loader, world);
+		} else if (plugin instanceof ServerPlugin) {//ServerPlugin loaded in a single world
+			((ServerPlugin) plugin).init(loader, Collections.singletonList(world));
+		}
+	}
+
+	void registerPlugin(Plugin plugin) {
+		loadedPlugins.put(plugin.getName(), plugin);
+	}
+
+	void unregisterPlugin(Plugin plugin) {
+		loadedPlugins.remove(plugin.getName(), plugin);
 	}
 
 	@Override
@@ -113,11 +142,6 @@ public class PhotonPluginsManager implements PluginsManager {
 	}
 
 	@Override
-	public ClassSharer getClassSharer() {
-		return classSharer;
-	}
-
-	@Override
 	public PluginLoader getDefaultPluginLoader() {
 		return defaultPluginLoader;
 	}
@@ -125,6 +149,11 @@ public class PhotonPluginsManager implements PluginsManager {
 	@Override
 	public void setDefaultPluginLoader(PluginLoader loader) {
 		this.defaultPluginLoader = loader;
+	}
+
+	@Override
+	public ClassSharer getClassSharer() {
+		return classSharer;
 	}
 
 }
