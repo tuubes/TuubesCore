@@ -25,16 +25,25 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.mcphoton.plugin.JavaPlugin;
+import org.mcphoton.plugin.Plugin;
 import org.mcphoton.plugin.PluginLoader;
 import org.mcphoton.plugin.PluginLoadingException;
+import org.mcphoton.plugin.ServerPlugin;
+import org.mcphoton.plugin.WorldPlugin;
 
-public class JavaPluginLoader implements PluginLoader<JavaPlugin> {
+/**
+ * Loads Java plugins. The plugins may be of any type, not necessarily {@link WorldPlugin} or
+ * {@link ServerPlugin}. The only condition for the JavaPluginLoader to be able to load a plugin is that it
+ * must have a default constructor (without parameters).
+ *
+ * @author TheElectronWill
+ */
+public class JavaPluginLoader implements PluginLoader<Plugin> {
 
 	private final PhotonClassSharer sharer = new PhotonClassSharer();
 
 	@Override
-	public JavaPlugin loadPlugin(File file) throws PluginLoadingException {
+	public Plugin loadPlugin(File file) throws PluginLoadingException {
 		try {
 			PluginClassLoader loader = new PluginClassLoader(file.toURI().toURL(), sharer);
 			sharer.addClassLoader(loader);
@@ -44,9 +53,15 @@ public class JavaPluginLoader implements PluginLoader<JavaPlugin> {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}. This method does not call any plugin's method. In particular, it does not call the
+	 * {@link WorldPlugin#init(PluginLoader, org.mcphoton.world.World)} method, nor the
+	 * {@link ServerPlugin#init(PluginLoader, java.util.Collection)} method.
+	 */
 	@Override
-	public List<JavaPlugin> loadPlugins(File[] files) {
+	public List<Plugin> loadPlugins(File[] files) {
 		// step 1 - creating ClassLoaders
+		// We add all the ClassLoaders first so that all the needed classes are available when the plugins' instances are created.
 		PluginClassLoader[] loaders = new PluginClassLoader[files.length];
 		for (int i = 0; i < files.length; i++) {
 			File f = files[i];
@@ -60,13 +75,12 @@ public class JavaPluginLoader implements PluginLoader<JavaPlugin> {
 		}
 
 		// step 2 - creating instances of plugins
-		List<JavaPlugin> plugins = new ArrayList<>(files.length);
+		List<Plugin> plugins = new ArrayList<>(files.length);
 		for (int i = 0; i < files.length; i++) {
 			PluginClassLoader loader = loaders[i];
 			if (loader != null) {
 				try {
-					JavaPlugin plugin = createPluginInstance(files[i], loader);
-					plugin.init(this);
+					Plugin plugin = createPluginInstance(files[i], loader);
 					plugins.add(plugin);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -74,10 +88,14 @@ public class JavaPluginLoader implements PluginLoader<JavaPlugin> {
 			}
 		}
 		return plugins;
-		// the PluginsManager is responsible for calling onLoad() and onUnload(), and for managing dependencies.
+		// the PluginsManager is responsible for calling init(), onLoad(), onUnload(), and for managing dependencies.
 	}
 
-	private JavaPlugin createPluginInstance(File file, PluginClassLoader loader)
+	/**
+	 * Creates a plugin instance by looking for the class that implements Plugin and using the default
+	 * constructor.
+	 */
+	private Plugin createPluginInstance(File file, PluginClassLoader loader)
 			throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
 		try (JarFile jar = new JarFile(file)) {
 			Enumeration<JarEntry> entries = jar.entries();
@@ -91,8 +109,8 @@ public class JavaPluginLoader implements PluginLoader<JavaPlugin> {
 
 				String className = entryName.replace('/', '.').replaceAll(".class", "");
 				Class<?> clazz = loader.loadClass(className);
-				if (JavaPlugin.class.isAssignableFrom(clazz)) {
-					return (JavaPlugin) clazz.newInstance();
+				if (Plugin.class.isAssignableFrom(clazz)) {
+					return (Plugin) clazz.newInstance();
 				}
 			}
 			return null;
@@ -100,7 +118,7 @@ public class JavaPluginLoader implements PluginLoader<JavaPlugin> {
 	}
 
 	@Override
-	public void unloadPlugin(JavaPlugin plugin) {
+	public void unloadPlugin(Plugin plugin) {
 		PluginClassLoader loader = (PluginClassLoader) plugin.getClass().getClassLoader();
 		sharer.removeClassLoader(loader);
 	}
