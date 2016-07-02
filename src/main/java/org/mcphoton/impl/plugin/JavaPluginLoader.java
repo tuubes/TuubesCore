@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import org.mcphoton.plugin.ClassSharer;
 import org.mcphoton.plugin.Plugin;
 import org.mcphoton.plugin.PluginLoader;
 import org.mcphoton.plugin.PluginLoadingException;
@@ -38,9 +39,17 @@ import org.mcphoton.plugin.WorldPlugin;
  *
  * @author TheElectronWill
  */
-public class JavaPluginLoader implements PluginLoader<Plugin> {
+public final class JavaPluginLoader implements PluginLoader<Plugin> {
 
-	private final PhotonClassSharer sharer = new PhotonClassSharer();
+	private final ClassSharer sharer;
+
+	public JavaPluginLoader() {
+		this.sharer = new ClassSharerImpl();
+	}
+
+	public JavaPluginLoader(ClassSharer sharer) {
+		this.sharer = sharer;
+	}
 
 	@Override
 	public Plugin loadPlugin(File file) throws PluginLoadingException {

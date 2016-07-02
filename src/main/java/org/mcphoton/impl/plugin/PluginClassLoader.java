@@ -23,16 +23,16 @@ import java.net.URLClassLoader;
 import org.mcphoton.plugin.ClassSharer;
 import org.mcphoton.plugin.SharedClassLoader;
 
-public class PluginClassLoader extends URLClassLoader implements SharedClassLoader {
+public final class PluginClassLoader extends URLClassLoader implements SharedClassLoader {
 
-	private final PhotonClassSharer sharer;
+	private final ClassSharer sharer;
 
-	public PluginClassLoader(URL[] urls, PhotonClassSharer sharer) {
+	public PluginClassLoader(URL[] urls, ClassSharer sharer) {
 		super(urls);
 		this.sharer = sharer;
 	}
 
-	public PluginClassLoader(URL url, PhotonClassSharer sharer) {
+	public PluginClassLoader(URL url, ClassSharer sharer) {
 		super(new URL[] {url});
 		this.sharer = sharer;
 	}
