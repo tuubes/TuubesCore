@@ -25,13 +25,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.mcphoton.plugin.Plugin;
+import org.mcphoton.plugin.PluginDescription;
 
 /**
  * Solves dependencies between plugins.
  * <h2>How it works</h2>
  * <p>
- * In a loop: we eliminate every plugin that only has met (resolved) dependencies.
+ * In a loop: we eliminate every plugin that has all its dependencies resolved.
  * </p>
  *
  * @author TheElectronWill
@@ -42,24 +42,28 @@ public class DependancyResolver {
 	private final Map<String, List<DependencyRequirement>> unresolved = new HashMap<>();
 	private final Map<String, String> versions = new HashMap<>();
 
-	public void add(Plugin plugin) {
-		versions.put(plugin.getName(), plugin.getVersion());
+	public void add(PluginDescription description) {
+		final String name = description.name(), version = description.version();
+		final String[] requiredDependencies = description.requiredDependencies();
+		final String[] optionalDependencies = description.optionalDependencies();
 
-		if (plugin.getRequiredDependencies() == null && plugin.getOptionalDependencies() == null) {
-			unresolved.put(plugin.getName(), Collections.emptyList());
+		versions.put(name, version);
+
+		if (requiredDependencies.length == 0 && optionalDependencies.length == 0) {
+			unresolved.put(name, Collections.emptyList());
 			return;
 		}
 
 		List<DependencyRequirement> depends = new ArrayList<>();
-		unresolved.put(plugin.getName(), depends);
+		unresolved.put(name, depends);
 
-		if (plugin.getRequiredDependencies() != null) {
-			for (String requiredDependency : plugin.getRequiredDependencies()) {
+		if (requiredDependencies.length > 0) {
+			for (String requiredDependency : requiredDependencies) {
 				depends.add(DependencyRequirement.parse(requiredDependency, false));
 			}
 		}
-		if (plugin.getOptionalDependencies() != null) {
-			for (String optionalDependency : plugin.getOptionalDependencies()) {
+		if (optionalDependencies.length > 0) {
+			for (String optionalDependency : optionalDependencies) {
 				depends.add(DependencyRequirement.parse(optionalDependency, true));
 			}
 		}
