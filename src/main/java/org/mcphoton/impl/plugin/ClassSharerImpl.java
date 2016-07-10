@@ -68,4 +68,11 @@ public final class ClassSharerImpl implements ClassSharer {
 		sharedClassLoaders.remove(classLoader);
 	}
 
+	@Override
+	public void removeUselessClassLoader(SharedClassLoader classLoader) {
+		if (classLoader.getUseCount() <= 0) {
+			sharedClassLoaders.remove(classLoader);
+		}
+	}
+
 }
