@@ -20,12 +20,14 @@ package org.mcphoton.impl.plugin;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.mcphoton.plugin.ClassSharer;
 import org.mcphoton.plugin.SharedClassLoader;
 
 public final class PluginClassLoader extends URLClassLoader implements SharedClassLoader {
 
 	private final ClassSharer sharer;
+	private final AtomicInteger useCount = new AtomicInteger();
 
 	public PluginClassLoader(URL[] urls, ClassSharer sharer) {
 		super(urls);
@@ -35,6 +37,11 @@ public final class PluginClassLoader extends URLClassLoader implements SharedCla
 	public PluginClassLoader(URL url, ClassSharer sharer) {
 		super(new URL[] {url});
 		this.sharer = sharer;
+	}
+
+	@Override
+	public int decreaseUseCount() {
+		return useCount.getAndDecrement();
 	}
 
 	@Override
@@ -57,6 +64,16 @@ public final class PluginClassLoader extends URLClassLoader implements SharedCla
 	@Override
 	public ClassSharer getSharer() {
 		return sharer;
+	}
+
+	@Override
+	public int getUseCount() {
+		return useCount.get();
+	}
+
+	@Override
+	public int increaseUseCount() {
+		return useCount.getAndIncrement();
 	}
 
 }
