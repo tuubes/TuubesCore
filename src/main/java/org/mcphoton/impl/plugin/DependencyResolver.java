@@ -37,7 +37,7 @@ import org.mcphoton.plugin.PluginDescription;
  * @author TheElectronWill
  *
  */
-public class DependancyResolver {
+public class DependencyResolver {
 
 	private final Map<String, List<DependencyRequirement>> unresolved = new HashMap<>();
 	private final Map<String, String> versions = new HashMap<>();
