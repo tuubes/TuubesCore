@@ -42,7 +42,21 @@ public class DependencyResolver {
 	private final Map<String, List<DependencyRequirement>> unresolved = new HashMap<>();
 	private final Map<String, String> versions = new HashMap<>();
 
-	public void add(PluginDescription description) {
+	public void addAvailable(String name, String version) {
+		versions.put(name, version);
+	}
+
+	public void addAvailable(List<String> names, List<String> versions) {
+		if (names.size() != versions.size()) {
+			throw new IllegalArgumentException("The two lists must have the same size.");
+		}
+		for (Iterator<String> it1 = names.iterator(), it2 = versions.iterator(); it1.hasNext();) {
+			String name = it1.next(), version = it2.next();
+			this.versions.put(name, version);
+		}
+	}
+
+	public void addToResolve(PluginDescription description) {
 		final String name = description.name(), version = description.version();
 		final String[] requiredDependencies = description.requiredDependencies();
 		final String[] optionalDependencies = description.optionalDependencies();
