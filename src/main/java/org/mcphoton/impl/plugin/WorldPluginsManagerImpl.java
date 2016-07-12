@@ -18,21 +18,20 @@
  */
 package org.mcphoton.impl.plugin;
 
+import com.electronwill.utils.SimpleBag;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import org.mcphoton.impl.plugin.DependancyResolver.Solution;
-import org.mcphoton.impl.server.Main;
-import org.mcphoton.plugin.ClassSharer;
+import static org.mcphoton.impl.plugin.ServerPluginsManagerImpl.GLOBAL_CLASS_SHARER;
+import static org.mcphoton.impl.plugin.ServerPluginsManagerImpl.LOGGER;
 import org.mcphoton.plugin.Plugin;
-import org.mcphoton.plugin.PluginLoader;
-import org.mcphoton.plugin.PluginLoadingException;
+import org.mcphoton.plugin.PluginDescription;
 import org.mcphoton.plugin.ServerPlugin;
+import org.mcphoton.plugin.SharedClassLoader;
 import org.mcphoton.plugin.WorldPlugin;
 import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.world.World;
@@ -44,118 +43,134 @@ import org.mcphoton.world.World;
  */
 public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 
-	private final Map<String, Plugin> loadedPlugins = new ConcurrentHashMap<>();
-	private final ClassSharer classSharer = new ClassSharerImpl();
-	private volatile PluginLoader defaultPluginLoader;
+	private final Map<String, Plugin> plugins = new HashMap<>();
 	private final World world;
 
 	public WorldPluginsManagerImpl(World world) {
 		this.world = world;
-		this.defaultPluginLoader = new JavaPluginLoader(classSharer);
 	}
 
 	@Override
 	public Plugin getPlugin(String name) {
-		return loadedPlugins.get(name);
+		return plugins.get(name);
 	}
 
 	@Override
 	public boolean isPluginLoaded(String name) {
-		return loadedPlugins.containsKey(name);
+		return plugins.containsKey(name);
 	}
 
 	@Override
-	public <T extends Plugin> T loadPlugin(File file, PluginLoader<T> loader) throws PluginLoadingException {
-		T plugin = loader.loadPlugin(file);
-		initialize(plugin, loader);
-		plugin.onLoad();
-		loadedPlugins.put(plugin.getName(), plugin);
-		return plugin;
-	}
-
-	@Override
-	public <T extends Plugin> List<T> loadPlugins(File[] files, PluginLoader<T> loader) {
-		List<T> plugins = loader.loadPlugins(files);
-		Map<String, T> namesMap = new HashMap<>();
-		DependancyResolver dependancyResolver = new DependancyResolver();
-		for (T p : plugins) {
-			namesMap.put(p.getName(), p);
-			dependancyResolver.add(p);
+	public Plugin loadPlugin(File file) throws Exception {
+		final PluginClassLoader classLoader = new PluginClassLoader(file.toURI().toURL(), GLOBAL_CLASS_SHARER);
+		final Class<? extends Plugin> clazz = PluginClassFinder.findPluginClass(file, classLoader);
+		if (clazz == null) {
+			throw new PluginClassNotFoundException(file);
 		}
-		Solution solution = dependancyResolver.resolve();
-		List<T> result = new ArrayList<>();
-		for (String name : solution.resolvedOrder) {
-			T plugin = namesMap.get(name);
-			try {
-				initialize(plugin, loader);
-				plugin.onLoad();
-				result.add(plugin);
-				loadedPlugins.put(name, plugin);
-			} catch (Throwable t) {// do not crash!
-				t.printStackTrace();
+		final PluginDescription description = clazz.getAnnotation(PluginDescription.class);
+		final Plugin instance = clazz.newInstance();
+
+		if (ServerPlugin.class.isAssignableFrom(clazz)) {
+			if (description == null) {
+				throw new MissingPluginDescriptionException(clazz);
 			}
+			Collection<World> worlds = Collections.synchronizedCollection(new SimpleBag<>(world));
+			((ServerPlugin) instance).init(description, worlds);
+		} else if (WorldPlugin.class.isAssignableFrom(clazz)) {
+			if (description == null) {
+				throw new MissingPluginDescriptionException(clazz);
+			}
+			((WorldPlugin) instance).init(description, world);
 		}
-		return result;
+
+		instance.onLoad();
+		classLoader.increaseUseCount();
+		plugins.put(instance.getName(), instance);
+		return instance;
 	}
 
-	private void initialize(Plugin plugin, PluginLoader loader) {
-		if (plugin instanceof WorldPlugin) {//WorldPlugin loaded in this world
-			((WorldPlugin) plugin).init(loader, world);
-		} else if (plugin instanceof ServerPlugin) {//ServerPlugin loaded in a single world
-			((ServerPlugin) plugin).init(loader, Collections.singletonList(world));
+	@Override
+	public List<Plugin> loadPlugins(File[] files) throws Exception {
+		final Map<String, PluginInfos> infosMap = new HashMap<>();
+		final List<Plugin> loadedPlugins = new ArrayList<>(files.length);
+
+		//1: Gather informations about the plugins: class + description.
+		LOGGER.debug("Gathering informations about the plugins...");
+		for (File file : files) {
+			PluginClassLoader classLoader = new PluginClassLoader(file.toURI().toURL(), GLOBAL_CLASS_SHARER);
+			Class<? extends Plugin> clazz = PluginClassFinder.findPluginClass(file, classLoader);
+			if (clazz == null) {
+				throw new PluginClassNotFoundException(file);
+			}
+			/*
+			 * Here we DO need a PluginDescription for every plugin because to resolve the dependencies we
+			 * need to have some informations about the plugin before creating its instance.
+			 */
+			PluginDescription description = clazz.getAnnotation(PluginDescription.class);
+			if (description == null) {
+				throw new MissingPluginDescriptionException(clazz);
+			}
+			PluginInfos infos = new PluginInfos(clazz, classLoader, description);
+			infosMap.put(description.name(), infos);
+			LOGGER.trace("Valid plugin found: {} -> infos: {}.", file, infos);
 		}
+
+		//2: Resolve the dependencies.
+		LOGGER.debug("Resolving plugins' dependencies...");
+		DependencyResolver resolver = new DependencyResolver();
+		for (PluginInfos infos : infosMap.values()) {
+			resolver.addToResolve(infos.description);
+		}
+		DependencyResolver.Solution solution = resolver.resolve();
+		LOGGER.debug("Solution: {}", solution.resolvedOrder);
+
+		//3: Print informations.
+		LOGGER.info("{} out of {} server plugins will be loaded.", solution.resolvedOrder.size(), files.length);
+		for (Exception ex : solution.errors) {
+			LOGGER.error(ex.toString());
+		}
+
+		//4: Load the plugins.
+		LOGGER.debug("Loading the plugins...");
+		for (String plugin : solution.resolvedOrder) {
+			PluginInfos infos = infosMap.get(plugin);
+			Plugin instance = infos.clazz.newInstance();
+
+			if (ServerPlugin.class.isAssignableFrom(infos.clazz)) {
+				Collection<World> worlds = Collections.synchronizedCollection(new SimpleBag<>(world));
+				((ServerPlugin) instance).init(infos.description, worlds);
+			} else if (WorldPlugin.class.isAssignableFrom(infos.clazz)) {
+				((WorldPlugin) instance).init(infos.description, world);
+			}
+
+			instance.onLoad();
+			infos.classLoader.increaseUseCount();
+			plugins.put(instance.getName(), instance);
+			loadedPlugins.add(instance);
+		}
+		return loadedPlugins;
 	}
 
 	@Override
 	public void registerPlugin(Plugin plugin) {
-		loadedPlugins.put(plugin.getName(), plugin);
+		plugins.put(plugin.getName(), plugin);
+	}
+
+	@Override
+	public void unloadPlugin(Plugin plugin) throws Exception {
+		plugin.onUnload();
+		((SharedClassLoader) plugin.getClass().getClassLoader()).decreaseUseCount();
+		plugins.remove(plugin.getName(), plugin);
+	}
+
+	@Override
+	public void unloadPlugin(String name) throws Exception {
+		unloadPlugin(plugins.get(name));
 	}
 
 	@Override
 	public void unregisterPlugin(Plugin plugin) {
-		loadedPlugins.remove(plugin.getName(), plugin);
-	}
-
-	@Override
-	public void unloadPlugin(Plugin plugin) {
-		try {
-			plugin.onUnload();
-		} finally {
-			plugin.getLoader().unloadPlugin(plugin);
-			loadedPlugins.remove(plugin.getName());
-		}
-	}
-
-	@Override
-	public void unloadPlugin(String name) {
-		unloadPlugin(getPlugin(name));
-	}
-
-	public void unloadAllPlugins() {
-		Iterator<Plugin> it = loadedPlugins.values().iterator();
-		while (it.hasNext()) {
-			Plugin next = it.next();
-			try {
-				unloadPlugin(next);
-			} catch (Exception e) {
-				Main.serverInstance.logger.error("Error while unloading plugin {}", e, next.getName());
-			}
-		}
-	}
-
-	@Override
-	public PluginLoader getDefaultPluginLoader() {
-		return defaultPluginLoader;
-	}
-
-	@Override
-	public void setDefaultPluginLoader(PluginLoader loader) {
-		this.defaultPluginLoader = loader;
-	}
-
-	@Override
-	public ClassSharer getClassSharer() {
-		return classSharer;
+		plugins.remove(plugin.getName(), plugin);
 	}
 
 }
