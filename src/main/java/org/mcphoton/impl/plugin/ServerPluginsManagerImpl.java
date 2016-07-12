@@ -34,7 +34,6 @@ import org.mcphoton.plugin.Plugin;
 import org.mcphoton.plugin.PluginDescription;
 import org.mcphoton.plugin.ServerPlugin;
 import org.mcphoton.plugin.ServerPluginsManager;
-import org.mcphoton.plugin.SharedClassLoader;
 import org.mcphoton.plugin.WorldPlugin;
 import org.mcphoton.world.World;
 import org.slf4j.Logger;
@@ -84,28 +83,14 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 			if (description == null) {
 				throw new MissingPluginDescriptionException(clazz);
 			}
-			ServerPlugin instance = (ServerPlugin) clazz.newInstance();
-
-			Collection<World> worldsCopy = new SimpleBag<>(worlds.size());
-			worldsCopy.addAll(worlds);
-
-			instance.init(description, worldsCopy);
-			for (World world : worldsCopy) {
-				world.getPluginsManager().registerPlugin(instance);
-				classLoader.increaseUseCount();
-			}
-			return instance;
-
+			return loadServerPlugin(clazz, classLoader, description, worlds);
 		} else if (WorldPlugin.class.isAssignableFrom(clazz)) {//WorldPlugin -> one instance per world.
 			if (description == null) {
 				throw new MissingPluginDescriptionException(clazz);
 			}
 			WorldPlugin instance = null;
 			for (World world : worlds) {
-				instance = (WorldPlugin) clazz.newInstance();
-				instance.init(description, world);
-				world.getPluginsManager().registerPlugin(instance);
-				classLoader.increaseUseCount();
+				instance = loadWorldPlugin(clazz, classLoader, description, world);
 			}
 			return instance;//return the plugin instance of the last world.
 
@@ -113,9 +98,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 			//Don't need to check for a PluginDescription, because this type of plugin doesn't need to be initialized by the PluginsManager.
 			Plugin instance = null;
 			for (World world : worlds) {
-				instance = clazz.newInstance();
-				world.getPluginsManager().registerPlugin(instance);
-				classLoader.increaseUseCount();
+				instance = loadOtherPlugin(clazz, classLoader, world);
 			}
 			return instance;//return the plugin instance of the last world.
 		}
@@ -149,7 +132,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 			if (description == null) {
 				throw new MissingPluginDescriptionException(clazz);
 			}
-			PluginInfos infos = new PluginInfos(clazz, description);
+			PluginInfos infos = new PluginInfos(clazz, classLoader, description);
 			infosMap.put(description.name(), infos);
 			LOGGER.trace("Valid plugin found: {} -> infos: {}.", file, infos);
 		}
@@ -184,13 +167,8 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		LOGGER.debug("Loading the server plugins...");
 		for (String plugin : solution.resolvedOrder) {
 			PluginInfos infos = infosMap.get(plugin);
-			try {
-				ServerPlugin instance = (ServerPlugin) infos.clazz.newInstance();
-				instance.init(infos.description, serverWorlds);
-				instance.onLoad();
-			} catch (Exception ex) {
-				LOGGER.error("Unable to load the plugin {}.", plugin, ex);
-			}
+			infos.setWorlds(serverWorlds);//load in every server's world
+			loadServerPlugin(infos);
 		}
 
 		//3: Resolve dependencies for the other (non server) plugins, per world, and load them.
@@ -226,17 +204,10 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 						infos.getWorlds().add(world);
 						nonGlobalServerPlugins.add(infos);
 					} else if (WorldPlugin.class.isAssignableFrom(infos.clazz)) {
-						WorldPlugin instance = (WorldPlugin) infos.clazz.newInstance();
-						instance.init(infos.description, world);
-						instance.onLoad();
-						world.getPluginsManager().registerPlugin(instance);
+						loadWorldPlugin(infos, world);
 					} else {
-						Plugin instance = infos.clazz.newInstance();
-						instance.onLoad();
-						world.getPluginsManager().registerPlugin(instance);
+						loadOtherPlugin(infos, world);
 					}
-					SharedClassLoader loader = (SharedClassLoader) infos.clazz.getClassLoader();
-					loader.increaseUseCount();
 				} catch (Exception ex) {
 					LOGGER.error("Unable to load the plugin {}.", plugin, ex);
 				}
@@ -244,49 +215,78 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		}
 
 		//4: Actually load the server plugins that aren't loaded on the entire server.
-		LOGGER.info("Loading the non global server plugins...");
+		LOGGER.info("Loading the non-global server plugins...");
 		for (PluginInfos infos : nonGlobalServerPlugins) {
-			try {
-				ServerPlugin instance = (ServerPlugin) infos.clazz.newInstance();
-				instance.init(infos.description, infos.worlds);
-				instance.onLoad();
-				for (World world : infos.worlds) {
-					world.getPluginsManager().registerPlugin(instance);
-				}
-			} catch (Exception ex) {
-				LOGGER.error("Unable to load the plugin {}.", infos.description.name(), ex);
-			}
+			loadServerPlugin(infos);
 		}
 	}
 
 	@Override
-	public void unloadServerPlugin(ServerPlugin plugin) {
-		; //TODO
+	public void unloadServerPlugin(ServerPlugin plugin) throws Exception {
+		plugin.onUnload();
+		for (World world : plugin.getActiveWorlds()) {
+			world.getPluginsManager().unregisterPlugin(plugin);
+		}
+		serverPlugins.remove(plugin.getName(), plugin);
 	}
 
 	@Override
-	public void unloadServerPlugin(String name) {
-		; //TODO
+	public void unloadServerPlugin(String name) throws Exception {
+		unloadServerPlugin(serverPlugins.get(name));
 	}
 
-	private class PluginInfos {
-
-		final Class<? extends Plugin> clazz;
-		final PluginDescription description;
-		Collection<World> worlds;
-
-		PluginInfos(Class<? extends Plugin> clazz, PluginDescription description) {
-			this.clazz = clazz;
-			this.description = description;
+	private void loadOtherPlugin(PluginInfos infos, World world) {
+		try {
+			loadOtherPlugin(infos.clazz, infos.classLoader, world);
+		} catch (Exception ex) {
+			LOGGER.error("Unable to load the plugin {}.", infos.description.name(), ex);
 		}
-
-		Collection<World> getWorlds() {
-			if (worlds == null) {
-				worlds = Collections.synchronizedCollection(new SimpleBag<>());//synchronized because any thread could use it
-			}
-			return worlds;
-		}
-
 	}
+
+	private Plugin loadOtherPlugin(Class<? extends Plugin> clazz, PluginClassLoader classLoader, World world) throws Exception {
+		Plugin instance = clazz.newInstance();
+		instance.onLoad();
+		world.getPluginsManager().registerPlugin(instance);
+		classLoader.increaseUseCount();
+		return instance;
+	}
+
+	private void loadWorldPlugin(PluginInfos infos, World world) {
+		try {
+			loadWorldPlugin(infos.clazz, infos.classLoader, infos.description, world);
+		} catch (Exception ex) {
+			LOGGER.error("Unable to load the world plugin {}.", infos.description.name(), ex);
+		}
+	}
+
+	private WorldPlugin loadWorldPlugin(Class clazz, PluginClassLoader classLoader, PluginDescription description, World world) throws Exception {
+		WorldPlugin instance = (WorldPlugin) clazz.newInstance();
+		instance.init(description, world);
+		instance.onLoad();
+		world.getPluginsManager().registerPlugin(instance);
+		classLoader.increaseUseCount();
+		return instance;
+	}
+
+	private void loadServerPlugin(PluginInfos infos) {
+		try {
+			loadServerPlugin(infos.clazz, infos.classLoader, infos.description, infos.worlds);
+		} catch (Exception ex) {
+			LOGGER.error("Unable to load the server plugin {}.", infos.description.name(), ex);
+		}
+	}
+
+	private ServerPlugin loadServerPlugin(Class clazz, PluginClassLoader classLoader, PluginDescription description, Collection<World> worlds) throws Exception {
+		ServerPlugin instance = (ServerPlugin) clazz.newInstance();
+		instance.init(description, worlds);
+		instance.onLoad();
+		for (World world : worlds) {
+			world.getPluginsManager().registerPlugin(instance);
+			classLoader.increaseUseCount();
+		}
+		this.serverPlugins.put(instance.getName(), instance);
+		return instance;
+	}
+
 
 }
