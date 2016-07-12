@@ -18,14 +18,13 @@
  */
 package org.mcphoton.impl.plugin;
 
+import java.io.File;
+
 /**
  *
  * @author TheElectronWill
  */
 public class PluginClassNotFoundException extends Exception {
-
-	public PluginClassNotFoundException() {
-	}
 
 	public PluginClassNotFoundException(String message) {
 		super(message);
@@ -35,8 +34,8 @@ public class PluginClassNotFoundException extends Exception {
 		super(message, cause);
 	}
 
-	public PluginClassNotFoundException(Throwable cause) {
-		super(cause);
+	public PluginClassNotFoundException(File pluginFile) {
+		super("No suitable plugin class found in " + pluginFile);
 	}
 
 }

@@ -76,13 +76,13 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		final PluginClassLoader classLoader = new PluginClassLoader(file.toURI().toURL(), GLOBAL_CLASS_SHARER);
 		final Class<? extends Plugin> clazz = PluginClassFinder.findPluginClass(file, classLoader);
 		if (clazz == null) {
-			throw new PluginClassNotFoundException("No suitable plugin class found in " + file);
+			throw new PluginClassNotFoundException(file);
 		}
 		final PluginDescription description = clazz.getAnnotation(PluginDescription.class);
 
 		if (ServerPlugin.class.isAssignableFrom(clazz)) {//ServerPlugin -> one global instance.
 			if (description == null) {
-				throw new MissingPluginDescriptionException("Missing annotation @PluginDescription for class " + clazz);
+				throw new MissingPluginDescriptionException(clazz);
 			}
 			ServerPlugin instance = (ServerPlugin) clazz.newInstance();
 
@@ -98,7 +98,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 
 		} else if (WorldPlugin.class.isAssignableFrom(clazz)) {//WorldPlugin -> one instance per world.
 			if (description == null) {
-				throw new MissingPluginDescriptionException("Missing annotation @PluginDescription for class " + clazz);
+				throw new MissingPluginDescriptionException(clazz);
 			}
 			WorldPlugin instance = null;
 			for (World world : worlds) {
@@ -107,17 +107,17 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 				world.getPluginsManager().registerPlugin(instance);
 				classLoader.increaseUseCount();
 			}
-			return instance;
+			return instance;//return the plugin instance of the last world.
 
 		} else {//Unknown type of plugin.
-			//Don't check for a PluginDescription annotation, because this type of plugin doesn't need to be initialized by the PluginsManager.
+			//Don't need to check for a PluginDescription, because this type of plugin doesn't need to be initialized by the PluginsManager.
 			Plugin instance = null;
 			for (World world : worlds) {
 				instance = clazz.newInstance();
 				world.getPluginsManager().registerPlugin(instance);
 				classLoader.increaseUseCount();
 			}
-			return instance;
+			return instance;//return the plugin instance of the last world.
 		}
 	}
 
@@ -129,16 +129,17 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	 * @param serverPlugins the plugins to load for the entire server. They don't have to extend ServerPlugin.
 	 */
 	public void loadPlugins(File[] files, Map<World, List<String>> worldPlugins, List<String> serverPlugins, List<World> serverWorlds) throws Exception {
-		final Map<String, Class<? extends Plugin>> pluginsClasses = new HashMap<>();
-		final Map<String, Collection<World>> pluginsWorlds = new HashMap<>();
+		final Map<String, PluginInfos> infosMap = new HashMap<>();
 		final List<String> serverPluginsVersions = new ArrayList<>(serverPlugins.size());
+		final List<PluginInfos> nonGlobalServerPlugins = new ArrayList<>();//for step 4
 
-		//1: Find the class of each plugin.
+		//1: Gather informations about the plugins: class + description.
+		LOGGER.debug("Gathering informations about the plugins...");
 		for (File file : files) {
 			PluginClassLoader classLoader = new PluginClassLoader(file.toURI().toURL(), GLOBAL_CLASS_SHARER);
 			Class<? extends Plugin> clazz = PluginClassFinder.findPluginClass(file, classLoader);
 			if (clazz == null) {
-				throw new PluginClassNotFoundException("No suitable plugin class found in " + file);
+				throw new PluginClassNotFoundException(file);
 			}
 			/*
 			 * Here we DO need a PluginDescription for every plugin because to resolve the dependencies we
@@ -146,20 +147,23 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 			 */
 			PluginDescription description = clazz.getAnnotation(PluginDescription.class);
 			if (description == null) {
-				throw new MissingPluginDescriptionException("Missing annotation @PluginDescription for class " + clazz);
+				throw new MissingPluginDescriptionException(clazz);
 			}
-			pluginsClasses.put(description.name(), clazz);
+			PluginInfos infos = new PluginInfos(clazz, description);
+			infosMap.put(description.name(), infos);
+			LOGGER.trace("Valid plugin found: {} -> infos: {}.", file, infos);
 		}
 
-		//2: Resolve dependencies for the *actual* ServerPlugins.
+		//2: Resolve dependencies for the ServerPlugins and load them.
+		//2.1: Resolve dependencies for the *actual* ServerPlugins.
+		LOGGER.debug("Resolving dependencies for the actual server plugins...");
 		DependencyResolver resolver = new DependencyResolver();
 		for (Iterator<String> it = serverPlugins.iterator(); it.hasNext();) {
 			String plugin = it.next();
-			Class<? extends Plugin> clazz = pluginsClasses.get(plugin);
-			if (ServerPlugin.class.isAssignableFrom(clazz)) {//actual ServerPlugin
-				PluginDescription description = clazz.getAnnotation(PluginDescription.class);
-				serverPluginsVersions.add(description.version());
-				resolver.addToResolve(description);
+			PluginInfos infos = infosMap.get(plugin);
+			if (ServerPlugin.class.isAssignableFrom(infos.clazz)) {//actual ServerPlugin
+				serverPluginsVersions.add(infos.description.version());
+				resolver.addToResolve(infos.description);
 			} else {//not a ServerPlugin -> distribute to every world
 				it.remove();
 				for (Map.Entry<World, List<String>> entry : worldPlugins.entrySet()) {
@@ -168,70 +172,70 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 			}
 		}
 		Solution solution = resolver.resolve();
+		LOGGER.debug("Solution: {}", solution.resolvedOrder);
 
-		//3: Load the server plugins.
+		//2.2: Print informations.
 		LOGGER.info("{} out of {} server plugins will be loaded.", solution.resolvedOrder.size(), serverPluginsVersions.size());
 		for (Exception ex : solution.errors) {
 			LOGGER.error(ex.toString());
 		}
+
+		//2.3: Load the server plugins.
+		LOGGER.debug("Loading the server plugins...");
 		for (String plugin : solution.resolvedOrder) {
-			Class<? extends Plugin> clazz = pluginsClasses.get(plugin);
+			PluginInfos infos = infosMap.get(plugin);
 			try {
-				ServerPlugin instance = (ServerPlugin) clazz.newInstance();
-				PluginDescription description = clazz.getAnnotation(PluginDescription.class);
-				instance.init(description, serverWorlds);
+				ServerPlugin instance = (ServerPlugin) infos.clazz.newInstance();
+				instance.init(infos.description, serverWorlds);
 				instance.onLoad();
 			} catch (Exception ex) {
 				LOGGER.error("Unable to load the plugin {}.", plugin, ex);
 			}
 		}
 
-		//4: Resolve dependencies for the other plugins, per world, and load them.
+		//3: Resolve dependencies for the other (non server) plugins, per world, and load them.
+		LOGGER.info("Loading plugins per world...");
 		for (Map.Entry<World, List<String>> entry : worldPlugins.entrySet()) {
 			final World world = entry.getKey();
 			final List<String> plugins = entry.getValue();
 
-			//4.1: Resolve dependencies for the world's plugins.
+			//3.1: Resolve dependencies for the world's plugins.
+			LOGGER.debug("Resolving dependencies for the plugins of the world {}...", world.getName());
 			resolver = new DependencyResolver();
 			resolver.addAvailable(serverPlugins, serverPluginsVersions);//the server plugins are available to all the plugins
-
 			for (String plugin : plugins) {
-				Class<? extends Plugin> clazz = pluginsClasses.get(plugin);
-				PluginDescription description = clazz.getAnnotation(PluginDescription.class);
-				resolver.addToResolve(description);
+				PluginInfos infos = infosMap.get(plugin);
+				resolver.addToResolve(infos.description);
 			}
 			solution = resolver.resolve();
+			LOGGER.debug("Solution: {}", solution.resolvedOrder);
 
-			//4.2: Load the world's plugins.
-			entry.setValue(solution.resolvedOrder);
+			//3.2: Print informations.
 			LOGGER.info("{} out of {} plugins will be loaded in world {}.", solution.resolvedOrder.size(), plugins.size(), world);
 			for (Exception ex : solution.errors) {
 				LOGGER.error(ex.toString());
 			}
 
+			//3.3: Load the world's plugins.
+			LOGGER.debug("Loading the plugins in world {}...", world.getName());
 			for (String plugin : solution.resolvedOrder) {
-				final Class<? extends Plugin> clazz = pluginsClasses.get(plugin);
+				PluginInfos infos = infosMap.get(plugin);
 				try {
-					if (ServerPlugin.class.isAssignableFrom(clazz)) {
-						//ServerPlugin needs a Collection<World> so we "collect" all the worlds first and we'll load the plugin later
-						Collection<World> pluginWorlds = pluginsWorlds.get(plugin);
-						if (pluginWorlds == null) {//need to create a Collection<World>
-							pluginWorlds = Collections.synchronizedCollection(new SimpleBag<>());//synchronized because any thread could use it
-							pluginsWorlds.put(plugin, pluginWorlds);
-						}
-						pluginWorlds.add(world);
-					} else if (WorldPlugin.class.isAssignableFrom(clazz)) {
-						PluginDescription description = clazz.getAnnotation(PluginDescription.class);
-						WorldPlugin instance = (WorldPlugin) clazz.newInstance();
-						instance.init(description, world);
+					if (ServerPlugin.class.isAssignableFrom(infos.clazz)) {
+						//ServerPlugins need a Collection<World> so we "collect" all the worlds first and load them later, at step 4.
+						infos.getWorlds().add(world);
+						nonGlobalServerPlugins.add(infos);
+					} else if (WorldPlugin.class.isAssignableFrom(infos.clazz)) {
+						WorldPlugin instance = (WorldPlugin) infos.clazz.newInstance();
+						instance.init(infos.description, world);
 						instance.onLoad();
 						world.getPluginsManager().registerPlugin(instance);
 					} else {
-						Plugin instance = clazz.newInstance();
+						Plugin instance = infos.clazz.newInstance();
 						instance.onLoad();
 						world.getPluginsManager().registerPlugin(instance);
 					}
-					SharedClassLoader loader = (SharedClassLoader) clazz.getClassLoader();
+					SharedClassLoader loader = (SharedClassLoader) infos.clazz.getClassLoader();
 					loader.increaseUseCount();
 				} catch (Exception ex) {
 					LOGGER.error("Unable to load the plugin {}.", plugin, ex);
@@ -239,23 +243,18 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 			}
 		}
 
-		//5: Actually load the server plugins that aren't loaded on the entire server.
-		for (Map.Entry<String, Collection<World>> entry : pluginsWorlds.entrySet()) {
-			final String plugin = entry.getKey();
-			final Collection<World> worlds = entry.getValue();
-			final Class<? extends Plugin> clazz = pluginsClasses.get(plugin);
+		//4: Actually load the server plugins that aren't loaded on the entire server.
+		LOGGER.info("Loading the non global server plugins...");
+		for (PluginInfos infos : nonGlobalServerPlugins) {
 			try {
-				PluginDescription description = clazz.getAnnotation(PluginDescription.class);
-
-				ServerPlugin instance = (ServerPlugin) clazz.newInstance();
-				instance.init(description, worlds);
+				ServerPlugin instance = (ServerPlugin) infos.clazz.newInstance();
+				instance.init(infos.description, infos.worlds);
 				instance.onLoad();
-
-				for (World world : worlds) {
+				for (World world : infos.worlds) {
 					world.getPluginsManager().registerPlugin(instance);
 				}
 			} catch (Exception ex) {
-				LOGGER.error("Unable to load the plugin {}.", plugin, ex);
+				LOGGER.error("Unable to load the plugin {}.", infos.description.name(), ex);
 			}
 		}
 	}
@@ -268,6 +267,26 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	@Override
 	public void unloadServerPlugin(String name) {
 		; //TODO
+	}
+
+	private class PluginInfos {
+
+		final Class<? extends Plugin> clazz;
+		final PluginDescription description;
+		Collection<World> worlds;
+
+		PluginInfos(Class<? extends Plugin> clazz, PluginDescription description) {
+			this.clazz = clazz;
+			this.description = description;
+		}
+
+		Collection<World> getWorlds() {
+			if (worlds == null) {
+				worlds = Collections.synchronizedCollection(new SimpleBag<>());//synchronized because any thread could use it
+			}
+			return worlds;
+		}
+
 	}
 
 }

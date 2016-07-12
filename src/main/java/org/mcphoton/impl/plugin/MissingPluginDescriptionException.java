@@ -24,9 +24,6 @@ package org.mcphoton.impl.plugin;
  */
 public class MissingPluginDescriptionException extends Exception {
 
-	public MissingPluginDescriptionException() {
-	}
-
 	public MissingPluginDescriptionException(String message) {
 		super(message);
 	}
@@ -35,8 +32,8 @@ public class MissingPluginDescriptionException extends Exception {
 		super(message, cause);
 	}
 
-	public MissingPluginDescriptionException(Throwable cause) {
-		super(cause);
+	public MissingPluginDescriptionException(Class pluginClass) {
+		super("Missing annotation @PluginDescription for class " + pluginClass);
 	}
 
 }
