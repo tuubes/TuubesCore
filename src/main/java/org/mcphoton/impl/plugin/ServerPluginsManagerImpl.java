@@ -18,11 +18,9 @@
  */
 package org.mcphoton.impl.plugin;
 
-import com.electronwill.utils.SimpleBag;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +32,7 @@ import org.mcphoton.plugin.Plugin;
 import org.mcphoton.plugin.PluginDescription;
 import org.mcphoton.plugin.ServerPlugin;
 import org.mcphoton.plugin.ServerPluginsManager;
+import org.mcphoton.plugin.SharedClassLoader;
 import org.mcphoton.plugin.WorldPlugin;
 import org.mcphoton.world.World;
 import org.slf4j.Logger;
@@ -224,8 +223,10 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	@Override
 	public void unloadServerPlugin(ServerPlugin plugin) throws Exception {
 		plugin.onUnload();
+		SharedClassLoader classLoader = (SharedClassLoader) plugin.getClass().getClassLoader();
 		for (World world : plugin.getActiveWorlds()) {
 			world.getPluginsManager().unregisterPlugin(plugin);
+			classLoader.decreaseUseCount();
 		}
 		serverPlugins.remove(plugin.getName(), plugin);
 	}
@@ -287,6 +288,5 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		this.serverPlugins.put(instance.getName(), instance);
 		return instance;
 	}
-
 
 }
