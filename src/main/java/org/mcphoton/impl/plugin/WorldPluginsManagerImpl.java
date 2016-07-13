@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.mcphoton.impl.plugin.DependencyResolver.Solution;
 import static org.mcphoton.impl.plugin.ServerPluginsManagerImpl.GLOBAL_CLASS_SHARER;
 import static org.mcphoton.impl.plugin.ServerPluginsManagerImpl.LOGGER;
 import org.mcphoton.plugin.Plugin;
@@ -90,29 +91,34 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 	}
 
 	@Override
-	public List<Plugin> loadPlugins(File[] files) throws Exception {
+	public List<Plugin> loadPlugins(File[] files) {
 		final Map<String, PluginInfos> infosMap = new HashMap<>();
 		final List<Plugin> loadedPlugins = new ArrayList<>(files.length);
+		final List<Exception> errors = new ArrayList<>();
 
 		//1: Gather informations about the plugins: class + description.
 		LOGGER.debug("Gathering informations about the plugins...");
 		for (File file : files) {
-			PluginClassLoader classLoader = new PluginClassLoader(file.toURI().toURL(), GLOBAL_CLASS_SHARER);
-			Class<? extends Plugin> clazz = PluginClassFinder.findPluginClass(file, classLoader);
-			if (clazz == null) {
-				throw new PluginClassNotFoundException(file);
+			try {
+				PluginClassLoader classLoader = new PluginClassLoader(file.toURI().toURL(), GLOBAL_CLASS_SHARER);
+				Class<? extends Plugin> clazz = PluginClassFinder.findPluginClass(file, classLoader);
+				if (clazz == null) {
+					throw new PluginClassNotFoundException(file);
+				}
+				/*
+				 * Here we DO need a PluginDescription for every plugin because to resolve the dependencies we
+				 * need to have some informations about the plugin before creating its instance.
+				 */
+				PluginDescription description = clazz.getAnnotation(PluginDescription.class);
+				if (description == null) {
+					throw new MissingPluginDescriptionException(clazz);
+				}
+				PluginInfos infos = new PluginInfos(clazz, classLoader, description);
+				infosMap.put(description.name(), infos);
+				LOGGER.trace("Valid plugin found: {} -> infos: {}.", file, infos);
+			} catch (Exception ex) {
+				errors.add(ex);
 			}
-			/*
-			 * Here we DO need a PluginDescription for every plugin because to resolve the dependencies we
-			 * need to have some informations about the plugin before creating its instance.
-			 */
-			PluginDescription description = clazz.getAnnotation(PluginDescription.class);
-			if (description == null) {
-				throw new MissingPluginDescriptionException(clazz);
-			}
-			PluginInfos infos = new PluginInfos(clazz, classLoader, description);
-			infosMap.put(description.name(), infos);
-			LOGGER.trace("Valid plugin found: {} -> infos: {}.", file, infos);
 		}
 
 		//2: Resolve the dependencies.
@@ -121,7 +127,7 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 		for (PluginInfos infos : infosMap.values()) {
 			resolver.addToResolve(infos.description);
 		}
-		DependencyResolver.Solution solution = resolver.resolve();
+		Solution solution = resolver.resolve(errors);
 		LOGGER.debug("Solution: {}", solution.resolvedOrder);
 
 		//3: Print informations.
@@ -133,20 +139,24 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 		//4: Load the plugins.
 		LOGGER.debug("Loading the plugins...");
 		for (String plugin : solution.resolvedOrder) {
-			PluginInfos infos = infosMap.get(plugin);
-			Plugin instance = infos.clazz.newInstance();
+			try {
+				PluginInfos infos = infosMap.get(plugin);
+				Plugin instance = infos.clazz.newInstance();
 
-			if (ServerPlugin.class.isAssignableFrom(infos.clazz)) {
-				Collection<World> worlds = Collections.synchronizedCollection(new SimpleBag<>(world));
-				((ServerPlugin) instance).init(infos.description, worlds);
-			} else if (WorldPlugin.class.isAssignableFrom(infos.clazz)) {
-				((WorldPlugin) instance).init(infos.description, world);
+				if (ServerPlugin.class.isAssignableFrom(infos.clazz)) {
+					Collection<World> worlds = Collections.synchronizedCollection(new SimpleBag<>(world));
+					((ServerPlugin) instance).init(infos.description, worlds);
+				} else if (WorldPlugin.class.isAssignableFrom(infos.clazz)) {
+					((WorldPlugin) instance).init(infos.description, world);
+				}
+
+				instance.onLoad();
+				infos.classLoader.increaseUseCount();
+				plugins.put(instance.getName(), instance);
+				loadedPlugins.add(instance);
+			} catch (Exception ex) {
+				LOGGER.error("Unable to load the plugin {} in world {}.", plugin, world.getName());
 			}
-
-			instance.onLoad();
-			infos.classLoader.increaseUseCount();
-			plugins.put(instance.getName(), instance);
-			loadedPlugins.add(instance);
 		}
 		return loadedPlugins;
 	}

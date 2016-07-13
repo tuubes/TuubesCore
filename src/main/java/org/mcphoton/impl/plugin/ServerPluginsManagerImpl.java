@@ -109,31 +109,37 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	 * @param files the files to load the plugins from (1 plugin per file).
 	 * @param worldPlugins the plugins to load for each world.
 	 * @param serverPlugins the plugins to load for the entire server. They don't have to extend ServerPlugin.
+	 * @param serverWorlds the worlds where the serverPlugins will be loaded.
 	 */
-	public void loadPlugins(File[] files, Map<World, List<String>> worldPlugins, List<String> serverPlugins, List<World> serverWorlds) throws Exception {
+	public void loadPlugins(File[] files, Map<World, List<String>> worldPlugins, List<String> serverPlugins, List<World> serverWorlds) {
 		final Map<String, PluginInfos> infosMap = new HashMap<>();
 		final List<String> serverPluginsVersions = new ArrayList<>(serverPlugins.size());
 		final List<PluginInfos> nonGlobalServerPlugins = new ArrayList<>();//for step 4
+		final List<Exception> errors = new ArrayList<>();
 
 		//1: Gather informations about the plugins: class + description.
 		LOGGER.debug("Gathering informations about the plugins...");
 		for (File file : files) {
-			PluginClassLoader classLoader = new PluginClassLoader(file.toURI().toURL(), GLOBAL_CLASS_SHARER);
-			Class<? extends Plugin> clazz = PluginClassFinder.findPluginClass(file, classLoader);
-			if (clazz == null) {
-				throw new PluginClassNotFoundException(file);
+			try {
+				PluginClassLoader classLoader = new PluginClassLoader(file.toURI().toURL(), GLOBAL_CLASS_SHARER);
+				Class<? extends Plugin> clazz = PluginClassFinder.findPluginClass(file, classLoader);
+				if (clazz == null) {
+					throw new PluginClassNotFoundException(file);
+				}
+				/*
+				 * Here we DO need a PluginDescription for every plugin because to resolve the dependencies we
+				 * need to have some informations about the plugin before creating its instance.
+				 */
+				PluginDescription description = clazz.getAnnotation(PluginDescription.class);
+				if (description == null) {
+					throw new MissingPluginDescriptionException(clazz);
+				}
+				PluginInfos infos = new PluginInfos(clazz, classLoader, description);
+				infosMap.put(description.name(), infos);
+				LOGGER.trace("Valid plugin found: {} -> infos: {}.", file, infos);
+			} catch (Exception ex) {
+				errors.add(ex);
 			}
-			/*
-			 * Here we DO need a PluginDescription for every plugin because to resolve the dependencies we
-			 * need to have some informations about the plugin before creating its instance.
-			 */
-			PluginDescription description = clazz.getAnnotation(PluginDescription.class);
-			if (description == null) {
-				throw new MissingPluginDescriptionException(clazz);
-			}
-			PluginInfos infos = new PluginInfos(clazz, classLoader, description);
-			infosMap.put(description.name(), infos);
-			LOGGER.trace("Valid plugin found: {} -> infos: {}.", file, infos);
 		}
 
 		//2: Resolve dependencies for the ServerPlugins and load them.
@@ -153,7 +159,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 				}
 			}
 		}
-		Solution solution = resolver.resolve();
+		Solution solution = resolver.resolve(errors);
 		LOGGER.debug("Solution: {}", solution.resolvedOrder);
 
 		//2.2: Print informations.
@@ -161,6 +167,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		for (Exception ex : solution.errors) {
 			LOGGER.error(ex.toString());
 		}
+		errors.clear();
 
 		//2.3: Load the server plugins.
 		LOGGER.debug("Loading the server plugins...");
@@ -184,7 +191,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 				PluginInfos infos = infosMap.get(plugin);
 				resolver.addToResolve(infos.description);
 			}
-			solution = resolver.resolve();
+			solution = resolver.resolve(errors);
 			LOGGER.debug("Solution: {}", solution.resolvedOrder);
 
 			//3.2: Print informations.
