@@ -20,6 +20,7 @@ package org.mcphoton.impl.server;
 
 import com.electronwill.utils.SimpleBag;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.util.Collection;
@@ -33,6 +34,9 @@ import org.mcphoton.impl.command.ListCommand;
 import org.mcphoton.impl.command.StopCommand;
 import org.mcphoton.impl.network.NioNetworkThread;
 import org.mcphoton.impl.network.PhotonPacketsManager;
+import org.mcphoton.impl.plugin.ServerPluginsManagerImpl;
+import org.mcphoton.network.PacketsManager;
+import org.mcphoton.plugin.ServerPluginsManager;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
@@ -58,6 +62,7 @@ public final class PhotonServer implements Server {
 	public final PhotonPacketsManager packetsManager;
 	public final PhotonBansManager bansManager = new PhotonBansManager();
 	public final PhotonWhitelistManager whitelistManager = new PhotonWhitelistManager();
+	public final ServerPluginsManagerImpl pluginsManager = new ServerPluginsManagerImpl();
 
 	public volatile String motd, encodedFavicon;
 
@@ -79,12 +84,26 @@ public final class PhotonServer implements Server {
 		this.packetsManager = new PhotonPacketsManager(this);
 	}
 
+	@Override
+	public PacketsManager getPacketsManager() {
+		return packetsManager;
+	}
+
+	@Override
+	public ServerPluginsManager getPluginsManager() {
+		return pluginsManager;
+	}
+
 	void loadPlugins() {
 		logger.info("Loading plugins...");
 		if (!Photon.PLUGINS_DIR.isDirectory()) {
 			Photon.PLUGINS_DIR.mkdir();
 		}
-		Photon.getPluginsManager().loadPlugins(Photon.PLUGINS_DIR.listFiles((dir, name) -> name.endsWith(".jar")));
+		try {
+			pluginsManager.loadAllPlugins();
+		} catch (IOException ex) {
+			logger.error("Unexpected error while trying to load the plugins.", ex);
+		}
 	}
 
 	void startThreads() {
@@ -96,7 +115,7 @@ public final class PhotonServer implements Server {
 	void setShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			logger.info("Unloading plugins...");
-			Photon.getPluginsManager().unloadAllPlugins();
+			pluginsManager.unloadAllPlugins();
 
 			logger.info("Stopping threads...");
 			consoleThread.stopNicely();
