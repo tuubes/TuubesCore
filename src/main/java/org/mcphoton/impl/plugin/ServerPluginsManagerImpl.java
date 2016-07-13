@@ -19,13 +19,16 @@
 package org.mcphoton.impl.plugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.mcphoton.Photon;
+import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.impl.plugin.DependencyResolver.Solution;
 import org.mcphoton.plugin.ClassSharer;
 import org.mcphoton.plugin.Plugin;
@@ -34,6 +37,7 @@ import org.mcphoton.plugin.ServerPlugin;
 import org.mcphoton.plugin.ServerPluginsManager;
 import org.mcphoton.plugin.SharedClassLoader;
 import org.mcphoton.plugin.WorldPlugin;
+import org.mcphoton.server.Server;
 import org.mcphoton.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +51,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 
 	static final ClassSharer GLOBAL_CLASS_SHARER = new ClassSharerImpl();
 	static final Logger LOGGER = LoggerFactory.getLogger("PluginsManager");
+	static final File PLUGINS_CONFIG = new File(Photon.PLUGINS_DIR, "plugins_config.toml");
 	private final Map<String, ServerPlugin> serverPlugins = new HashMap<>();
 
 	@Override
@@ -62,6 +67,31 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	@Override
 	public boolean isServerPluginLoaded(String name) {
 		return serverPlugins.containsKey(name);
+	}
+
+	/**
+	 * Loads all the plugins from the photon's plugins directory.
+	 */
+	public void loadAllPlugins() throws IOException {
+		File[] pluginsFiles = Photon.PLUGINS_DIR.listFiles((file, name) -> name.endsWith(".jar"));
+		if (!PLUGINS_CONFIG.exists()) {
+			PLUGINS_CONFIG.createNewFile();
+		}
+
+		TomlConfiguration config = new TomlConfiguration(PLUGINS_CONFIG);
+		Map<World, List<String>> worldPlugins = new HashMap<>(config.size());
+		List<String> serverPlugins = (List<String>) config.getOrDefault("server", Collections.emptyList());
+
+		Server server = Photon.getServer();
+		Collection<World> serverWorlds = server.getWorlds();
+		for (World world : serverWorlds) {
+			List<String> plugins = (List<String>) config.get(world.getName());
+			if (plugins != null) {
+				worldPlugins.put(world, plugins);
+			}
+		}
+
+		loadPlugins(pluginsFiles, worldPlugins, serverPlugins, serverWorlds);
 	}
 
 	private void loadOtherPlugin(PluginInfos infos, World world) {
@@ -128,7 +158,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	 * @param serverWorlds the worlds where the serverPlugins will be loaded.
 	 */
 	@Override
-	public void loadPlugins(File[] files, Map<World, List<String>> worldPlugins, List<String> serverPlugins, List<World> serverWorlds) {
+	public void loadPlugins(File[] files, Map<World, List<String>> worldPlugins, List<String> serverPlugins, Collection<World> serverWorlds) {
 		final Map<String, PluginInfos> infosMap = new HashMap<>();
 		final List<String> serverPluginsVersions = new ArrayList<>(serverPlugins.size());
 		final List<PluginInfos> nonGlobalServerPlugins = new ArrayList<>();//for step 4
@@ -282,6 +312,20 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	}
 
 	@Override
+	public void unloadAllPlugins() {
+		for (ServerPlugin serverPlugin : serverPlugins.values()) {
+			try {
+				unloadServerPlugin(serverPlugin);
+			} catch (Exception ex) {
+				LOGGER.error("Unable to unload the server plugin {}.", serverPlugin.getName(), ex);
+			}
+		}
+		for (World world : Photon.getServer().getWorlds()) {
+			world.getPluginsManager().unloadAllPlugins();
+		}
+	}
+
+	@Override
 	public void unloadServerPlugin(ServerPlugin plugin) throws Exception {
 		plugin.onUnload();
 		SharedClassLoader classLoader = (SharedClassLoader) plugin.getClass().getClassLoader();
@@ -289,6 +333,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 			world.getPluginsManager().unregisterPlugin(plugin);
 			classLoader.decreaseUseCount();
 		}
+		GLOBAL_CLASS_SHARER.removeUselessClassLoader(classLoader);
 		serverPlugins.remove(plugin.getName(), plugin);
 	}
 

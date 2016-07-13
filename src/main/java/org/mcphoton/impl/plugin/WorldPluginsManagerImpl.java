@@ -167,9 +167,22 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 	}
 
 	@Override
+	public void unloadAllPlugins() {
+		for (Plugin plugin : plugins.values()) {
+			try {
+				unloadPlugin(plugin);
+			} catch (Exception ex) {
+				LOGGER.error("Unable to unload the plugin {}", plugin, ex);
+			}
+		}
+	}
+
+	@Override
 	public void unloadPlugin(Plugin plugin) throws Exception {
 		plugin.onUnload();
-		((SharedClassLoader) plugin.getClass().getClassLoader()).decreaseUseCount();
+		SharedClassLoader classLoader = (SharedClassLoader) plugin.getClass().getClassLoader();
+		classLoader.decreaseUseCount();
+		GLOBAL_CLASS_SHARER.removeUselessClassLoader(classLoader);
 		plugins.remove(plugin.getName(), plugin);
 	}
 
