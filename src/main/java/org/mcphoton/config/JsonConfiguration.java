@@ -19,6 +19,7 @@
 package org.mcphoton.config;
 
 import com.electronwill.json.Json;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,6 +28,11 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+/**
+ * Implementation of a JSON configuration.
+ *
+ * @author TheElectronWill
+ */
 public class JsonConfiguration extends BaseConfiguration {
 
 	public JsonConfiguration() {
@@ -35,6 +41,16 @@ public class JsonConfiguration extends BaseConfiguration {
 
 	public JsonConfiguration(Map<String, Object> map) {
 		super(map);
+	}
+
+	public JsonConfiguration(File file) throws IOException {
+		super(null);
+		readFrom(file);
+	}
+
+	public JsonConfiguration(InputStream in) throws IOException {
+		super(null);
+		readFrom(in);
 	}
 
 	@Override

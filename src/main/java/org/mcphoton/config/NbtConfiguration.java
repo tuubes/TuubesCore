@@ -22,6 +22,7 @@ import com.electronwill.nbt.Nbt;
 import com.electronwill.nbt.NbtReader;
 import com.electronwill.nbt.ReadTagCompound;
 import com.electronwill.utils.DataInputBuffer;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,7 +32,7 @@ import org.mcphoton.network.ProtocolOutputStream;
 import org.mcphoton.network.ProtocolWriteable;
 
 /**
- * A NBT configuration.
+ * Implementation of a NBT configuration.
  *
  * @see http://wiki.vg/NBT
  * @author TheElectronWill
@@ -53,6 +54,21 @@ public class NbtConfiguration extends BaseConfiguration implements ProtocolWrite
 	public NbtConfiguration(Map<String, Object> data, String name) {
 		super(data);
 		this.name = name;
+	}
+
+	public NbtConfiguration(File file) throws IOException {
+		super(null);
+		readFrom(file);
+	}
+
+	public NbtConfiguration(InputStream in) throws IOException {
+		super(null);
+		readFrom(in);
+	}
+
+	public NbtConfiguration(ByteBuffer in) throws IOException {
+		super(null);
+		readFrom(in);
 	}
 
 	public String getName() {

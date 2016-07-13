@@ -20,12 +20,18 @@ package org.mcphoton.config;
 
 import com.electronwill.toml.Toml;
 import com.electronwill.toml.TomlException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.temporal.TemporalAccessor;
 import java.util.Map;
 
+/**
+ * Implementation of a TOML configuration.
+ *
+ * @author TheElectronWill
+ */
 public class TomlConfiguration extends BaseConfiguration {
 
 	public TomlConfiguration() {
@@ -34,6 +40,14 @@ public class TomlConfiguration extends BaseConfiguration {
 
 	public TomlConfiguration(Map<String, Object> map) {
 		super(map);
+	}
+
+	public TomlConfiguration(File file) throws IOException, TomlException {
+		super(Toml.read(file));
+	}
+
+	public TomlConfiguration(InputStream in) throws IOException, TomlException {
+		super(Toml.read(in));
 	}
 
 	/**
