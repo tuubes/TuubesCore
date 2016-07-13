@@ -89,8 +89,16 @@ public class DependencyResolver {
 	 * contains the best load order and the errors that occured, if any.
 	 */
 	public Solution resolve() {
+		return resolve(new ArrayList<>());
+	}
+
+	/**
+	 * Resolves the dependencies of all plugins that were added by the
+	 * {@link #add(org.mcphoton.plugin.Plugin)} method. This method returns a {@link Solution} object, which
+	 * contains the best load order and the errors that occured, if any.
+	 */
+	public Solution resolve(List<Exception> errorsList) {
 		List<String> resolved = new ArrayList<>();
-		List<Exception> errors = new ArrayList<>();
 
 		int lastSize = -1;
 		while (unresolved.size() > 0) {//while there are unresolved dependencies
@@ -135,14 +143,14 @@ public class DependencyResolver {
 			if (currentSize == lastSize) {// aucun changement effectué
 				for (Entry<String, List<DependencyRequirement>> entry : unresolved.entrySet()) {// on parcourt tous les plugins
 					Exception ex = new UnmetDependenciesException(entry.getKey(), entry.getValue());
-					errors.add(ex);
+					errorsList.add(ex);
 				}
 				break;
 			}
 			lastSize = currentSize;
 
 		}
-		return new Solution(resolved, errors);
+		return new Solution(resolved, errorsList);
 	}
 
 	public class Solution {
