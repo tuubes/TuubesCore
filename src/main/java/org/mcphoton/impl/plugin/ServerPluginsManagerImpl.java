@@ -45,8 +45,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 
-	static final Logger LOGGER = LoggerFactory.getLogger("PluginsManager");
 	static final ClassSharer GLOBAL_CLASS_SHARER = new ClassSharerImpl();
+	static final Logger LOGGER = LoggerFactory.getLogger("PluginsManager");
 	private final Map<String, ServerPlugin> serverPlugins = new HashMap<>();
 
 	@Override
@@ -62,6 +62,22 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	@Override
 	public boolean isServerPluginLoaded(String name) {
 		return serverPlugins.containsKey(name);
+	}
+
+	private void loadOtherPlugin(PluginInfos infos, World world) {
+		try {
+			loadOtherPlugin(infos.clazz, infos.classLoader, world);
+		} catch (Exception ex) {
+			LOGGER.error("Unable to load the plugin {}.", infos.description.name(), ex);
+		}
+	}
+
+	private Plugin loadOtherPlugin(Class<? extends Plugin> clazz, PluginClassLoader classLoader, World world) throws Exception {
+		Plugin instance = clazz.newInstance();
+		instance.onLoad();
+		world.getPluginsManager().registerPlugin(instance);
+		classLoader.increaseUseCount();
+		return instance;
 	}
 
 	@Override
@@ -111,6 +127,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	 * @param serverPlugins the plugins to load for the entire server. They don't have to extend ServerPlugin.
 	 * @param serverWorlds the worlds where the serverPlugins will be loaded.
 	 */
+	@Override
 	public void loadPlugins(File[] files, Map<World, List<String>> worldPlugins, List<String> serverPlugins, List<World> serverWorlds) {
 		final Map<String, PluginInfos> infosMap = new HashMap<>();
 		final List<String> serverPluginsVersions = new ArrayList<>(serverPlugins.size());
@@ -227,35 +244,23 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		}
 	}
 
-	@Override
-	public void unloadServerPlugin(ServerPlugin plugin) throws Exception {
-		plugin.onUnload();
-		SharedClassLoader classLoader = (SharedClassLoader) plugin.getClass().getClassLoader();
-		for (World world : plugin.getActiveWorlds()) {
-			world.getPluginsManager().unregisterPlugin(plugin);
-			classLoader.decreaseUseCount();
-		}
-		serverPlugins.remove(plugin.getName(), plugin);
-	}
-
-	@Override
-	public void unloadServerPlugin(String name) throws Exception {
-		unloadServerPlugin(serverPlugins.get(name));
-	}
-
-	private void loadOtherPlugin(PluginInfos infos, World world) {
+	private void loadServerPlugin(PluginInfos infos) {
 		try {
-			loadOtherPlugin(infos.clazz, infos.classLoader, world);
+			loadServerPlugin(infos.clazz, infos.classLoader, infos.description, infos.worlds);
 		} catch (Exception ex) {
-			LOGGER.error("Unable to load the plugin {}.", infos.description.name(), ex);
+			LOGGER.error("Unable to load the server plugin {}.", infos.description.name(), ex);
 		}
 	}
 
-	private Plugin loadOtherPlugin(Class<? extends Plugin> clazz, PluginClassLoader classLoader, World world) throws Exception {
-		Plugin instance = clazz.newInstance();
+	private ServerPlugin loadServerPlugin(Class clazz, PluginClassLoader classLoader, PluginDescription description, Collection<World> worlds) throws Exception {
+		ServerPlugin instance = (ServerPlugin) clazz.newInstance();
+		instance.init(description, worlds);
 		instance.onLoad();
-		world.getPluginsManager().registerPlugin(instance);
-		classLoader.increaseUseCount();
+		for (World world : worlds) {
+			world.getPluginsManager().registerPlugin(instance);
+			classLoader.increaseUseCount();
+		}
+		this.serverPlugins.put(instance.getName(), instance);
 		return instance;
 	}
 
@@ -276,24 +281,20 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		return instance;
 	}
 
-	private void loadServerPlugin(PluginInfos infos) {
-		try {
-			loadServerPlugin(infos.clazz, infos.classLoader, infos.description, infos.worlds);
-		} catch (Exception ex) {
-			LOGGER.error("Unable to load the server plugin {}.", infos.description.name(), ex);
+	@Override
+	public void unloadServerPlugin(ServerPlugin plugin) throws Exception {
+		plugin.onUnload();
+		SharedClassLoader classLoader = (SharedClassLoader) plugin.getClass().getClassLoader();
+		for (World world : plugin.getActiveWorlds()) {
+			world.getPluginsManager().unregisterPlugin(plugin);
+			classLoader.decreaseUseCount();
 		}
+		serverPlugins.remove(plugin.getName(), plugin);
 	}
 
-	private ServerPlugin loadServerPlugin(Class clazz, PluginClassLoader classLoader, PluginDescription description, Collection<World> worlds) throws Exception {
-		ServerPlugin instance = (ServerPlugin) clazz.newInstance();
-		instance.init(description, worlds);
-		instance.onLoad();
-		for (World world : worlds) {
-			world.getPluginsManager().registerPlugin(instance);
-			classLoader.increaseUseCount();
-		}
-		this.serverPlugins.put(instance.getName(), instance);
-		return instance;
+	@Override
+	public void unloadServerPlugin(String name) throws Exception {
+		unloadServerPlugin(serverPlugins.get(name));
 	}
 
 }

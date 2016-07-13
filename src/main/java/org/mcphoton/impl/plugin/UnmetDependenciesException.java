@@ -26,12 +26,16 @@ import java.util.List;
  */
 public class UnmetDependenciesException extends Exception {
 
-	private final String pluginName;
 	private final List<DependencyRequirement> dependencies;
+	private final String pluginName;
 
 	public UnmetDependenciesException(String pluginName, List<DependencyRequirement> dependencies) {
 		this.pluginName = pluginName;
 		this.dependencies = dependencies;
+	}
+
+	public List<DependencyRequirement> getDependencies() {
+		return dependencies;
 	}
 
 	@Override
@@ -41,10 +45,6 @@ public class UnmetDependenciesException extends Exception {
 
 	public String getPluginName() {
 		return pluginName;
-	}
-
-	public List<DependencyRequirement> getDependencies() {
-		return dependencies;
 	}
 
 }
