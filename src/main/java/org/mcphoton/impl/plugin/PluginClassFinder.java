@@ -19,6 +19,7 @@
 package org.mcphoton.impl.plugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -30,7 +31,7 @@ import org.mcphoton.plugin.Plugin;
  */
 public class PluginClassFinder {
 
-	public static Class<? extends Plugin> findPluginClass(File file, PluginClassLoader loader) throws Exception {
+	public static Class<? extends Plugin> findPluginClass(File file, PluginClassLoader loader) throws ClassNotFoundException, IOException {
 		try (JarFile jar = new JarFile(file)) {
 			Enumeration<JarEntry> entries = jar.entries();
 
