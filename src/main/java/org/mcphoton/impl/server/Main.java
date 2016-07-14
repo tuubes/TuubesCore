@@ -18,28 +18,121 @@
  */
 package org.mcphoton.impl.server;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
+import static org.mcphoton.Photon.*;
+import org.mcphoton.config.ConfigurationSpecification;
+import org.mcphoton.config.TomlConfiguration;
+import org.mcphoton.world.Location;
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.LoggingLevel;
+import org.slf4j.impl.PhotonLogger;
 
 /**
- * Main class, which launches the program.
+ * The main class which launches the program.
  *
  * @author TheElectronWill
- *
  */
-public class Main {
+public final class Main {
 
-	static final String os = System.getProperty("os.name");
+	static final ConfigurationSpecification configSpec = new ConfigurationSpecification();
+	static final TomlConfiguration config = new TomlConfiguration();
+	static final PhotonLogger LOGGER = (PhotonLogger) LoggerFactory.getLogger("PhotonServer");
+
+	private static InetSocketAddress address;
+	private static int maxPlayers;
+	private static String motd, encodedFavicon;
+	private static KeyPair keyPair;
+	private static LoggingLevel loggingLevel;
+	private static Location spawn;
+
 	public static volatile PhotonServer serverInstance;
 
 	public static void main(String[] args) {
 		printFramed("Photon server version " + Photon.getVersion(), "For minecraft version " + Photon.getMinecraftVersion());
-		ServerCreator serverCreator = new ServerCreator("PhotonServer");
-		serverInstance = serverCreator.createServer();
+		createServerInstance();
+		loadFavicon();
 		serverInstance.setShutdownHook();
 		serverInstance.registerCommands();
 		serverInstance.registerPackets();
 		serverInstance.loadPlugins();
 		serverInstance.startThreads();
+	}
+
+	private static void loadFavicon() {
+		try {
+			if (ICON_PNG.exists()) {
+				serverInstance.setFavicon(ImageIO.read(ICON_PNG));
+			} else if (ICON_JPG.exists()) {
+				serverInstance.setFavicon(ImageIO.read(ICON_JPG));
+			} else {
+				serverInstance.encodedFavicon = DEFAULT_ICON;
+			}
+		} catch (IOException ex) {
+			LOGGER.error("Unable to load the favicon.", ex);
+		}
+	}
+
+	private static void createServerInstance() {
+		readConfiguration();
+		loadFavicon();
+		generateRsaKeyPair();
+		try {
+			serverInstance = new PhotonServer(LOGGER, keyPair, address, motd, encodedFavicon, maxPlayers, spawn);
+		} catch (Exception ex) {
+			LOGGER.error("Cannot create the server instance.", ex);
+			System.exit(3);
+		}
+	}
+
+	private static void generateRsaKeyPair() {
+		LOGGER.info("Generating RSA keypair...");
+		try {
+			KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+			generator.initialize(512);
+			keyPair = generator.genKeyPair();
+		} catch (NoSuchAlgorithmException ex) {
+			LOGGER.error("Cannot generate RSA keypair.", ex);
+			System.exit(2);
+		}
+	}
+
+	private static void readConfiguration() {
+		configSpec.defineInt("port", 25565, 0, 65535);
+		configSpec.defineInt("maxPlayers", 10, 1, 1000);
+		configSpec.defineString("default-level", "world");
+		configSpec.defineString("motd", "Photon server, version alpha");
+		configSpec.defineString("loggingLevel", "DEBUG", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
+
+		LOGGER.info("Loading the server's configuration...");
+		try {
+			if (CONFIG_FILE.exists()) {
+				config.readFrom(CONFIG_FILE);
+				int corrected = config.correct(configSpec);
+				if (corrected > 0) {
+					config.writeTo(CONFIG_FILE);
+					LOGGER.warn("Corrected {} entry(ies) in serverConfig.toml", corrected);
+				}
+				address = new InetSocketAddress(config.getInt("port"));
+				maxPlayers = config.getInt("maxPlayers");
+				motd = config.getString("motd");
+				loggingLevel = LoggingLevel.valueOf(config.getString("loggingLevel"));
+			} else {
+				int corrected = config.correct(configSpec);
+				LOGGER.info("Added {} entries in serverConfig.toml", corrected);
+				config.writeTo(CONFIG_FILE);
+				loggingLevel = LoggingLevel.DEBUG;
+			}
+		} catch (IOException ex) {
+			LOGGER.error("Cannot load the server's configuration.", ex);
+			System.exit(1);
+		}
+		LOGGER.setLevel(loggingLevel);
 	}
 
 	private static void printFramed(String... strings) {
