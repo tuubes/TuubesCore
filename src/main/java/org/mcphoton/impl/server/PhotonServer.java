@@ -29,8 +29,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.mcphoton.Photon;
+import org.mcphoton.command.ServerCommandRegistry;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.impl.command.ListCommand;
+import org.mcphoton.impl.command.ServerCommandRegistryImpl;
 import org.mcphoton.impl.command.StopCommand;
 import org.mcphoton.impl.network.NioNetworkThread;
 import org.mcphoton.impl.network.PhotonPacketsManager;
@@ -63,6 +65,7 @@ public final class PhotonServer implements Server {
 	public final PhotonBansManager bansManager = new PhotonBansManager();
 	public final PhotonWhitelistManager whitelistManager = new PhotonWhitelistManager();
 	public final ServerPluginsManagerImpl pluginsManager = new ServerPluginsManagerImpl();
+	public final ServerCommandRegistryImpl commandRegistry = new ServerCommandRegistryImpl();
 
 	public volatile String motd, encodedFavicon;
 
@@ -82,6 +85,11 @@ public final class PhotonServer implements Server {
 		this.maxPlayers = maxPlayers;
 		this.spawn = spawn;
 		this.packetsManager = new PhotonPacketsManager(this);
+	}
+
+	@Override
+	public ServerCommandRegistry getCommandRegistry() {
+		return commandRegistry;
 	}
 
 	@Override
@@ -133,8 +141,8 @@ public final class PhotonServer implements Server {
 
 	void registerCommands() {
 		logger.info("Registering photon commands...");
-		Photon.getCommandsRegistry().register(new StopCommand(), null);
-		Photon.getCommandsRegistry().register(new ListCommand(), null);
+		commandRegistry.register(new StopCommand());
+		commandRegistry.register(new ListCommand());
 	}
 
 	void registerPackets() {

@@ -18,6 +18,7 @@
  */
 package org.mcphoton.impl.command;
 
+import org.mcphoton.Photon;
 import org.mcphoton.command.Command;
 import org.mcphoton.command.ServerCommandRegistry;
 import org.mcphoton.command.WorldCommandRegistry;
@@ -30,6 +31,17 @@ import org.mcphoton.world.World;
  * @author TheElectronWill
  */
 public class ServerCommandRegistryImpl implements ServerCommandRegistry {
+
+	/**
+	 * Registers a server command.
+	 *
+	 * @param cmd the command to register.
+	 */
+	public void register(Command cmd) {
+		for (World world : Photon.getServer().getWorlds()) {
+			world.getCommandRegistry().register(cmd, null);
+		}
+	}
 
 	@Override
 	public void register(Command cmd, ServerPlugin plugin) {
