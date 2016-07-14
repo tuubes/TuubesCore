@@ -20,14 +20,17 @@ package org.mcphoton.impl.server;
 
 import com.electronwill.utils.SimpleBag;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
 import org.mcphoton.command.ServerCommandRegistry;
 import org.mcphoton.entity.living.Player;
@@ -42,7 +45,6 @@ import org.mcphoton.plugin.ServerPluginsManager;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
-import org.mcphoton.utils.PhotonFavicon;
 import org.mcphoton.world.Location;
 import org.mcphoton.world.World;
 import org.slf4j.impl.LoggingService;
@@ -52,7 +54,6 @@ import org.slf4j.impl.PhotonLogger;
  * The game server.
  *
  * @author TheElectronWill
- *
  */
 public final class PhotonServer implements Server {
 
@@ -76,6 +77,7 @@ public final class PhotonServer implements Server {
 	public volatile Location spawn;
 
 	public PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, String motd, String encodedFavicon, int maxPlayers, Location spawn) throws Exception {
+		System.out.println("PhotonServer class: constructor called!");
 		this.logger = logger;
 		this.keyPair = keyPair;
 		this.address = address;
@@ -148,23 +150,16 @@ public final class PhotonServer implements Server {
 	void registerPackets() {
 		logger.info("Registering game packets...");
 		packetsManager.registerGamePackets();
-		logger.info("Registering packets handler...");
+		logger.info("Registering packets handlers...");
 		packetsManager.registerPacketHandlers();
 	}
 
-	void setFavicon(BufferedImage image) {
-		PhotonFavicon favicon = new PhotonFavicon();
-		try {
-			favicon.encode(image);
-		} catch (Exception e) {
-			logger.error("The image is not in the right format: it should be 64x64 pixels.");
-			e.printStackTrace();
-		}
-		encodedFavicon = favicon.getEncodedFavicon();
-	}
-
-	void setFavicon(String encoded) {
-		encodedFavicon = encoded;
+	@Override
+	public void setFavicon(BufferedImage image) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ImageIO.write(image, "png", bos);
+		byte[] imageBytes = bos.toByteArray();
+		encodedFavicon = "data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes);
 	}
 
 	@Override
