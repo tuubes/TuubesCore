@@ -19,6 +19,8 @@
 package org.mcphoton;
 
 import java.io.File;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import org.mcphoton.block.BlockRegistry;
 import org.mcphoton.entity.EntityRegistry;
 import org.mcphoton.impl.block.PhotonBlockRegistry;
@@ -39,13 +41,34 @@ import org.mcphoton.world.BiomeRegistry;
 public final class Photon {
 
 	public static final File MAIN_DIR = new File(System.getProperty("user.dir")), PLUGINS_DIR = new File(MAIN_DIR, "plugins"), WORLDS_DIR = new File(MAIN_DIR, "worlds");
+	public static final File CONFIG_FILE = new File(MAIN_DIR, "server_config.toml"), ICON_PNG = new File(MAIN_DIR, "server_icon.png"), ICON_JPG = new File(MAIN_DIR, "server_icon.png");
+
 	private static final BlockRegistry BLOCK_REGISTRY = new PhotonBlockRegistry();
 	private static final ItemRegistry ITEM_REGISTRY = new PhotonItemRegistry();
 	private static final EntityRegistry ENTITY_REGISTRY = new PhotonEntityRegistry();
 	private static final BiomeRegistry BIOME_REGISTRY = new PhotonBiomeRegistry();
 	private static final boolean consoleAdvanced = !System.getProperty("os.name").toLowerCase().contains("windows");
+	private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(2);//TODO configurable number of threads
 
 	private Photon() {
+	}
+
+	/**
+	 * Gets the Photon's ScheduledExecutorService, which is used to schedule tasks across multiple
+	 * threads.
+	 * <h2>What kind of task may be submitted to this ExecutorService?</h2>
+	 * <p>
+	 * To achieve better performance, the submitted tasks:
+	 * <ol>
+	 * <li>Musn't be IO-bound, in order to avoid delaying the other tasks. Use an asynchronous IO API
+	 * instead of the ExecutorService.</li>
+	 * <li>Musn't be too short, in order to avoid creating too much overhead. It is advised to group many
+	 * small tasks together into one bigger task.</li>
+	 * </ol>
+	 * </p>
+	 */
+	public static ScheduledExecutorService getExecutorService() {
+		return EXECUTOR_SERVICE;
 	}
 
 	public static PacketsManager getPacketsManager() {
