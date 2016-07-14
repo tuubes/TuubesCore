@@ -97,7 +97,7 @@ public class DependencyResolver {
 	 * {@link #add(org.mcphoton.plugin.Plugin)} method. This method returns a {@link Solution} object, which
 	 * contains the best load order and the errors that occured, if any.
 	 */
-	public Solution resolve(List<Exception> errorsList) {
+	public Solution resolve(List<Throwable> errorsList) {
 		List<String> resolved = new ArrayList<>();
 
 		int lastSize = -1;
@@ -156,9 +156,9 @@ public class DependencyResolver {
 	public class Solution {
 
 		public final List<String> resolvedOrder;
-		public final List<Exception> errors;
+		public final List<Throwable> errors;
 
-		public Solution(List<String> loadOrder, List<Exception> errors) {
+		public Solution(List<String> loadOrder, List<Throwable> errors) {
 			this.resolvedOrder = loadOrder;
 			this.errors = errors;
 		}

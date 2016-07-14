@@ -162,7 +162,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		final Map<String, PluginInfos> infosMap = new HashMap<>();
 		final List<String> serverPluginsVersions = new ArrayList<>(serverPlugins.size());
 		final List<PluginInfos> nonGlobalServerPlugins = new ArrayList<>();//for step 4
-		final List<Exception> errors = new ArrayList<>();
+		final List<Throwable> errors = new ArrayList<>();
 
 		//1: Gather informations about the plugins: class + description.
 		LOGGER.debug("Gathering informations about the plugins...");
@@ -184,8 +184,8 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 				PluginInfos infos = new PluginInfos(clazz, classLoader, description);
 				infosMap.put(description.name(), infos);
 				LOGGER.trace("Valid plugin found: {} -> infos: {}.", file, infos);
-			} catch (Exception ex) {
-				errors.add(ex);
+			} catch (Exception | NoClassDefFoundError error) {
+				errors.add(error);
 			}
 		}
 
@@ -211,7 +211,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 
 		//2.2: Print informations.
 		LOGGER.info("{} out of {} server plugins will be loaded.", solution.resolvedOrder.size(), serverPluginsVersions.size());
-		for (Exception ex : solution.errors) {
+		for (Throwable ex : solution.errors) {
 			LOGGER.error(ex.toString());
 		}
 		errors.clear();
@@ -243,7 +243,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 
 			//3.2: Print informations.
 			LOGGER.info("{} out of {} plugins will be loaded in world {}.", solution.resolvedOrder.size(), plugins.size(), world);
-			for (Exception ex : solution.errors) {
+			for (Throwable ex : solution.errors) {
 				LOGGER.error(ex.toString());
 			}
 
