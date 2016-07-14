@@ -34,7 +34,7 @@ public class ConsoleThread extends Thread implements Messageable {
 	/**
 	 * The world currently used for the command registry.
 	 */
-	public volatile World world = Photon.getServer().getSpawn().getWorld();
+	public volatile World world;
 
 	private volatile boolean run = true;
 	private final Scanner sc = new Scanner(System.in);
@@ -52,6 +52,7 @@ public class ConsoleThread extends Thread implements Messageable {
 
 	@Override
 	public void run() {
+		world = Photon.getServer().getSpawn().getWorld();
 		while (run) {
 			String line = sc.nextLine();
 			String[] parts = line.split(" ", 2);
