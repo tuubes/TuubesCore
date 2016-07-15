@@ -72,7 +72,7 @@ public class NioNetworkThread extends Thread {
 			ssc.configureBlocking(false);
 			ssc.register(selector, OP_ACCEPT);
 		} catch (IOException ex) {
-			Main.serverInstance.logger.error("Unable to launch the ServerSocketChannel.", ex);
+			Main.SERVER.logger.error("Unable to launch the ServerSocketChannel.", ex);
 			System.exit(10);//Photon cannot work with this error
 		}
 	}

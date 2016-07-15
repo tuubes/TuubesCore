@@ -32,7 +32,7 @@ public class HandshakeHandler implements PacketHandler<HandshakePacket> {
 
 	@Override
 	public void handle(HandshakePacket packet, Client client) {
-		Main.serverInstance.logger.debug("Set client state to " + packet.nextState);
+		Main.SERVER.logger.debug("Set client state to " + packet.nextState);
 		if (packet.nextState == 1) {
 			client.setConnectionState(ConnectionState.STATUS);
 		} else if (packet.nextState == 2) {

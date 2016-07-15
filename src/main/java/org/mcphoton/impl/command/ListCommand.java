@@ -28,15 +28,15 @@ public class ListCommand implements Command {
 	@Override
 	public void execute(Messageable source, String[] args) {
 		
-		switch(Main.serverInstance.getOnlinePlayers().size()) {
+		switch(Main.SERVER.getOnlinePlayers().size()) {
 		case 0:
 			source.sendMessage("No player is connected.");
 			break;
 		case 1:
-			source.sendMessage("There is 1 of " + Main.serverInstance.getMaxPlayers() + " player connected.");
+			source.sendMessage("There is 1 of " + Main.SERVER.getMaxPlayers() + " player connected.");
 			break;
 		default:
-			source.sendMessage("There are " + Main.serverInstance.getOnlinePlayers().size() + " of " + Main.serverInstance.getMaxPlayers() + " players connected.");
+			source.sendMessage("There are " + Main.SERVER.getOnlinePlayers().size() + " of " + Main.SERVER.getMaxPlayers() + " players connected.");
 			break;
 		}
 	}

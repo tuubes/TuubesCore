@@ -191,7 +191,7 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 			try {
 				handlerMethod.invoke(event);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-				Main.serverInstance.logger.error("An unexpected error occured in an EventHandler.", ex);
+				Main.SERVER.logger.error("An unexpected error occured in an EventHandler.", ex);
 			}
 		}
 	}
@@ -212,7 +212,7 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 				try {
 					handlerMethod.invoke(event);
 				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-					Main.serverInstance.logger.error("An unexpected error occured in an EventHandler.", ex);
+					Main.SERVER.logger.error("An unexpected error occured in an EventHandler.", ex);
 				}
 			}
 		}

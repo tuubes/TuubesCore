@@ -19,7 +19,6 @@
 package org.mcphoton;
 
 import java.io.File;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.mcphoton.block.BlockRegistry;
 import org.mcphoton.entity.EntityRegistry;
@@ -42,13 +41,11 @@ public final class Photon {
 
 	public static final File MAIN_DIR = new File(System.getProperty("user.dir")), PLUGINS_DIR = new File(MAIN_DIR, "plugins"), WORLDS_DIR = new File(MAIN_DIR, "worlds");
 	public static final File CONFIG_FILE = new File(MAIN_DIR, "server_config.toml"), ICON_PNG = new File(MAIN_DIR, "server_icon.png"), ICON_JPG = new File(MAIN_DIR, "server_icon.png");
-
 	private static final BlockRegistry BLOCK_REGISTRY = new PhotonBlockRegistry();
 	private static final ItemRegistry ITEM_REGISTRY = new PhotonItemRegistry();
 	private static final EntityRegistry ENTITY_REGISTRY = new PhotonEntityRegistry();
 	private static final BiomeRegistry BIOME_REGISTRY = new PhotonBiomeRegistry();
 	private static final boolean consoleAdvanced = !System.getProperty("os.name").toLowerCase().contains("windows");
-	private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(2);//TODO configurable number of threads
 
 	private Photon() {
 	}
@@ -68,11 +65,11 @@ public final class Photon {
 	 * </p>
 	 */
 	public static ScheduledExecutorService getExecutorService() {
-		return EXECUTOR_SERVICE;
+		return Main.EXECUTOR_SERVICE;
 	}
 
 	public static PacketsManager getPacketsManager() {
-		return Main.serverInstance.packetsManager;
+		return Main.SERVER.packetsManager;
 	}
 
 	public static EntityRegistry getEntityRegistry() {
@@ -120,6 +117,6 @@ public final class Photon {
 	}
 
 	public static Server getServer() {
-		return Main.serverInstance;
+		return Main.SERVER;
 	}
 }

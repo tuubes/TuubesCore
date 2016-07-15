@@ -71,7 +71,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 		try {
 			verifyToken = authenticator.decryptWithRsaPrivateKey(packet.verifyToken);
 		} catch (IllegalBlockSizeException | BadPaddingException ex) {
-			Main.serverInstance.logger.error("Unable to decrypt the verify token sent by client {}.", client, ex);
+			Main.SERVER.logger.error("Unable to decrypt the verify token sent by client {}.", client, ex);
 			return;
 		}
 		if (!authenticator.checkAndForgetToken(verifyToken, client)) {
@@ -84,7 +84,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 		try {
 			sharedKey = authenticator.decryptWithRsaPrivateKey(packet.sharedKey);
 		} catch (IllegalBlockSizeException | BadPaddingException ex) {
-			Main.serverInstance.logger.error("Unable to decrypt the shared key sent by client {}.", client, ex);
+			Main.SERVER.logger.error("Unable to decrypt the shared key sent by client {}.", client, ex);
 			return;
 		}
 		String username = authenticator.getAndForgetUsername(client);
@@ -102,19 +102,19 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 
 			String playerUuid = (String) response.get("id");
 			String playerName = (String) response.get("name");
-			Main.serverInstance.logger.trace("Got id={} from auth server", playerUuid);
-			Main.serverInstance.logger.trace("Got name={} from auth server", playerName);
+			Main.SERVER.logger.trace("Got id={} from auth server", playerUuid);
+			Main.SERVER.logger.trace("Got name={} from auth server", playerName);
 
 			if (playerUuid.indexOf('-') == -1) {//uuid without hyphens
 				playerUuid = UUID_FIXER.matcher(playerUuid).replaceFirst("$1-$2-$3-$4-$5");
-				Main.serverInstance.logger.debug("Fixed UUID: {}", playerUuid);
+				Main.SERVER.logger.debug("Fixed UUID: {}", playerUuid);
 			}
 			UUID accountId = UUID.fromString(playerUuid);
 
-			Location location = Main.serverInstance.spawn;
+			Location location = Main.SERVER.spawn;
 
 			PhotonPlayer player = new PhotonPlayer(username, accountId, location);
-			Main.serverInstance.logger.debug("Player instance created: {}", player);
+			Main.SERVER.logger.debug("Player instance created: {}", player);
 			pc.setPlayer(player);
 
 			//--- Enable encryption ---
@@ -122,7 +122,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				AESCodec cipherCodec = new AESCodec(sharedKey);
 				pc.enableEncryption(cipherCodec);
 			} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException ex) {
-				Main.serverInstance.logger.error("Failed to enable encryption for client {}.", client, ex);
+				Main.SERVER.logger.error("Failed to enable encryption for client {}.", client, ex);
 				pm.sendPacket(AUTH_FAILED, client, () -> {
 					try {
 						client.closeConnection();
@@ -141,7 +141,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 		},
 				(Exception ex) -> {//on failure
 					pm.sendPacket(AUTH_FAILED, client);
-					Main.serverInstance.logger.error("Unable to authenticate {}.", username, ex);
+					Main.SERVER.logger.error("Unable to authenticate {}.", username, ex);
 				}
 		);
 	}

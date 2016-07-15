@@ -39,13 +39,13 @@ public class ChangeWorldCommand implements Command {
 			source.sendMessage("Invalid syntax. Use cw [world]");
 			return;
 		}
-		World world = Main.serverInstance.getWorld(args[0]);
+		World world = Main.SERVER.getWorld(args[0]);
 		if (world == null) {
 			source.sendMessage("This world does not exist.");
 			return;
 		}
 		if (source instanceof ConsoleThread) {
-			Main.serverInstance.consoleThread.world = world;
+			Main.SERVER.consoleThread.world = world;
 		} else {
 			//TODO ?
 		}

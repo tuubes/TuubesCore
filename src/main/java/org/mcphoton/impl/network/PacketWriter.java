@@ -59,7 +59,7 @@ public final class PacketWriter {
 	public PacketWriter(SocketChannel channel, Codec cipherCodec) {
 		this.channel = channel;
 		this.cipherCodec = cipherCodec;
-		((PhotonLogger) logger).setLevel(Main.serverInstance.logger.getLevel());
+		((PhotonLogger) logger).setLevel(Main.SERVER.logger.getLevel());
 	}
 
 	/**

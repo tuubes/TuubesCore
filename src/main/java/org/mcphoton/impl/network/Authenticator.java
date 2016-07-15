@@ -95,7 +95,7 @@ public class Authenticator {
 	}
 
 	public void authenticate(String username, byte[] sharedKey, Consumer<Map<String, Object>> onSuccess, Consumer<Exception> onFailure) {
-		Main.serverInstance.logger.debug("Submitting authentication task for user {}", username);
+		Main.SERVER.logger.debug("Submitting authentication task for user {}", username);
 		backgroundHttpService.submit(() -> {
 			try {
 				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");

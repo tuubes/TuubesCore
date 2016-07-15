@@ -76,8 +76,7 @@ public final class PhotonServer implements Server {
 	public final Map<String, World> worlds = new ConcurrentHashMap<>();
 	public volatile Location spawn;
 
-	public PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, String motd, String encodedFavicon, int maxPlayers, Location spawn) throws Exception {
-		System.out.println("PhotonServer class: constructor called!");
+	PhotonServer(PhotonLogger logger, KeyPair keyPair, InetSocketAddress address, String motd, String encodedFavicon, int maxPlayers, String defaultWorld, double spawnX, double spawnY, double spawnZ) throws Exception {
 		this.logger = logger;
 		this.keyPair = keyPair;
 		this.address = address;
@@ -85,7 +84,7 @@ public final class PhotonServer implements Server {
 		this.motd = motd;
 		this.encodedFavicon = encodedFavicon;
 		this.maxPlayers = maxPlayers;
-		this.spawn = spawn;
+		//TODO set this.spawn
 		this.packetsManager = new PhotonPacketsManager(this);
 	}
 

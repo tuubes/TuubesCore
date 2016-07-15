@@ -61,7 +61,7 @@ public final class PacketReader {
 		this.cipherCodec = cipherCodec;
 		this.maxBufferSize = maxBufferSize;
 		this.buffer = ByteBuffer.allocateDirect(initialBufferSize);
-		((PhotonLogger) logger).setLevel(Main.serverInstance.logger.getLevel());
+		((PhotonLogger) logger).setLevel(Main.SERVER.logger.getLevel());
 	}
 
 	/**

@@ -23,12 +23,15 @@ import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
 import static org.mcphoton.Photon.*;
 import org.mcphoton.config.ConfigurationSpecification;
 import org.mcphoton.config.TomlConfiguration;
-import org.mcphoton.world.Location;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.LoggingLevel;
 import org.slf4j.impl.PhotonLogger;
@@ -40,54 +43,43 @@ import org.slf4j.impl.PhotonLogger;
  */
 public final class Main {
 
-	static final ConfigurationSpecification configSpec = new ConfigurationSpecification();
-	static final TomlConfiguration config = new TomlConfiguration();
-	static final PhotonLogger LOGGER = (PhotonLogger) LoggerFactory.getLogger("PhotonServer");
+	/**
+	 * The global ScheduledExecutorService.
+	 */
+	public static final ScheduledExecutorService EXECUTOR_SERVICE;
+	/**
+	 * The global Logger.
+	 */
+	public static final PhotonLogger LOGGER = (PhotonLogger) LoggerFactory.getLogger("PhotonServer");
+	/**
+	 * The unique server instance.
+	 */
+	public static final PhotonServer SERVER;
 
+	//--- Loaded from the config ---
 	private static InetSocketAddress address;
-	private static int maxPlayers;
-	private static String motd, encodedFavicon;
+	private static String defaultWorld;
+	private static String encodedFavicon;
+	private static int executionThreads;
 	private static KeyPair keyPair;
 	private static LoggingLevel loggingLevel;
-	private static Location spawn;
+	private static int maxPlayers;
+	private static String motd;
+	private static double spawnX, spawnY, spawnZ;
 
-	public static volatile PhotonServer serverInstance;
-
-	public static void main(String[] args) {
+	static {
 		printFramed("Photon server version " + Photon.getVersion(), "For minecraft version " + Photon.getMinecraftVersion());
-		createServerInstance();
-		loadFavicon();
-		serverInstance.setShutdownHook();
-		serverInstance.registerCommands();
-		serverInstance.registerPackets();
-		serverInstance.loadPlugins();
-		serverInstance.startThreads();
-	}
-
-	private static void loadFavicon() {
-		try {
-			if (ICON_PNG.exists()) {
-				serverInstance.setFavicon(ImageIO.read(ICON_PNG));
-			} else if (ICON_JPG.exists()) {
-				serverInstance.setFavicon(ImageIO.read(ICON_JPG));
-			} else {
-				serverInstance.encodedFavicon = DEFAULT_ICON;
-			}
-		} catch (IOException ex) {
-			LOGGER.error("Unable to load the favicon.", ex);
-		}
-	}
-
-	private static void createServerInstance() {
 		readConfiguration();
-		loadFavicon();
 		generateRsaKeyPair();
+		EXECUTOR_SERVICE = Executors.newScheduledThreadPool(executionThreads, new ExecutionThreadFactory());
+		PhotonServer server = null;
 		try {
-			serverInstance = new PhotonServer(LOGGER, keyPair, address, motd, encodedFavicon, maxPlayers, spawn);
+			server = new PhotonServer(LOGGER, keyPair, address, motd, encodedFavicon, maxPlayers, defaultWorld, spawnX, spawnY, spawnZ);
 		} catch (Exception ex) {
 			LOGGER.error("Cannot create the server instance.", ex);
 			System.exit(3);
 		}
+		SERVER = server;
 	}
 
 	private static void generateRsaKeyPair() {
@@ -102,37 +94,28 @@ public final class Main {
 		}
 	}
 
-	private static void readConfiguration() {
-		configSpec.defineInt("port", 25565, 0, 65535);
-		configSpec.defineInt("maxPlayers", 10, 1, 1000);
-		configSpec.defineString("default-level", "world");
-		configSpec.defineString("motd", "Photon server, version alpha");
-		configSpec.defineString("loggingLevel", "DEBUG", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
-
-		LOGGER.info("Loading the server's configuration...");
+	private static void loadFavicon() {
 		try {
-			if (CONFIG_FILE.exists()) {
-				config.readFrom(CONFIG_FILE);
-				int corrected = config.correct(configSpec);
-				if (corrected > 0) {
-					config.writeTo(CONFIG_FILE);
-					LOGGER.warn("Corrected {} entry(ies) in serverConfig.toml", corrected);
-				}
-				address = new InetSocketAddress(config.getInt("port"));
-				maxPlayers = config.getInt("maxPlayers");
-				motd = config.getString("motd");
-				loggingLevel = LoggingLevel.valueOf(config.getString("loggingLevel"));
+			if (ICON_PNG.exists()) {
+				SERVER.setFavicon(ImageIO.read(ICON_PNG));
+			} else if (ICON_JPG.exists()) {
+				SERVER.setFavicon(ImageIO.read(ICON_JPG));
 			} else {
-				int corrected = config.correct(configSpec);
-				LOGGER.info("Added {} entries in serverConfig.toml", corrected);
-				config.writeTo(CONFIG_FILE);
-				loggingLevel = LoggingLevel.DEBUG;
+				SERVER.encodedFavicon = DEFAULT_ICON;
 			}
 		} catch (IOException ex) {
-			LOGGER.error("Cannot load the server's configuration.", ex);
-			System.exit(1);
+			LOGGER.error("Unable to load the favicon.", ex);
+			SERVER.encodedFavicon = DEFAULT_ICON;
 		}
-		LOGGER.setLevel(loggingLevel);
+	}
+
+	public static void main(String[] args) {
+		loadFavicon();
+		SERVER.setShutdownHook();
+		SERVER.registerCommands();
+		SERVER.registerPackets();
+		SERVER.loadPlugins();
+		SERVER.startThreads();
 	}
 
 	private static void printFramed(String... strings) {
@@ -161,6 +144,60 @@ public final class Main {
 			System.out.print('-');
 		}
 		System.out.println();
+	}
+
+	private static void readConfiguration() {
+		ConfigurationSpecification specification = new ConfigurationSpecification();
+		specification.defineInt("port", 25565, 1, 65535);
+		specification.defineInt("maxPlayers", 10, 1, 1000);
+		specification.defineString("defaultWorld", "world");
+		specification.defineString("spawn", "0,60,0");
+		specification.defineString("motd", "Photon server, version alpha");
+		specification.defineString("loggingLevel", "DEBUG", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
+		specification.defineInt("executionThreads", Math.max(1, Runtime.getRuntime().availableProcessors() - 1), 1, 100);
+
+		LOGGER.info("Loading the server's configuration from \"server_config.toml\"...");
+		try {
+			TomlConfiguration config;
+			if (CONFIG_FILE.exists()) {
+				config = new TomlConfiguration(CONFIG_FILE);
+				int corrected = config.correct(specification);
+				if (corrected > 0) {
+					config.writeTo(CONFIG_FILE);
+					LOGGER.warn("Corrected {} entry(ies) in server_config.toml", corrected);
+				}
+
+			} else {
+				config = new TomlConfiguration();
+				int corrected = config.correct(specification);
+				LOGGER.info("Added {} entries in server_config.toml", corrected);
+				config.writeTo(CONFIG_FILE);
+			}
+			address = new InetSocketAddress(config.getInt("port"));
+			maxPlayers = config.getInt("maxPlayers");
+			defaultWorld = config.getString("defaultWorld");
+			String[] coords = config.getString("spawn").split(",");
+			spawnX = Double.parseDouble(coords[0]);
+			spawnY = Double.parseDouble(coords[1]);
+			spawnZ = Double.parseDouble(coords[2]);
+			motd = config.getString("motd");
+			loggingLevel = LoggingLevel.valueOf(config.getString("loggingLevel"));
+			executionThreads = config.getInt("executionThreads");
+		} catch (IOException ex) {
+			LOGGER.error("Cannot load the server's configuration.", ex);
+			System.exit(1);
+		}
+		LOGGER.setLevel(loggingLevel);
+	}
+
+	private static class ExecutionThreadFactory implements ThreadFactory {
+
+		private final AtomicInteger count = new AtomicInteger(1);
+
+		@Override
+		public Thread newThread(Runnable r) {
+			return new Thread(r, "executor" + count.getAndIncrement());
+		}
 	}
 
 	/**
