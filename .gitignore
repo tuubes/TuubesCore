@@ -3,4 +3,4 @@
 build
 logs
 plugins
-serverConfig.toml
+server_config.toml
