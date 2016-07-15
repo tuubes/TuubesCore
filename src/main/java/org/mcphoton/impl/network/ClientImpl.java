@@ -43,7 +43,7 @@ import org.mcphoton.network.ConnectionState;
  * @author TheElectronWill
  *
  */
-public final class PhotonClient implements Client {
+public final class ClientImpl implements Client {
 
 	final InetSocketAddress address;
 	final SocketChannel channel;
@@ -54,11 +54,11 @@ public final class PhotonClient implements Client {
 	volatile ConnectionState state = ConnectionState.INIT;
 	volatile Codec cipherCodec, compressionCodec;
 
-	public PhotonClient(SocketChannel channel) throws IOException {
+	public ClientImpl(SocketChannel channel) throws IOException {
 		this(channel, new NoCodec(), new NoCodec());
 	}
 
-	public PhotonClient(SocketChannel channel, Codec cipherCodec, Codec compressionCodec) throws IOException {
+	public ClientImpl(SocketChannel channel, Codec cipherCodec, Codec compressionCodec) throws IOException {
 		this.channel = channel;
 		this.cipherCodec = cipherCodec;
 		this.compressionCodec = compressionCodec;

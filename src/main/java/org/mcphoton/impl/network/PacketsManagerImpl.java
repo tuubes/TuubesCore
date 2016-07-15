@@ -42,7 +42,7 @@ import org.mcphoton.network.ProtocolHelper;
  *
  * @author TheElectronWill
  */
-public final class PhotonPacketsManager implements PacketsManager {
+public final class PacketsManagerImpl implements PacketsManager {
 
 	private final PhotonServer server;
 	private final Authenticator authenticator;
@@ -55,7 +55,7 @@ public final class PhotonPacketsManager implements PacketsManager {
 	private final ConcurrentIndexMap<Class<? extends Packet>> clientInitPackets, clientStatusPackets, clientLoginPackets, clientPlayPackets;
 	private final ConcurrentIndexMap<Collection<PacketHandler>> clientInitHandlers, clientStatusHandlers, clientLoginHandlers, clientPlayHandlers;
 
-	public PhotonPacketsManager(PhotonServer server) throws GeneralSecurityException {
+	public PacketsManagerImpl(PhotonServer server) throws GeneralSecurityException {
 		this.server = server;
 		this.authenticator = new Authenticator(server.keyPair);
 
@@ -175,21 +175,21 @@ public final class PhotonPacketsManager implements PacketsManager {
 	@Override
 	public void sendPacket(Packet packet, Client client) {
 		server.logger.debug("Send packet {} to the client {}", packet, client);
-		server.networkThread.outboundQueue().add(new PacketSending(packet, (PhotonClient) client));
+		server.networkThread.outboundQueue().add(new PacketSending(packet, (ClientImpl) client));
 	}
 
 	@Override
 	public void sendPacket(Packet packet, Client... clients) {
 		server.logger.debug("Send packet {} to multiple clients: {}", packet, clients);
 		for (Client client : clients) {
-			server.networkThread.outboundQueue().add(new PacketSending(packet, (PhotonClient) client));
+			server.networkThread.outboundQueue().add(new PacketSending(packet, (ClientImpl) client));
 		}
 	}
 
 	@Override
 	public void sendPacket(Packet packet, Client client, Runnable completionAction) {
 		server.logger.debug("Send packet {} to the client {} with a completion action {}", packet, client, completionAction);
-		server.networkThread.outboundQueue().add(new PacketSending(packet, (PhotonClient) client, completionAction));
+		server.networkThread.outboundQueue().add(new PacketSending(packet, (ClientImpl) client, completionAction));
 	}
 
 	@Override

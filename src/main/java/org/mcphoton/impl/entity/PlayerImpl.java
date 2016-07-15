@@ -27,13 +27,13 @@ import org.mcphoton.world.Location;
  *
  * @author TheElectronWill
  */
-public class PhotonPlayer implements Player {
+public class PlayerImpl implements Player {
 
 	private final String name;
 	private final UUID accoundId;
 	private volatile Location location;
 
-	public PhotonPlayer(String name, UUID accoundId, Location location) {
+	public PlayerImpl(String name, UUID accoundId, Location location) {
 		this.name = name;
 		this.accoundId = accoundId;
 		this.location = location;

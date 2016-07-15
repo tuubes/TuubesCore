@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.mcphoton.impl.item;
+package org.mcphoton.impl.world;
 
 import com.electronwill.utils.IndexMap;
 import java.util.HashMap;
 import java.util.Map;
-import org.mcphoton.item.ItemRegistry;
-import org.mcphoton.item.ItemType;
+import org.mcphoton.world.BiomeRegistry;
+import org.mcphoton.world.BiomeType;
 
 /**
  *
  * @author TheElectronWill
  */
-public class PhotonItemRegistry implements ItemRegistry {
+public class BiomeRegistryImpl implements BiomeRegistry {
 
-	private final IndexMap<ItemType> idMap = new IndexMap<>();
-	private final Map<String, ItemType> nameMap = new HashMap<>();
+	private final IndexMap<BiomeType> idMap = new IndexMap<>();
+	private final Map<String, BiomeType> nameMap = new HashMap<>();
 
 	@Override
-	public synchronized void register(ItemType type) {
+	public synchronized void register(BiomeType type) {
 		int id = idMap.size();
 		type.initializeId(id);
 		idMap.put(id, type);
@@ -42,19 +42,19 @@ public class PhotonItemRegistry implements ItemRegistry {
 	}
 
 	@Override
-	public synchronized void register(ItemType type, int id) {
+	public synchronized void register(BiomeType type, int id) {
 		type.initializeId(id);
 		idMap.put(id, type);
 		nameMap.put(type.getUniqueName(), type);
 	}
 
 	@Override
-	public synchronized ItemType getRegistered(int id) {
+	public synchronized BiomeType getRegistered(int id) {
 		return idMap.get(id);
 	}
 
 	@Override
-	public synchronized ItemType getRegistered(String name) {
+	public synchronized BiomeType getRegistered(String name) {
 		return nameMap.get(name);
 	}
 

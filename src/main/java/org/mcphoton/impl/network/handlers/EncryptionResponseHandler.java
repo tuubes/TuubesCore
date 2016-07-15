@@ -28,10 +28,10 @@ import java.util.regex.Pattern;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import org.mcphoton.impl.entity.PhotonPlayer;
+import org.mcphoton.impl.entity.PlayerImpl;
 import org.mcphoton.impl.network.AESCodec;
 import org.mcphoton.impl.network.Authenticator;
-import org.mcphoton.impl.network.PhotonClient;
+import org.mcphoton.impl.network.ClientImpl;
 import org.mcphoton.impl.server.Main;
 import org.mcphoton.messaging.TextChatMessage;
 import org.mcphoton.network.Client;
@@ -93,7 +93,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				pm.sendPacket(AUTH_FAILED, client);
 				return;
 			}
-			PhotonClient pc = (PhotonClient) client;
+			ClientImpl pc = (ClientImpl) client;
 			//--- Get informations about the player ---
 			/* TODO read skin. See wiki.vg for a description of the format used.
 			 * TODO set the last player location if available
@@ -113,7 +113,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 
 			Location location = Main.SERVER.spawn;
 
-			PhotonPlayer player = new PhotonPlayer(username, accountId, location);
+			PlayerImpl player = new PlayerImpl(username, accountId, location);
 			Main.SERVER.logger.debug("Player instance created: {}", player);
 			pc.setPlayer(player);
 

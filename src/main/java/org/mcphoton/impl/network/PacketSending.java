@@ -39,7 +39,7 @@ public final class PacketSending {
 	/**
 	 * The client to send the packet.
 	 */
-	public final PhotonClient recipient;
+	public final ClientImpl recipient;
 
 	/**
 	 * The action to execute when the sending completes.
@@ -54,7 +54,7 @@ public final class PacketSending {
 	 * @param recipient the client to send the packet.
 	 * @param completionAction the action to execute when the sending completes.
 	 */
-	public PacketSending(Packet packet, PhotonClient recipient, Runnable completionAction) {
+	public PacketSending(Packet packet, ClientImpl recipient, Runnable completionAction) {
 		this.packet = packet;
 		this.recipient = recipient;
 		this.completionAction = Objects.requireNonNull(completionAction);
@@ -66,7 +66,7 @@ public final class PacketSending {
 	 * @param packet the packet to send.
 	 * @param recipient the client to send the packet.
 	 */
-	public PacketSending(Packet packet, PhotonClient recipient) {
+	public PacketSending(Packet packet, ClientImpl recipient) {
 		this(packet, recipient, NO_ACTION);
 	}
 

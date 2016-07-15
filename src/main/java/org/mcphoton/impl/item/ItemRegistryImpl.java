@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.mcphoton.impl.block;
+package org.mcphoton.impl.item;
 
 import com.electronwill.utils.IndexMap;
 import java.util.HashMap;
 import java.util.Map;
-import org.mcphoton.block.BlockRegistry;
-import org.mcphoton.block.BlockType;
+import org.mcphoton.item.ItemRegistry;
+import org.mcphoton.item.ItemType;
 
 /**
  *
  * @author TheElectronWill
  */
-public class PhotonBlockRegistry implements BlockRegistry {
+public class ItemRegistryImpl implements ItemRegistry {
 
-	private final IndexMap<BlockType> idMap = new IndexMap<>();
-	private final Map<String, BlockType> nameMap = new HashMap<>();
+	private final IndexMap<ItemType> idMap = new IndexMap<>();
+	private final Map<String, ItemType> nameMap = new HashMap<>();
 
 	@Override
-	public synchronized void register(BlockType type) {
+	public synchronized void register(ItemType type) {
 		int id = idMap.size();
 		type.initializeId(id);
 		idMap.put(id, type);
@@ -42,19 +42,19 @@ public class PhotonBlockRegistry implements BlockRegistry {
 	}
 
 	@Override
-	public synchronized void register(BlockType type, int id) {
+	public synchronized void register(ItemType type, int id) {
 		type.initializeId(id);
 		idMap.put(id, type);
 		nameMap.put(type.getUniqueName(), type);
 	}
 
 	@Override
-	public synchronized BlockType getRegistered(int id) {
+	public synchronized ItemType getRegistered(int id) {
 		return idMap.get(id);
 	}
 
 	@Override
-	public synchronized BlockType getRegistered(String name) {
+	public synchronized ItemType getRegistered(String name) {
 		return nameMap.get(name);
 	}
 
@@ -66,10 +66,6 @@ public class PhotonBlockRegistry implements BlockRegistry {
 	@Override
 	public synchronized boolean isRegistered(String name) {
 		return nameMap.containsKey(name);
-	}
-
-	public int getBiggestBlockId() {
-		return Math.max(0, idMap.array().length - 1);
 	}
 
 }

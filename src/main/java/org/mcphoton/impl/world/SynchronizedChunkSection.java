@@ -26,7 +26,7 @@ import org.mcphoton.network.ProtocolOutputStream;
  *
  * @author TheElectronWill
  */
-public class SynchronizedChunkSection extends SimpleChunkSection {
+public class SynchronizedChunkSection extends ChunkSectionImpl {
 
 	public SynchronizedChunkSection(int bitsPerBlock) {
 		super(bitsPerBlock);

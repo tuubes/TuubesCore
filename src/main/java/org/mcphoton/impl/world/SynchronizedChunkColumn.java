@@ -30,7 +30,7 @@ import org.mcphoton.world.World;
  *
  * @author TheElectronWill
  */
-public class SafeChunkColumn implements ChunkColumn {
+public class SynchronizedChunkColumn implements ChunkColumn {
 
 	private final int x, z;
 	private final World world;
@@ -38,11 +38,11 @@ public class SafeChunkColumn implements ChunkColumn {
 	private final ChunkSection[] sections;
 	private final Collection<ChunkSection> unmodifiableCollection;
 
-	public SafeChunkColumn(int x, int z, World world) {
+	public SynchronizedChunkColumn(int x, int z, World world) {
 		this(x, z, world, new ChunkSection[16], new byte[256]);
 	}
 
-	public SafeChunkColumn(int x, int z, World world, ChunkSection[] sections, byte[] biomesData) {
+	public SynchronizedChunkColumn(int x, int z, World world, ChunkSection[] sections, byte[] biomesData) {
 		this.x = x;
 		this.z = z;
 		this.world = world;

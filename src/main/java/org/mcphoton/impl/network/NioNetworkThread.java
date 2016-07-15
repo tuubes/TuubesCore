@@ -145,7 +145,7 @@ public class NioNetworkThread extends Thread {
 		try {
 			SocketChannel channel = ssc.accept();
 			channel.configureBlocking(false);
-			PhotonClient client = new PhotonClient(channel);
+			ClientImpl client = new ClientImpl(channel);
 			channel.register(selector, OP_READ, client);
 		} catch (Exception ex) {
 			server.logger.error("Unable to accept the client", ex);
@@ -156,7 +156,7 @@ public class NioNetworkThread extends Thread {
 	 * Reads some data from the key's channel.
 	 */
 	private void readData(SelectionKey key) {
-		PhotonClient client = (PhotonClient) key.attachment();
+		ClientImpl client = (ClientImpl) key.attachment();
 		try {
 			while (true) {
 				ByteBuffer packetData = client.packetReader.readNext();
@@ -181,7 +181,7 @@ public class NioNetworkThread extends Thread {
 	 * Continues the pending write operation on a key's channel.
 	 */
 	private void continuePendingWrite(SelectionKey key) {
-		PhotonClient client = (PhotonClient) key.attachment();
+		ClientImpl client = (ClientImpl) key.attachment();
 		try {
 			boolean writeComplete = client.packetWriter.doWrite();
 			if (writeComplete) {
@@ -205,7 +205,7 @@ public class NioNetworkThread extends Thread {
 		server.logger.trace("Drained {} PacketSendings from the queue.", drained);
 		for (PacketSending sending : packetsProcessingList) {
 			try {
-				PhotonClient recipient = sending.recipient;
+				ClientImpl recipient = sending.recipient;
 				boolean complete = recipient.packetWriter.writeASAP(sending);
 				if (!complete) {
 					server.logger.trace("Incomplete write -> put into the queue");

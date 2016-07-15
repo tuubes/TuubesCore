@@ -28,7 +28,7 @@ import org.mcphoton.world.ChunkSection;
  *
  * @author TheElectronWill
  */
-public class SimpleChunkSection implements ChunkSection {
+public class ChunkSectionImpl implements ChunkSection {
 
 	private final byte[] dataBytes;
 	private final BitBuffer data;
@@ -37,7 +37,7 @@ public class SimpleChunkSection implements ChunkSection {
 	//TODO blocklight and skylight
 	//TODO block entities
 
-	public SimpleChunkSection(int bitsPerBlock) {
+	public ChunkSectionImpl(int bitsPerBlock) {
 		int bits = bitsPerBlock * 4096;
 		this.dataBytes = new byte[(int) Math.ceil(bits / 8)];
 		this.data = BitBuffer.wrap(dataBytes);

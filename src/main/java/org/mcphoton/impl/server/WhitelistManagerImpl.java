@@ -18,60 +18,43 @@
  */
 package org.mcphoton.impl.server;
 
-import java.net.InetAddress;
-import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
-import org.mcphoton.server.BansManager;
+import org.mcphoton.server.WhitelistManager;
 
 /**
  *
  * @author TheElectronWill
  */
-public class PhotonBansManager implements BansManager {
+public class WhitelistManagerImpl implements WhitelistManager {
 
-	private final Set<UUID> bannedAccounts = new ConcurrentSkipListSet<>();
-	private final Set<InetAddress> bannedAddresses = new ConcurrentSkipListSet<>();
+	private final Set<UUID> whitelist = new ConcurrentSkipListSet<>();
+	private volatile boolean enabled = true;
 
 	@Override
-	public boolean isBanned(UUID accountId) {
-		return bannedAccounts.contains(accountId);
+	public boolean isEnabled() {
+		return enabled;
 	}
 
 	@Override
-	public boolean isBanned(InetAddress ip) {
-		return bannedAddresses.contains(ip);
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 
 	@Override
-	public void ban(UUID accountId) {
-		bannedAccounts.add(accountId);
+	public void allow(UUID accountId) {
+		whitelist.add(accountId);
 	}
 
 	@Override
-	public void ban(InetAddress ip) {
-		bannedAddresses.add(ip);
+	public void deny(UUID accountId) {
+		whitelist.remove(accountId);
 	}
 
 	@Override
-	public void unban(UUID accountId) {
-		bannedAccounts.remove(accountId);
-	}
-
-	@Override
-	public void unban(InetAddress ip) {
-		bannedAddresses.remove(ip);
-	}
-
-	@Override
-	public Collection<UUID> getBannedAccounts() {
-		return bannedAccounts;
-	}
-
-	@Override
-	public Collection<InetAddress> getBannedIPs() {
-		return bannedAddresses;
+	public boolean isAllowed(UUID accountId) {
+		return whitelist.contains(accountId);
 	}
 
 }

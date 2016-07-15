@@ -38,7 +38,7 @@ import org.mcphoton.impl.command.ListCommand;
 import org.mcphoton.impl.command.ServerCommandRegistryImpl;
 import org.mcphoton.impl.command.StopCommand;
 import org.mcphoton.impl.network.NioNetworkThread;
-import org.mcphoton.impl.network.PhotonPacketsManager;
+import org.mcphoton.impl.network.PacketsManagerImpl;
 import org.mcphoton.impl.plugin.ServerPluginsManagerImpl;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.plugin.ServerPluginsManager;
@@ -62,9 +62,9 @@ public final class PhotonServer implements Server {
 	public final InetSocketAddress address;
 	public final NioNetworkThread networkThread;
 	public final ConsoleThread consoleThread = new ConsoleThread();
-	public final PhotonPacketsManager packetsManager;
-	public final PhotonBansManager bansManager = new PhotonBansManager();
-	public final PhotonWhitelistManager whitelistManager = new PhotonWhitelistManager();
+	public final PacketsManagerImpl packetsManager;
+	public final BansManagerImpl bansManager = new BansManagerImpl();
+	public final WhitelistManagerImpl whitelistManager = new WhitelistManagerImpl();
 	public final ServerPluginsManagerImpl pluginsManager = new ServerPluginsManagerImpl();
 	public final ServerCommandRegistryImpl commandRegistry = new ServerCommandRegistryImpl();
 
@@ -85,7 +85,7 @@ public final class PhotonServer implements Server {
 		this.encodedFavicon = encodedFavicon;
 		this.maxPlayers = maxPlayers;
 		//TODO set this.spawn
-		this.packetsManager = new PhotonPacketsManager(this);
+		this.packetsManager = new PacketsManagerImpl(this);
 	}
 
 	@Override
@@ -191,6 +191,11 @@ public final class PhotonServer implements Server {
 		} catch (IOException ex) {
 			logger.error("Unexpected error while trying to load the plugins.", ex);
 		}
+	}
+
+	void loadWorlds() {
+		logger.info("Loading game worlds...");
+
 	}
 
 	void registerCommands() {
