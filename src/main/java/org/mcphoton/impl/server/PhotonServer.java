@@ -89,68 +89,18 @@ public final class PhotonServer implements Server {
 	}
 
 	@Override
+	public BansManager getBansManager() {
+		return bansManager;
+	}
+
+	@Override
+	public InetSocketAddress getBoundAddress() {
+		return address;
+	}
+
+	@Override
 	public ServerCommandRegistry getCommandRegistry() {
 		return commandRegistry;
-	}
-
-	@Override
-	public PacketsManager getPacketsManager() {
-		return packetsManager;
-	}
-
-	@Override
-	public ServerPluginsManager getPluginsManager() {
-		return pluginsManager;
-	}
-
-	void loadPlugins() {
-		logger.info("Loading plugins...");
-		if (!Photon.PLUGINS_DIR.isDirectory()) {
-			Photon.PLUGINS_DIR.mkdir();
-		}
-		try {
-			pluginsManager.loadAllPlugins();
-		} catch (IOException ex) {
-			logger.error("Unexpected error while trying to load the plugins.", ex);
-		}
-	}
-
-	void startThreads() {
-		logger.info("Starting threads...");
-		consoleThread.start();
-		networkThread.start();
-	}
-
-	void setShutdownHook() {
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			logger.info("Unloading plugins...");
-			pluginsManager.unloadAllPlugins();
-
-			logger.info("Stopping threads...");
-			consoleThread.stopNicely();
-			networkThread.stopNicely();
-			try {
-				networkThread.join(500);
-			} catch (InterruptedException ex) {
-				logger.error("Interrupted while waiting for the network thread to terminate.", ex);
-				networkThread.stop();
-			} finally {
-				LoggingService.close();
-			}
-		}));
-	}
-
-	void registerCommands() {
-		logger.info("Registering photon commands...");
-		commandRegistry.register(new StopCommand());
-		commandRegistry.register(new ListCommand());
-	}
-
-	void registerPackets() {
-		logger.info("Registering game packets...");
-		packetsManager.registerGamePackets();
-		logger.info("Registering packets handlers...");
-		packetsManager.registerPacketHandlers();
 	}
 
 	@Override
@@ -162,13 +112,18 @@ public final class PhotonServer implements Server {
 	}
 
 	@Override
+	public int getMaxPlayers() {
+		return maxPlayers;
+	}
+
+	@Override
 	public Collection<Player> getOnlinePlayers() {
 		return Collections.unmodifiableCollection(onlinePlayers);
 	}
 
 	@Override
-	public int getMaxPlayers() {
-		return maxPlayers;
+	public PacketsManager getPacketsManager() {
+		return packetsManager;
 	}
 
 	@Override
@@ -192,43 +147,8 @@ public final class PhotonServer implements Server {
 	}
 
 	@Override
-	public BansManager getBansManager() {
-		return bansManager;
-	}
-
-	@Override
-	public WhitelistManager getWhitelistManager() {
-		return whitelistManager;
-	}
-
-	@Override
-	public InetSocketAddress getBoundAddress() {
-		return address;
-	}
-
-	@Override
-	public boolean isOnlineMode() {
-		return true;
-	}
-
-	@Override
-	public Collection<World> getWorlds() {
-		return Collections.unmodifiableCollection(worlds.values());
-	}
-
-	@Override
-	public World getWorld(String name) {
-		return worlds.get(name);
-	}
-
-	@Override
-	public void registerWorld(World w) {
-		worlds.put(w.getName(), w);
-	}
-
-	@Override
-	public void unregisterWorld(World w) {
-		worlds.remove(w.getName());
+	public ServerPluginsManager getPluginsManager() {
+		return pluginsManager;
 	}
 
 	@Override
@@ -239,6 +159,86 @@ public final class PhotonServer implements Server {
 	@Override
 	public void setSpawn(Location spawn) {
 		this.spawn = spawn;
+	}
+
+	@Override
+	public WhitelistManager getWhitelistManager() {
+		return whitelistManager;
+	}
+
+	@Override
+	public World getWorld(String name) {
+		return worlds.get(name);
+	}
+
+	@Override
+	public Collection<World> getWorlds() {
+		return Collections.unmodifiableCollection(worlds.values());
+	}
+
+	@Override
+	public boolean isOnlineMode() {
+		return true;
+	}
+
+	void loadPlugins() {
+		logger.info("Loading plugins...");
+		if (!Photon.PLUGINS_DIR.isDirectory()) {
+			Photon.PLUGINS_DIR.mkdir();
+		}
+		try {
+			pluginsManager.loadAllPlugins();
+		} catch (IOException ex) {
+			logger.error("Unexpected error while trying to load the plugins.", ex);
+		}
+	}
+
+	void registerCommands() {
+		logger.info("Registering photon commands...");
+		commandRegistry.register(new StopCommand());
+		commandRegistry.register(new ListCommand());
+	}
+
+	void registerPackets() {
+		logger.info("Registering game packets...");
+		packetsManager.registerGamePackets();
+		logger.info("Registering packets handlers...");
+		packetsManager.registerPacketHandlers();
+	}
+
+	@Override
+	public void registerWorld(World w) {
+		worlds.put(w.getName(), w);
+	}
+
+	void setShutdownHook() {
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			logger.info("Unloading plugins...");
+			pluginsManager.unloadAllPlugins();
+
+			logger.info("Stopping threads...");
+			consoleThread.stopNicely();
+			networkThread.stopNicely();
+			try {
+				networkThread.join(500);
+			} catch (InterruptedException ex) {
+				logger.error("Interrupted while waiting for the network thread to terminate.", ex);
+				networkThread.stop();
+			} finally {
+				LoggingService.close();
+			}
+		}));
+	}
+
+	void startThreads() {
+		logger.info("Starting threads...");
+		consoleThread.start();
+		networkThread.start();
+	}
+
+	@Override
+	public void unregisterWorld(World w) {
+		worlds.remove(w.getName());
 	}
 
 }
