@@ -40,7 +40,7 @@ import org.mcphoton.network.PacketsManager;
 import org.mcphoton.network.login.clientbound.DisconnectPacket;
 import org.mcphoton.network.login.clientbound.LoginSuccessPacket;
 import org.mcphoton.network.login.serverbound.EncryptionResponsePacket;
-import org.mcphoton.world.Location;
+import org.mcphoton.utils.Location;
 
 /**
  *

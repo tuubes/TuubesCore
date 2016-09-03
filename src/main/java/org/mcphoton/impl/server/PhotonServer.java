@@ -45,7 +45,7 @@ import org.mcphoton.plugin.ServerPluginsManager;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
-import org.mcphoton.world.Location;
+import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
 import org.slf4j.impl.LoggingService;
 import org.slf4j.impl.PhotonLogger;
