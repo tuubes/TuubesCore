@@ -20,17 +20,10 @@ package org.mcphoton;
 
 import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
-import org.mcphoton.block.BlockRegistry;
-import org.mcphoton.entity.EntityRegistry;
-import org.mcphoton.impl.block.BlockRegistryImpl;
-import org.mcphoton.impl.entity.EntityRegistryImpl;
-import org.mcphoton.impl.item.ItemRegistryImpl;
+import org.mcphoton.impl.GameRegistryImpl;
 import org.mcphoton.impl.server.Main;
-import org.mcphoton.impl.world.BiomeRegistryImpl;
-import org.mcphoton.item.ItemRegistry;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.server.Server;
-import org.mcphoton.world.BiomeRegistry;
 
 /**
  * Implementation of the Photon's class, which is the centralized API core.
@@ -41,13 +34,14 @@ public final class Photon {
 
 	public static final File MAIN_DIR = new File(System.getProperty("user.dir")), PLUGINS_DIR = new File(MAIN_DIR, "plugins"), WORLDS_DIR = new File(MAIN_DIR, "worlds");
 	public static final File CONFIG_FILE = new File(MAIN_DIR, "server_config.toml"), ICON_PNG = new File(MAIN_DIR, "server_icon.png"), ICON_JPG = new File(MAIN_DIR, "server_icon.png");
-	private static final BlockRegistry BLOCK_REGISTRY = new BlockRegistryImpl();
-	private static final ItemRegistry ITEM_REGISTRY = new ItemRegistryImpl();
-	private static final EntityRegistry ENTITY_REGISTRY = new EntityRegistryImpl();
-	private static final BiomeRegistry BIOME_REGISTRY = new BiomeRegistryImpl();
-	private static final boolean consoleAdvanced = !System.getProperty("os.name").toLowerCase().contains("windows");
+	private static final GameRegistry GAME_REGISTRY = new GameRegistryImpl();
+	private static final boolean CONSOLE_ADVANCED = !System.getProperty("os.name").toLowerCase().contains("windows");
 
 	private Photon() {
+	}
+
+	public static GameRegistry getGameRegistry() {
+		return GAME_REGISTRY;
 	}
 
 	/**
@@ -72,22 +66,6 @@ public final class Photon {
 		return Main.SERVER.packetsManager;
 	}
 
-	public static EntityRegistry getEntityRegistry() {
-		return ENTITY_REGISTRY;
-	}
-
-	public static BlockRegistry getBlockRegistry() {
-		return BLOCK_REGISTRY;
-	}
-
-	public static ItemRegistry getItemRegistry() {
-		return ITEM_REGISTRY;
-	}
-
-	public static BiomeRegistry getBiomeRegistry() {
-		return BIOME_REGISTRY;
-	}
-
 	public static boolean isClient() {
 		return false;
 	}
@@ -97,7 +75,7 @@ public final class Photon {
 	}
 
 	public static boolean isConsoleAdvanced() {
-		return consoleAdvanced;
+		return CONSOLE_ADVANCED;
 	}
 
 	public static String getVersion() {
