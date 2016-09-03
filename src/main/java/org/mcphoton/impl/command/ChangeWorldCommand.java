@@ -36,7 +36,7 @@ public class ChangeWorldCommand implements Command {
 	@Override
 	public void execute(Messageable source, String[] args) {
 		if (args.length != 1) {
-			source.sendMessage("Invalid syntax. Use cw [world]");
+			source.sendMessage("Invalid syntax. Usage " + getUsage());
 			return;
 		}
 		World world = Main.SERVER.getWorld(args[0]);
@@ -59,6 +59,16 @@ public class ChangeWorldCommand implements Command {
 	@Override
 	public String[] getAliases() {
 		return ALIASES;
+	}
+
+	@Override
+	public String getDescription() {
+		return "Teleport the executor in the pointed world";
+	}
+	
+	@Override
+	public String getUsage() {
+		return "/change-world [world]";
 	}
 
 }

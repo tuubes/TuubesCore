@@ -46,4 +46,9 @@ public class ListCommand implements Command {
 		return "list";
 	}
 
+	@Override
+	public String getDescription() {
+		return "Get the number of players connected.";
+	}
+
 }
