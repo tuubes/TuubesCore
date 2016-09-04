@@ -47,8 +47,13 @@ public class ChangeWorldCommand implements Command {
 		if (source instanceof ConsoleThread) {
 			Main.SERVER.consoleThread.world = world;
 		} else {
-			//TODO ?
+			source.sendMessage("This command only works in the server's console!");
 		}
+	}
+
+	@Override
+	public String getDescription() {
+		return "Changes the world where the console commands are executed. Only works in the server's console.";
 	}
 
 	@Override

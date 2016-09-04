@@ -33,6 +33,11 @@ public class StopCommand implements Command {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Stops the server";
+	}
+
+	@Override
 	public String getName() {
 		return "stop";
 	}

@@ -23,7 +23,6 @@ import org.mcphoton.impl.server.Main;
 import org.mcphoton.messaging.Messageable;
 
 public class ListCommand implements Command {
-	
 
 	@Override
 	public void execute(Messageable source, String[] args) {
@@ -39,6 +38,11 @@ public class ListCommand implements Command {
 			source.sendMessage("There are " + Main.SERVER.getOnlinePlayers().size() + " of " + Main.SERVER.getMaxPlayers() + " players connected.");
 			break;
 		}
+	}
+
+	@Override
+	public String getDescription() {
+		return "Lists the connected players.";
 	}
 
 	@Override
