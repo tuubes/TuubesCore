@@ -117,6 +117,7 @@ public final class BansManagerImpl implements BansManager {
 				log.error("Invalid IP address in ban list.", ex);
 			}
 		}
+		log.info("Ban list loaded.");
 	}
 
 	public void save() throws IOException {
@@ -124,5 +125,6 @@ public final class BansManagerImpl implements BansManager {
 		config.put("ips", bannedAddresses);
 		config.put("accounts", bannedAccounts);
 		config.writeTo(FILE);
+		log.info("Ban list saved.");
 	}
 }

@@ -92,6 +92,7 @@ public final class WhitelistManagerImpl implements WhitelistManager {
 				}
 			}
 		}
+		log.info("Whitelist loaded.");
 	}
 
 	public void save() throws IOException {
@@ -101,6 +102,7 @@ public final class WhitelistManagerImpl implements WhitelistManager {
 				writer.newLine();
 			}
 		}
+		log.info("Whitelist saved.");
 	}
 
 }
