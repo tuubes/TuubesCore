@@ -63,7 +63,7 @@ public class ChangeWorldCommand implements Command {
 
 	@Override
 	public String getDescription() {
-		return "Teleport the executor in the pointed world";
+		return "Change the executor's world with the pointed world. It doesn't teleport the executor it only change it for world command's.";
 	}
 	
 	@Override
