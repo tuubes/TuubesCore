@@ -29,13 +29,15 @@ import org.mcphoton.impl.network.handlers.HandshakeHandler;
 import org.mcphoton.impl.network.handlers.LoginStartHandler;
 import org.mcphoton.impl.network.handlers.PingHandler;
 import org.mcphoton.impl.network.handlers.RequestHandler;
-import org.mcphoton.impl.server.PhotonServer;
+import static org.mcphoton.impl.server.Main.SERVER;
 import org.mcphoton.network.Client;
 import org.mcphoton.network.ConnectionState;
 import org.mcphoton.network.Packet;
 import org.mcphoton.network.PacketHandler;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.network.ProtocolHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the PacketsManager.
@@ -44,7 +46,7 @@ import org.mcphoton.network.ProtocolHelper;
  */
 public final class PacketsManagerImpl implements PacketsManager {
 
-	private final PhotonServer server;
+	private static final Logger log = LoggerFactory.getLogger(PacketsManagerImpl.class);
 	private final Authenticator authenticator;
 
 	//--- ServerBound ---
@@ -55,9 +57,8 @@ public final class PacketsManagerImpl implements PacketsManager {
 	private final ConcurrentIndexMap<Class<? extends Packet>> clientInitPackets, clientStatusPackets, clientLoginPackets, clientPlayPackets;
 	private final ConcurrentIndexMap<Collection<PacketHandler>> clientInitHandlers, clientStatusHandlers, clientLoginHandlers, clientPlayHandlers;
 
-	public PacketsManagerImpl(PhotonServer server) throws GeneralSecurityException {
-		this.server = server;
-		this.authenticator = new Authenticator(server.keyPair);
+	public PacketsManagerImpl() throws GeneralSecurityException {
+		this.authenticator = new Authenticator(SERVER.keyPair);
 
 		//TODO set the correct sizes
 		this.serverInitPackets = new ConcurrentIndexMap<>();
@@ -174,41 +175,41 @@ public final class PacketsManagerImpl implements PacketsManager {
 
 	@Override
 	public void sendPacket(Packet packet, Client client) {
-		server.logger.debug("Send packet {} to the client {}", packet, client);
-		server.networkThread.outboundQueue().add(new PacketSending(packet, (ClientImpl) client));
+		log.debug("Send packet {} to the client {}", packet, client);
+		SERVER.networkThread.outboundQueue().add(new PacketSending(packet, (ClientImpl) client));
 	}
 
 	@Override
 	public void sendPacket(Packet packet, Client... clients) {
-		server.logger.debug("Send packet {} to multiple clients: {}", packet, clients);
+		log.debug("Send packet {} to multiple clients: {}", packet, clients);
 		for (Client client : clients) {
-			server.networkThread.outboundQueue().add(new PacketSending(packet, (ClientImpl) client));
+			SERVER.networkThread.outboundQueue().add(new PacketSending(packet, (ClientImpl) client));
 		}
 	}
 
 	@Override
 	public void sendPacket(Packet packet, Client client, Runnable completionAction) {
-		server.logger.debug("Send packet {} to the client {} with a completion action {}", packet, client, completionAction);
-		server.networkThread.outboundQueue().add(new PacketSending(packet, (ClientImpl) client, completionAction));
+		log.debug("Send packet {} to the client {} with a completion action {}", packet, client, completionAction);
+		SERVER.networkThread.outboundQueue().add(new PacketSending(packet, (ClientImpl) client, completionAction));
 	}
 
 	@Override
 	public Packet parsePacket(ByteBuffer data, ConnectionState connState, boolean serverBound) {
-		server.logger.debug("parse packet: {}, state: {}, serverBound: {}", data, connState, serverBound);
+		log.debug("parse packet: {}, state: {}, serverBound: {}", data, connState, serverBound);
 		int packetId = ProtocolHelper.readVarInt(data);
 		try {
 			Class<? extends Packet> packetClass = getRegisteredPacket(connState, serverBound, packetId);
 			Packet packet = packetClass.newInstance();
 			return packet.readFrom(data);
 		} catch (Exception ex) {
-			server.logger.error("Cannot create packet object with id {}", packetId, ex);
+			log.error("Cannot create packet object with id {}", packetId, ex);
 		}
 		return null;
 	}
 
 	@Override
 	public void handle(Packet packet, Client client) {
-		server.logger.debug("Handling packet {} from {}", packet.toString(), client.getAddress().toString());
+		log.debug("Handling packet {} from {}", packet.toString(), client.getAddress().toString());
 		ConcurrentIndexMap<Collection<PacketHandler>> handlersMap = getHandlersMap(client.getConnectionState(), packet.isServerBound());
 		Collection<PacketHandler> handlers = handlersMap.get(packet.getId());
 		if (handlers != null) {
@@ -248,7 +249,7 @@ public final class PacketsManagerImpl implements PacketsManager {
 	public void registerPacketHandlers() {
 		serverInitHandlers.put(0, new SimpleBag(new HandshakeHandler()));
 
-		serverStatusHandlers.put(0, new SimpleBag(new RequestHandler(server)));
+		serverStatusHandlers.put(0, new SimpleBag(new RequestHandler()));
 		serverStatusHandlers.put(1, new SimpleBag(new PingHandler(this)));
 
 		serverLoginHandlers.put(0, new SimpleBag(new LoginStartHandler(new Random(), authenticator, this)));

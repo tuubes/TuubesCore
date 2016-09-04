@@ -21,10 +21,8 @@ package org.mcphoton.impl.network;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import org.mcphoton.impl.server.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.PhotonLogger;
 
 /**
  * A PacketReader reads packets from a SocketChannel. In the minecraft protocol, a packet is a block of data
@@ -39,7 +37,7 @@ import org.slf4j.impl.PhotonLogger;
  */
 public final class PacketReader {
 
-	private static final Logger logger = LoggerFactory.getLogger("PacketReader");
+	private static final Logger log = LoggerFactory.getLogger(PacketReader.class);
 
 	/**
 	 * An empty ByteBuffer with a capacity of 0, used to indicate that the end of the stream has been reached.
@@ -61,7 +59,6 @@ public final class PacketReader {
 		this.cipherCodec = cipherCodec;
 		this.maxBufferSize = maxBufferSize;
 		this.buffer = ByteBuffer.allocateDirect(initialBufferSize);
-		((PhotonLogger) logger).setLevel(Main.SERVER.logger.getLevel());
 	}
 
 	/**
@@ -69,7 +66,7 @@ public final class PacketReader {
 	 * buffer. Then, sets readPos to 0 and update writePos accordingly.
 	 */
 	private void compactBuffer() {
-		logger.trace("compactBuffer()");
+		log.trace("compactBuffer()");
 		buffer.position(readPos);
 		buffer.limit(writePos);
 		buffer.compact();
@@ -85,7 +82,7 @@ public final class PacketReader {
 	 * buffer size.
 	 */
 	private void allocateBiggerBuffer() throws IOException {
-		logger.trace("allocateBiggerBuffer()");
+		log.trace("allocateBiggerBuffer()");
 		if (packetLength > maxBufferSize) {
 			throw new IOException("Packet too big: size is " + packetLength + ", maximum is " + maxBufferSize);
 		}
@@ -104,11 +101,11 @@ public final class PacketReader {
 	 * @throws IOException if an I/O error occurs.
 	 */
 	private int readFromSocketChannel() throws IOException {
-		logger.trace("readFromSocketChannel() begins with writePos={}", writePos);
+		log.trace("readFromSocketChannel() begins with writePos={}", writePos);
 		buffer.position(writePos);
 		int read = channel.read(buffer);
 		writePos += read;
-		logger.trace("readFromSocketChannel() ends with writePos={}", writePos);
+		log.trace("readFromSocketChannel() ends with writePos={}", writePos);
 		return read;
 	}
 
@@ -191,7 +188,7 @@ public final class PacketReader {
 	 * @throws IOException if an I/O error occurs.
 	 */
 	public ByteBuffer readNext() throws IOException {
-		logger.trace("readNext() with packetLength={} writePos={} and readPos={}", packetLength, writePos, readPos);
+		log.trace("readNext() with packetLength={} writePos={} and readPos={}", packetLength, writePos, readPos);
 		if (packetLength < 0) {//need to read the packet's length
 			readPacketLength();
 			if (packetLength == -1) {//end of stream
@@ -200,7 +197,7 @@ public final class PacketReader {
 				return null;
 			}
 		}
-		logger.trace("packetLength={}", packetLength);
+		log.trace("packetLength={}", packetLength);
 		return readPacketData(true);//reads the packet's data
 	}
 

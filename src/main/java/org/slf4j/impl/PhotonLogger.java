@@ -56,8 +56,16 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 
 	private static final String[] LEVEL_STRINGS = {"ERROR", " WARN", " INFO", "DEBUG", "TRACE"};// aligned names
 	private static final boolean USE_COLORS = !System.getProperty("os.name").toLowerCase().contains("windows") && System.console() != null;
+	private static volatile LoggingLevel level;
 
-	private volatile LoggingLevel level;
+	public static LoggingLevel getLevel() {
+		return level;
+	}
+
+	public static void setLevel(LoggingLevel level) {
+		PhotonLogger.level = level;
+	}
+
 	private final String name;
 
 	public PhotonLogger(String name) {
@@ -65,16 +73,8 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	}
 
 	public PhotonLogger(LoggingLevel level, String name) {
-		this.level = level;
+		PhotonLogger.level = level;
 		this.name = name;
-	}
-
-	public LoggingLevel getLevel() {
-		return level;
-	}
-
-	public void setLevel(LoggingLevel level) {
-		this.level = level;
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	 * @param args the arguments, may be null
 	 */
 	private void formatAndLogArguments(int level, String msg, Object[] args) {
-		if (this.level.getId() < level) {
+		if (PhotonLogger.level.getId() < level) {
 			return;
 		}
 		LocalDateTime dateTime = LocalDateTime.now();
@@ -112,7 +112,7 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 			formatAndLogArguments(level, msg, args);
 			return;
 		}
-		if (this.level.getId() < level) {
+		if (PhotonLogger.level.getId() < level) {
 			return;
 		}
 		LocalDateTime dateTime = LocalDateTime.now();
@@ -130,7 +130,7 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	 * Formats and logs a message with a Throwable.
 	 */
 	private void formatAndLogThrowable(int level, String msg, Throwable t) {
-		if (this.level.getId() < level) {
+		if (PhotonLogger.level.getId() < level) {
 			return;
 		}
 		LocalDateTime dateTime = LocalDateTime.now();
@@ -146,7 +146,7 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 			formatAndLogThrowable(level, msg, t);
 			return;
 		}
-		if (this.level.getId() < level) {
+		if (PhotonLogger.level.getId() < level) {
 			return;
 		}
 		LocalDateTime dateTime = LocalDateTime.now();

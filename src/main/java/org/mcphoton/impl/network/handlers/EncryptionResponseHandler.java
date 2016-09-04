@@ -41,6 +41,8 @@ import org.mcphoton.network.login.clientbound.DisconnectPacket;
 import org.mcphoton.network.login.clientbound.LoginSuccessPacket;
 import org.mcphoton.network.login.serverbound.EncryptionResponsePacket;
 import org.mcphoton.utils.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -48,6 +50,7 @@ import org.mcphoton.utils.Location;
  */
 public class EncryptionResponseHandler implements PacketHandler<EncryptionResponsePacket> {
 
+	private static final Logger log = LoggerFactory.getLogger(EncryptionResponseHandler.class);
 	private static final org.mcphoton.network.login.clientbound.DisconnectPacket BAD_VERIFY_TOKEN = new DisconnectPacket(), AUTH_FAILED = new DisconnectPacket();
 	private static final Pattern UUID_FIXER = Pattern.compile("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})");
 
@@ -71,7 +74,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 		try {
 			verifyToken = authenticator.decryptWithRsaPrivateKey(packet.verifyToken);
 		} catch (IllegalBlockSizeException | BadPaddingException ex) {
-			Main.SERVER.logger.error("Unable to decrypt the verify token sent by client {}.", client, ex);
+			log.error("Unable to decrypt the verify token sent by client {}.", client, ex);
 			return;
 		}
 		if (!authenticator.checkAndForgetToken(verifyToken, client)) {
@@ -84,7 +87,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 		try {
 			sharedKey = authenticator.decryptWithRsaPrivateKey(packet.sharedKey);
 		} catch (IllegalBlockSizeException | BadPaddingException ex) {
-			Main.SERVER.logger.error("Unable to decrypt the shared key sent by client {}.", client, ex);
+			log.error("Unable to decrypt the shared key sent by client {}.", client, ex);
 			return;
 		}
 		String username = authenticator.getAndForgetUsername(client);
@@ -102,19 +105,19 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 
 			String playerUuid = (String) response.get("id");
 			String playerName = (String) response.get("name");
-			Main.SERVER.logger.trace("Got id={} from auth server", playerUuid);
-			Main.SERVER.logger.trace("Got name={} from auth server", playerName);
+			log.trace("Got id={} from auth server", playerUuid);
+			log.trace("Got name={} from auth server", playerName);
 
 			if (playerUuid.indexOf('-') == -1) {//uuid without hyphens
 				playerUuid = UUID_FIXER.matcher(playerUuid).replaceFirst("$1-$2-$3-$4-$5");
-				Main.SERVER.logger.debug("Fixed UUID: {}", playerUuid);
+				log.debug("Fixed UUID: {}", playerUuid);
 			}
 			UUID accountId = UUID.fromString(playerUuid);
 
 			Location location = Main.SERVER.spawn;
 
 			PlayerImpl player = new PlayerImpl(username, accountId, location);
-			Main.SERVER.logger.debug("Player instance created: {}", player);
+			log.debug("Player instance created: {}", player);
 			pc.setPlayer(player);
 
 			//--- Enable encryption ---
@@ -122,7 +125,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				AESCodec cipherCodec = new AESCodec(sharedKey);
 				pc.enableEncryption(cipherCodec);
 			} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException ex) {
-				Main.SERVER.logger.error("Failed to enable encryption for client {}.", client, ex);
+				log.error("Failed to enable encryption for client {}.", client, ex);
 				pm.sendPacket(AUTH_FAILED, client, () -> {
 					try {
 						client.closeConnection();
@@ -141,7 +144,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 		},
 				(Exception ex) -> {//on failure
 					pm.sendPacket(AUTH_FAILED, client);
-					Main.SERVER.logger.error("Unable to authenticate {}.", username, ex);
+					log.error("Unable to authenticate {}.", username, ex);
 				}
 		);
 	}

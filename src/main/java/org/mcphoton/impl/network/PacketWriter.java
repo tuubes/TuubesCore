@@ -23,12 +23,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
 import java.util.Queue;
-import org.mcphoton.impl.server.Main;
 import org.mcphoton.network.Packet;
 import org.mcphoton.network.ProtocolOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.PhotonLogger;
 
 /**
  * A PacketWriter writes packets to a SocketChannel. In the minecraft protocol, a packet is a block of data
@@ -43,7 +41,7 @@ import org.slf4j.impl.PhotonLogger;
  */
 public final class PacketWriter {
 
-	private static final Logger logger = LoggerFactory.getLogger("PacketWriter");
+	private static final Logger log = LoggerFactory.getLogger(PacketWriter.class);
 
 	private final SocketChannel channel;
 	private final Queue<PacketSending> pendingQueue = new LinkedList<>();
@@ -59,7 +57,6 @@ public final class PacketWriter {
 	public PacketWriter(SocketChannel channel, Codec cipherCodec) {
 		this.channel = channel;
 		this.cipherCodec = cipherCodec;
-		((PhotonLogger) logger).setLevel(Main.SERVER.logger.getLevel());
 	}
 
 	/**
@@ -88,11 +85,11 @@ public final class PacketWriter {
 	 * @return true if the packet has been completely written, false otherwise.
 	 */
 	public boolean writeASAP(PacketSending packetSending) throws IOException {
-		logger.trace("--------------------{");
-		logger.trace("packet to write: {}", packetSending);
-		logger.trace("currentBuffer: {}", currentBuffer);
-		logger.trace("output stream: {}", out);
-		logger.trace("pending queue: {}", pendingQueue);
+		log.trace("--------------------{");
+		log.trace("packet to write: {}", packetSending);
+		log.trace("currentBuffer: {}", currentBuffer);
+		log.trace("output stream: {}", out);
+		log.trace("pending queue: {}", pendingQueue);
 		if (!pendingQueue.isEmpty() || currentBuffer != null) {
 			//cannot write now because an other packet must be written before
 			enqueue(packetSending);
@@ -100,7 +97,7 @@ public final class PacketWriter {
 		}
 
 		writePacket(packetSending.packet);
-		logger.trace("}--------------------");
+		log.trace("}--------------------");
 		if (currentBuffer.hasRemaining()) {//incomplete write
 			pendingCompletionAction = packetSending.completionAction;
 			return false;
@@ -164,19 +161,19 @@ public final class PacketWriter {
 		try {
 			currentBuffer = cipherCodec.encode(currentBuffer);
 		} catch (Exception ex) {
-			logger.error("Unable to encrypt outbound packet {}", packet);
+			log.error("Unable to encrypt outbound packet {}", packet);
 			throw new IOException("Encryption error while writing outbound packet", ex);
 		}
-		logger.trace("currentBuffer before write: {}", currentBuffer);
+		log.trace("currentBuffer before write: {}", currentBuffer);
 		channel.write(currentBuffer);
-		logger.trace("currentBuffer after write: {}", currentBuffer);
+		log.trace("currentBuffer after write: {}", currentBuffer);
 	}
 
 	private class SetCipherCodec implements Packet {
 
 		private final Codec newCipherCodec;
 
-		public SetCipherCodec(Codec newCipherCodec) {
+		private SetCipherCodec(Codec newCipherCodec) {
 			this.newCipherCodec = newCipherCodec;
 		}
 

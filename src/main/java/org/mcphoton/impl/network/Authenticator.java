@@ -38,8 +38,9 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import org.mcphoton.impl.server.Main;
 import org.mcphoton.network.Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -47,6 +48,7 @@ import org.mcphoton.network.Client;
  */
 public class Authenticator {
 
+	private static final Logger log = LoggerFactory.getLogger(Authenticator.class);
 	private static final String AUTH_URL = "https://sessionserver.mojang.com/session/minecraft/hasJoined?username=%s&serverId=%s";
 
 	/**
@@ -95,7 +97,7 @@ public class Authenticator {
 	}
 
 	public void authenticate(String username, byte[] sharedKey, Consumer<Map<String, Object>> onSuccess, Consumer<Exception> onFailure) {
-		Main.SERVER.logger.debug("Submitting authentication task for user {}", username);
+		log.debug("Submitting authentication task for user {}", username);
 		backgroundHttpService.submit(() -> {
 			try {
 				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");

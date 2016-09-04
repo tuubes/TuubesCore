@@ -33,17 +33,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import org.mcphoton.impl.server.Main;
-import org.mcphoton.impl.server.PhotonServer;
+import static org.mcphoton.impl.server.Main.SERVER;
 import org.mcphoton.network.Packet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author TheElectronWill
  */
 public class NioNetworkThread extends Thread {
+	
+	private static final Logger log = LoggerFactory.getLogger(NioNetworkThread.class);
 
-	private final PhotonServer server;
 	private final InetSocketAddress address;
 	private final Selector selector;
 	private final ServerSocketChannel ssc;
@@ -51,12 +53,11 @@ public class NioNetworkThread extends Thread {
 	private final List<PacketSending> packetsProcessingList = new ArrayList<>(50);
 	private volatile boolean run = true;
 
-	public NioNetworkThread(InetSocketAddress address, PhotonServer server) throws IOException {
+	public NioNetworkThread(InetSocketAddress address) throws IOException {
 		super("nio-network");
 		this.selector = Selector.open();
 		this.ssc = ServerSocketChannel.open();
 		this.address = address;
-		this.server = server;
 	}
 
 	/**
@@ -72,7 +73,7 @@ public class NioNetworkThread extends Thread {
 			ssc.configureBlocking(false);
 			ssc.register(selector, OP_ACCEPT);
 		} catch (IOException ex) {
-			Main.SERVER.logger.error("Unable to launch the ServerSocketChannel.", ex);
+			log.error("Unable to launch the ServerSocketChannel.", ex);
 			System.exit(10);//Photon cannot work with this error
 		}
 	}
@@ -93,8 +94,8 @@ public class NioNetworkThread extends Thread {
 			try {
 				selected = selectAndProcess();
 			} catch (IOException ex) {
-				server.logger.error("Unable to select keys for processing", ex);
-				server.logger.error("Photon cannot work with such an error. The network thread will shut down now.");
+				log.error("Unable to select keys for processing", ex);
+				log.error("Photon cannot work with such an error. The network thread will shut down now.");
 				run = false;
 				return;
 			}
@@ -121,7 +122,7 @@ public class NioNetworkThread extends Thread {
 		if (selected == 0) {
 			return selected;
 		}
-		server.logger.trace("Selected {} keys with the Selector.", selected);
+		log.trace("Selected {} keys with the Selector.", selected);
 		Set<SelectionKey> keys = selector.selectedKeys();
 		for (SelectionKey key : keys) {
 			if (key.isAcceptable()) {
@@ -148,7 +149,7 @@ public class NioNetworkThread extends Thread {
 			ClientImpl client = new ClientImpl(channel);
 			channel.register(selector, OP_READ, client);
 		} catch (Exception ex) {
-			server.logger.error("Unable to accept the client", ex);
+			log.error("Unable to accept the client", ex);
 		}
 	}
 
@@ -161,19 +162,19 @@ public class NioNetworkThread extends Thread {
 			while (true) {
 				ByteBuffer packetData = client.packetReader.readNext();
 				if (packetData == PacketReader.END_OF_STREAM) {//client disconnected
-					server.logger.debug("END OF STREAM for {}", client.address);
+					log.debug("END OF STREAM for {}", client.address);
 					key.cancel();
-					client.getPlayer().ifPresent(server.onlinePlayers::remove);
+					client.getPlayer().ifPresent(SERVER.onlinePlayers::remove);
 					return;
 				} else if (packetData == null) {//not enough bytes available to read the packet
 					return;
 				} else {//read operation succeed
-					Packet packet = server.packetsManager.parsePacket(packetData, client.state, true);
-					server.packetsManager.handle(packet, client);
+					Packet packet = SERVER.packetsManager.parsePacket(packetData, client.state, true);
+					SERVER.packetsManager.handle(packet, client);
 				}
 			}
 		} catch (Exception ex) {
-			server.logger.error("Unable to read data from client {}", client, ex);
+			log.error("Unable to read data from client {}", client, ex);
 		}
 	}
 
@@ -188,7 +189,7 @@ public class NioNetworkThread extends Thread {
 				key.interestOps(OP_READ);//remove OP_WRITE
 			}
 		} catch (Exception ex) {
-			server.logger.error("Unable to continue the pending writes for client {}", client, ex);
+			log.error("Unable to continue the pending writes for client {}", client, ex);
 		}
 	}
 
@@ -202,17 +203,17 @@ public class NioNetworkThread extends Thread {
 		if (drained == 0) {
 			return drained;
 		}
-		server.logger.trace("Drained {} PacketSendings from the queue.", drained);
+		log.trace("Drained {} PacketSendings from the queue.", drained);
 		for (PacketSending sending : packetsProcessingList) {
 			try {
 				ClientImpl recipient = sending.recipient;
 				boolean complete = recipient.packetWriter.writeASAP(sending);
 				if (!complete) {
-					server.logger.trace("Incomplete write -> put into the queue");
+					log.trace("Incomplete write -> put into the queue");
 					recipient.channel.register(selector, OP_READ | OP_WRITE, recipient);
 				}
 			} catch (IOException ex) {
-				server.logger.error("Unable to write outbound packet. Infos: {}", sending, ex);
+				log.error("Unable to write outbound packet. Infos: {}", sending, ex);
 			}
 		}
 		packetsProcessingList.clear();

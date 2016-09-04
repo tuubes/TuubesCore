@@ -19,24 +19,22 @@
 package org.mcphoton.impl.network.handlers;
 
 import org.mcphoton.Photon;
-import org.mcphoton.impl.server.PhotonServer;
+import static org.mcphoton.impl.server.Main.SERVER;
 import org.mcphoton.network.Client;
 import org.mcphoton.network.PacketHandler;
 import org.mcphoton.network.handshaking.serverbound.HandshakePacket;
 import org.mcphoton.network.status.clientbound.ResponsePacket;
 import org.mcphoton.network.status.serverbound.RequestPacket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author TheElectronWill
  */
 public class RequestHandler implements PacketHandler<RequestPacket> {
-
-	private final PhotonServer server;
-
-	public RequestHandler(PhotonServer server) {
-		this.server = server;
-	}
+	
+	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
 	@Override
 	public void handle(RequestPacket packet, Client client) {
@@ -47,15 +45,15 @@ public class RequestHandler implements PacketHandler<RequestPacket> {
 		jsonBuilder.append("\"protocol\":").append(HandshakePacket.CURRENT_PROTOCOL_VERSION);
 		jsonBuilder.append("},");
 		jsonBuilder.append("\"players\":{");
-		jsonBuilder.append("\"max\":").append(server.maxPlayers).append(',');
-		jsonBuilder.append("\"online\":").append(server.onlinePlayers.size());
+		jsonBuilder.append("\"max\":").append(SERVER.maxPlayers).append(',');
+		jsonBuilder.append("\"online\":").append(SERVER.onlinePlayers.size());
 		jsonBuilder.append("},");
 		jsonBuilder.append("\"description\":{");
-		jsonBuilder.append("\"text\":\"").append(server.motd).append("\"");
+		jsonBuilder.append("\"text\":\"").append(SERVER.motd).append("\"");
 		jsonBuilder.append("}}");
 		response.jsonResponse = jsonBuilder.toString();
-		server.logger.debug("Sending ResponsePacket to the client: {}", jsonBuilder);
-		server.packetsManager.sendPacket(response, client);
+		log.debug("Sending ResponsePacket to the client: {}", jsonBuilder);
+		SERVER.packetsManager.sendPacket(response, client);
 	}
 
 }

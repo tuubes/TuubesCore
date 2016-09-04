@@ -18,12 +18,9 @@
  */
 package org.mcphoton.impl.server;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import org.mcphoton.Photon;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.PhotonLogger;
 
 /**
  * The main class which launches the program.
@@ -33,44 +30,25 @@ import org.slf4j.impl.PhotonLogger;
 public final class Main {
 
 	/**
-	 * The global Logger.
-	 */
-	public static final PhotonLogger LOGGER = (PhotonLogger) LoggerFactory.getLogger("PhotonServer");
-	
-	/**
 	 * The unique server instance.
 	 */
 	public static final PhotonServer SERVER;
+	
+	/**
+	 * The logger for the Main class (and only for it! One logger per class!).
+	 */
+	private static final Logger log = LoggerFactory.getLogger(Main.class);
 
 	static {
 		printFramed("Photon server version " + Photon.getVersion(), "For minecraft version " + Photon.getMinecraftVersion());
-		LOGGER.info("Generating RSA keypair for secure communications...");
-		KeyPair keys = generateRsaKeyPair();
-		SERVER = createServerInstance(keys);
-	}
-
-	private static KeyPair generateRsaKeyPair() {
-		LOGGER.info("Generating RSA keypair...");
+		PhotonServer server = null;
 		try {
-			KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-			generator.initialize(512);
-			return generator.genKeyPair();
-		} catch (NoSuchAlgorithmException ex) {
-			LOGGER.error("Cannot generate RSA keypair.", ex);
-			System.exit(2);
-		}
-		return null;
-	}
-
-	private static PhotonServer createServerInstance(KeyPair keys) {
-		LOGGER.info("Creating server instance...");
-		try {
-			return new PhotonServer(LOGGER, keys);
+			server = new PhotonServer();
 		} catch (Exception ex) {
-			LOGGER.error("Cannot create the server instance.", ex);
+			log.error("Cannot create the server instance!", ex);
 			System.exit(3);
 		}
-		return null;
+		SERVER = server;
 	}
 
 	public static void main(String[] args) {

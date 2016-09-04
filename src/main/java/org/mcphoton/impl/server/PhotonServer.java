@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,7 +48,6 @@ import org.mcphoton.impl.command.StopCommand;
 import org.mcphoton.impl.network.NioNetworkThread;
 import org.mcphoton.impl.network.PacketsManagerImpl;
 import org.mcphoton.impl.plugin.ServerPluginsManagerImpl;
-import static org.mcphoton.impl.server.Main.LOGGER;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.plugin.ServerPluginsManager;
 import org.mcphoton.server.BansManager;
@@ -55,6 +55,8 @@ import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.impl.LoggingLevel;
 import org.slf4j.impl.LoggingService;
 import org.slf4j.impl.PhotonLogger;
@@ -66,6 +68,7 @@ import org.slf4j.impl.PhotonLogger;
  */
 public final class PhotonServer implements Server {
 
+	private static final Logger log = LoggerFactory.getLogger(PhotonServer.class);
 	private static final ConfigurationSpecification CONFIG_SPEC = new ConfigurationSpecification();
 
 	static {
@@ -79,11 +82,10 @@ public final class PhotonServer implements Server {
 	}
 
 	//---- Utilities ----
-	public final PhotonLogger logger;
 	public final KeyPair keyPair;
 	public final NioNetworkThread networkThread;
 	public final ConsoleThread consoleThread = new ConsoleThread();
-	public final PacketsManagerImpl packetsManager;
+	public final PacketsManagerImpl packetsManager = new PacketsManagerImpl();
 	public final BansManagerImpl bansManager = new BansManagerImpl();
 	public final WhitelistManagerImpl whitelistManager = new WhitelistManagerImpl();
 	public final ServerPluginsManagerImpl pluginsManager = new ServerPluginsManagerImpl();
@@ -101,12 +103,14 @@ public final class PhotonServer implements Server {
 	public final Collection<Player> onlinePlayers = new SimpleBag<>();
 	public final Map<String, World> worlds = new ConcurrentHashMap<>();
 
-	PhotonServer(PhotonLogger logger, KeyPair keyPair) throws Exception {
-		this.logger = logger;
-		this.keyPair = keyPair;
+	PhotonServer() throws Exception {
+		log.info("Generating RSA keypair...");
+		KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+		generator.initialize(512);
+		keyPair = generator.genKeyPair();
+		
 		loadConfig();
-		this.networkThread = new NioNetworkThread(address.get(), this);
-		this.packetsManager = new PacketsManagerImpl(this);
+		networkThread = new NioNetworkThread(address.get());
 	}
 
 	@Override
@@ -203,7 +207,7 @@ public final class PhotonServer implements Server {
 	}
 
 	public void loadConfig() {
-		LOGGER.info("Loading the server's configuration from \"server_config.toml\"...");
+		log.info("Loading the server's configuration from \"server_config.toml\"...");
 		try {
 			TomlConfiguration config;
 			if (CONFIG_FILE.exists()) {
@@ -211,13 +215,13 @@ public final class PhotonServer implements Server {
 				int corrected = config.correct(CONFIG_SPEC);
 				if (corrected > 0) {
 					config.writeTo(CONFIG_FILE);
-					LOGGER.warn("Corrected {} invalid entry(ies) in server_config.toml", corrected);
+					log.warn("Corrected {} invalid entry(ies) in server_config.toml", corrected);
 				}
 
 			} else {
 				config = new TomlConfiguration();
 				int corrected = config.correct(CONFIG_SPEC);
-				LOGGER.info("Added {} missing entries in server_config.toml", corrected);
+				log.info("Added {} missing entries in server_config.toml", corrected);
 				config.writeTo(CONFIG_FILE);
 			}
 
@@ -225,7 +229,7 @@ public final class PhotonServer implements Server {
 			if (!address.isInitialized()) {
 				address.init(new InetSocketAddress(port));
 			} else if (address.get().getPort() != port) {
-				LOGGER.warn("The server port has been modified in the config file. A restart is required to make the change effective.");
+				log.warn("The server port has been modified in the config file. A restart is required to make the change effective.");
 			}
 
 			maxPlayers = config.getInt("maxPlayers");
@@ -240,47 +244,47 @@ public final class PhotonServer implements Server {
 			motd = config.getString("motd");
 
 			LoggingLevel logLevel = LoggingLevel.valueOf(config.getString("loggingLevel"));
-			logger.setLevel(logLevel);
+			PhotonLogger.setLevel(logLevel);
 
 			int threads = config.getInt("executionThreads");
 			if (!executorService.isInitialized()) {
 				executorService.init(Executors.newScheduledThreadPool(threads, new ExecutionThreadFactory()));
 			} else if (executionThreads.get() != threads) {
-				LOGGER.warn("The number of execution threads has been modified in the config file. A restart is required to make the change effective.");
+				log.warn("The number of execution threads has been modified in the config file. A restart is required to make the change effective.");
 			}
 		} catch (IOException ex) {
-			LOGGER.error("Cannot load the server's configuration.", ex);
+			log.error("Cannot load the server's configuration.", ex);
 			System.exit(1);
 		}
 	}
 
 	void loadPlugins() {
-		logger.info("Loading plugins...");
+		log.info("Loading plugins...");
 		if (!Photon.PLUGINS_DIR.isDirectory()) {
 			Photon.PLUGINS_DIR.mkdir();
 		}
 		try {
 			pluginsManager.loadAllPlugins();
 		} catch (IOException ex) {
-			logger.error("Unexpected error while trying to load the plugins.", ex);
+			log.error("Unexpected error while trying to load the plugins.", ex);
 		}
 	}
 
 	void loadWorlds() {
-		logger.info("Loading game worlds...");
+		log.info("Loading game worlds...");
 
 	}
 
 	void registerCommands() {
-		logger.info("Registering photon commands...");
+		log.info("Registering photon commands...");
 		commandRegistry.register(new StopCommand());
 		commandRegistry.register(new ListCommand());
 	}
 
 	void registerPackets() {
-		logger.info("Registering game packets...");
+		log.info("Registering game packets...");
 		packetsManager.registerGamePackets();
-		logger.info("Registering packets handlers...");
+		log.info("Registering packets handlers...");
 		packetsManager.registerPacketHandlers();
 	}
 
@@ -295,22 +299,22 @@ public final class PhotonServer implements Server {
 		config.put("world", spawn.getWorld().getName());
 		config.put("spawn", spawn.getX() + "," + spawn.getY() + "," + spawn.getZ());
 		config.put("motd", motd);
-		config.put("loggingLevel", logger.getLevel());
+		config.put("loggingLevel", PhotonLogger.getLevel());
 		config.put("executionThreads", executionThreads.get());
 	}
 
 	void setShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			logger.info("Unloading plugins...");
+			log.info("Unloading plugins...");
 			pluginsManager.unloadAllPlugins();
 
-			logger.info("Stopping threads...");
+			log.info("Stopping threads...");
 			consoleThread.stopNicely();
 			networkThread.stopNicely();
 			try {
 				networkThread.join(500);
 			} catch (InterruptedException ex) {
-				logger.error("Interrupted while waiting for the network thread to terminate.", ex);
+				log.error("Interrupted while waiting for the network thread to terminate.", ex);
 				networkThread.stop();
 			} finally {
 				LoggingService.close();
@@ -319,7 +323,7 @@ public final class PhotonServer implements Server {
 	}
 
 	void startThreads() {
-		logger.info("Starting threads...");
+		log.info("Starting threads...");
 		consoleThread.start();
 		networkThread.start();
 	}

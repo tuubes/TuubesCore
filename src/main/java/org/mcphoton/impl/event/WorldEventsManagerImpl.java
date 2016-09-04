@@ -32,7 +32,8 @@ import org.mcphoton.event.EventHandler;
 import org.mcphoton.event.Listen;
 import org.mcphoton.event.ListenOrder;
 import org.mcphoton.event.WorldEventsManager;
-import org.mcphoton.impl.server.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of the {@link WorldEventsManager}. This class is thread-safe because all the operations are
@@ -43,6 +44,7 @@ import org.mcphoton.impl.server.Main;
  */
 public class WorldEventsManagerImpl implements WorldEventsManager {
 
+	private static final Logger log = LoggerFactory.getLogger(WorldEventsManagerImpl.class);
 	private final Map<Class<? extends Event>, EnumMap<ListenOrder, Bag<EventHandler>>> handlersMap = new HashMap<>();
 
 	@Override
@@ -191,7 +193,7 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 			try {
 				handlerMethod.invoke(event);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-				Main.SERVER.logger.error("An unexpected error occured in an EventHandler.", ex);
+				log.error("An unexpected error occured in an EventHandler.", ex);
 			}
 		}
 	}
@@ -212,7 +214,7 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 				try {
 					handlerMethod.invoke(event);
 				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-					Main.SERVER.logger.error("An unexpected error occured in an EventHandler.", ex);
+					log.error("An unexpected error occured in an EventHandler.", ex);
 				}
 			}
 		}

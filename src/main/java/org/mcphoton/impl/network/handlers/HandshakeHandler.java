@@ -18,21 +18,24 @@
  */
 package org.mcphoton.impl.network.handlers;
 
-import org.mcphoton.impl.server.Main;
 import org.mcphoton.network.Client;
 import org.mcphoton.network.ConnectionState;
 import org.mcphoton.network.PacketHandler;
 import org.mcphoton.network.handshaking.serverbound.HandshakePacket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author TheElectronWill
  */
 public class HandshakeHandler implements PacketHandler<HandshakePacket> {
+	
+	private static final Logger log = LoggerFactory.getLogger(HandshakeHandler.class);
 
 	@Override
 	public void handle(HandshakePacket packet, Client client) {
-		Main.SERVER.logger.debug("Set client state to " + packet.nextState);
+		log.debug("Set client state to " + packet.nextState);
 		if (packet.nextState == 1) {
 			client.setConnectionState(ConnectionState.STATUS);
 		} else if (packet.nextState == 2) {
