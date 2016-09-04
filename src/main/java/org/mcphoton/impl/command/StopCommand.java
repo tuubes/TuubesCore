@@ -37,4 +37,9 @@ public class StopCommand implements Command {
 		return "stop";
 	}
 
+	@Override
+	public String getDescription() {
+		return "Stop the server. Only for opped players";
+	}
+
 }
