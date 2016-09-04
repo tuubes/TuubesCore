@@ -18,6 +18,15 @@
  */
 package org.mcphoton.impl.server;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -34,6 +43,7 @@ public final class WhitelistManagerImpl implements WhitelistManager {
 
 	private static final Logger log = LoggerFactory.getLogger(WhitelistManagerImpl.class);
 	private static final WhitelistManagerImpl INSTANCE = new WhitelistManagerImpl();
+	private static final File FILE = new File(Photon.MAIN_DIR, "whitelist.txt");
 
 	public static WhitelistManagerImpl getInstance() {
 		return INSTANCE;
@@ -68,6 +78,29 @@ public final class WhitelistManagerImpl implements WhitelistManager {
 	@Override
 	public boolean isAllowed(UUID accountId) {
 		return whitelist.contains(accountId);
+	}
+
+	public void load() throws IOException {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(FILE), StandardCharsets.UTF_8))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				try {
+					UUID playerId = UUID.fromString(line);
+					whitelist.add(playerId);
+				} catch (IllegalArgumentException ex) {
+					log.error("Invalid UUID in whitelist.", ex);
+				}
+			}
+		}
+	}
+
+	public void save() throws IOException {
+		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(FILE), StandardCharsets.UTF_8))) {
+			for (UUID uuid : whitelist) {
+				writer.write(uuid.toString());
+				writer.newLine();
+			}
+		}
 	}
 
 }

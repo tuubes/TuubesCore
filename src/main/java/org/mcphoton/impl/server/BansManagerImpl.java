@@ -18,12 +18,16 @@
  */
 package org.mcphoton.impl.server;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
 import org.mcphoton.Photon;
+import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.server.BansManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +40,7 @@ public final class BansManagerImpl implements BansManager {
 
 	private static final Logger log = LoggerFactory.getLogger(WhitelistManagerImpl.class);
 	private static final BansManagerImpl INSTANCE = new BansManagerImpl();
+	private static final File FILE = new File(Photon.MAIN_DIR, "bans.toml");
 
 	public static BansManagerImpl getInstance() {
 		return INSTANCE;
@@ -87,4 +92,37 @@ public final class BansManagerImpl implements BansManager {
 		return bannedAddresses;
 	}
 
+	public void load() throws IOException {
+		TomlConfiguration config = new TomlConfiguration(FILE);
+		if (config.isEmpty()) {
+			return;
+		}
+
+		List<String> accounts = (List) config.get("accounts");
+		for (String account : accounts) {
+			try {
+				UUID playerId = UUID.fromString(account);
+				bannedAccounts.add(playerId);
+			} catch (IllegalArgumentException ex) {
+				log.error("Invalid UUID in ban list.", ex);
+			}
+		}
+
+		List<String> ips = (List) config.get("ips");
+		for (String ip : ips) {
+			try {
+				InetAddress address = InetAddress.getByName(ip);
+				bannedAddresses.add(address);
+			} catch (IllegalArgumentException ex) {
+				log.error("Invalid IP address in ban list.", ex);
+			}
+		}
+	}
+
+	public void save() throws IOException {
+		TomlConfiguration config = new TomlConfiguration();
+		config.put("ips", bannedAddresses);
+		config.put("accounts", bannedAccounts);
+		config.writeTo(FILE);
+	}
 }
