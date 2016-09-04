@@ -80,6 +80,7 @@ public final class PhotonServer implements Server {
 		CONFIG_SPEC.defineString("motd", "Photon server, version alpha");
 		CONFIG_SPEC.defineString("loggingLevel", "DEBUG", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
 		CONFIG_SPEC.defineInt("executionThreads", Math.max(1, Runtime.getRuntime().availableProcessors() - 1), 1, 100);
+		CONFIG_SPEC.defineBoolean("whitelist", false);
 	}
 
 	//---- Utilities ----
@@ -107,7 +108,7 @@ public final class PhotonServer implements Server {
 		KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
 		generator.initialize(512);
 		keyPair = generator.genKeyPair();
-		
+
 		loadConfig();
 		networkThread = new NioNetworkThread(address.get());
 	}
@@ -205,6 +206,38 @@ public final class PhotonServer implements Server {
 		return true;
 	}
 
+	public void loadBanlist() {
+		try {
+			BansManagerImpl.getInstance().load();
+		} catch (IOException ex) {
+			log.error("Unable to load the ban list.", ex);
+		}
+	}
+
+	public void saveBanlist() {
+		try {
+			BansManagerImpl.getInstance().save();
+		} catch (IOException ex) {
+			log.error("Unable to save the ban list.", ex);
+		}
+	}
+
+	public void loadWhitelist() {
+		try {
+			WhitelistManagerImpl.getInstance().load();
+		} catch (IOException ex) {
+			log.error("Unable to load the whitelist.", ex);
+		}
+	}
+
+	public void saveWhitelist() {
+		try {
+			WhitelistManagerImpl.getInstance().save();
+		} catch (IOException ex) {
+			log.error("Unable to save the whitelist.", ex);
+		}
+	}
+
 	public void loadConfig() {
 		log.info("Loading the server's configuration from server-config.toml ...");
 		try {
@@ -231,6 +264,7 @@ public final class PhotonServer implements Server {
 			}
 
 			maxPlayers = config.getInt("maxPlayers");
+			WhitelistManagerImpl.getInstance().setEnabled(config.getBoolean("whitelist"));
 
 			String spawnWorld = config.getString("world");
 			String[] coords = config.getString("spawn").split(",");
@@ -250,6 +284,8 @@ public final class PhotonServer implements Server {
 			} else if (executionThreads.get() != threads) {
 				log.warn("The number of execution threads has been modified in the config file. A restart is required to make the change effective.");
 			}
+
+			log.info("Server config loaded!");
 		} catch (IOException ex) {
 			log.error("Cannot load the server's configuration.", ex);
 			System.exit(1);
@@ -299,12 +335,18 @@ public final class PhotonServer implements Server {
 		config.put("motd", motd);
 		config.put("loggingLevel", PhotonLogger.getLevel());
 		config.put("executionThreads", executionThreads.get());
+		log.info("Server config saved!");
 	}
 
 	void setShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			log.info("Unloading plugins...");
 			pluginsManager.unloadAllPlugins();
+			
+			log.info("Saving configurations...");
+			saveConfig();
+			saveBanlist();
+			saveWhitelist();
 
 			log.info("Stopping threads...");
 			consoleThread.stopNicely();

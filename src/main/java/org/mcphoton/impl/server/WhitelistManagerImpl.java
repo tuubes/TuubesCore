@@ -53,7 +53,7 @@ public final class WhitelistManagerImpl implements WhitelistManager {
 	}
 
 	private final Set<UUID> whitelist = new ConcurrentSkipListSet<>();
-	private volatile boolean enabled = true;
+	private volatile boolean enabled;
 
 	@Override
 	public boolean isEnabled() {

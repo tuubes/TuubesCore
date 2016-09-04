@@ -53,6 +53,8 @@ public final class Main {
 
 	public static void main(String[] args) {
 		SERVER.setShutdownHook();
+		SERVER.loadBanlist();
+		SERVER.loadWhitelist();
 		SERVER.registerCommands();
 		SERVER.registerPackets();
 		SERVER.loadPlugins();
