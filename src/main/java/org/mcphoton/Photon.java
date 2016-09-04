@@ -33,7 +33,7 @@ import org.mcphoton.server.Server;
 public final class Photon {
 
 	public static final File MAIN_DIR = new File(System.getProperty("user.dir")), PLUGINS_DIR = new File(MAIN_DIR, "plugins"), WORLDS_DIR = new File(MAIN_DIR, "worlds");
-	public static final File CONFIG_FILE = new File(MAIN_DIR, "server_config.toml"), ICON_PNG = new File(MAIN_DIR, "server_icon.png"), ICON_JPG = new File(MAIN_DIR, "server_icon.png");
+	public static final File CONFIG_FILE = new File(MAIN_DIR, "server_config.toml");
 	private static final GameRegistry GAME_REGISTRY = new GameRegistryImpl();
 	private static final boolean CONSOLE_ADVANCED = !System.getProperty("os.name").toLowerCase().contains("windows");
 
@@ -59,7 +59,7 @@ public final class Photon {
 	 * </p>
 	 */
 	public static ScheduledExecutorService getExecutorService() {
-		return Main.EXECUTOR_SERVICE;
+		return Main.SERVER.executorService.get();
 	}
 
 	public static PacketsManager getPacketsManager() {
