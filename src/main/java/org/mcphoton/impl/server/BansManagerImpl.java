@@ -23,13 +23,26 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
+import org.mcphoton.Photon;
 import org.mcphoton.server.BansManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author TheElectronWill
  */
-public class BansManagerImpl implements BansManager {
+public final class BansManagerImpl implements BansManager {
+
+	private static final Logger log = LoggerFactory.getLogger(WhitelistManagerImpl.class);
+	private static final BansManagerImpl INSTANCE = new BansManagerImpl();
+
+	public static BansManagerImpl getInstance() {
+		return INSTANCE;
+	}
+
+	private BansManagerImpl() {
+	}
 
 	private final Set<UUID> bannedAccounts = new ConcurrentSkipListSet<>();
 	private final Set<InetAddress> bannedAddresses = new ConcurrentSkipListSet<>();

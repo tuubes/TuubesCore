@@ -86,8 +86,6 @@ public final class PhotonServer implements Server {
 	public final NioNetworkThread networkThread;
 	public final ConsoleThread consoleThread = new ConsoleThread();
 	public final PacketsManagerImpl packetsManager = new PacketsManagerImpl();
-	public final BansManagerImpl bansManager = new BansManagerImpl();
-	public final WhitelistManagerImpl whitelistManager = new WhitelistManagerImpl();
 	public final ServerPluginsManagerImpl pluginsManager = new ServerPluginsManagerImpl();
 	public final ServerCommandRegistryImpl commandRegistry = new ServerCommandRegistryImpl();
 	public final Constant<ScheduledExecutorService> executorService = new Constant<>();
@@ -115,7 +113,7 @@ public final class PhotonServer implements Server {
 
 	@Override
 	public BansManager getBansManager() {
-		return bansManager;
+		return BansManagerImpl.getInstance();
 	}
 
 	@Override
@@ -188,7 +186,7 @@ public final class PhotonServer implements Server {
 
 	@Override
 	public WhitelistManager getWhitelistManager() {
-		return whitelistManager;
+		return WhitelistManagerImpl.getInstance();
 	}
 
 	@Override

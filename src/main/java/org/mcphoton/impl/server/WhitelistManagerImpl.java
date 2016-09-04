@@ -21,13 +21,26 @@ package org.mcphoton.impl.server;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
+import org.mcphoton.Photon;
 import org.mcphoton.server.WhitelistManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author TheElectronWill
  */
-public class WhitelistManagerImpl implements WhitelistManager {
+public final class WhitelistManagerImpl implements WhitelistManager {
+
+	private static final Logger log = LoggerFactory.getLogger(WhitelistManagerImpl.class);
+	private static final WhitelistManagerImpl INSTANCE = new WhitelistManagerImpl();
+
+	public static WhitelistManagerImpl getInstance() {
+		return INSTANCE;
+	}
+
+	private WhitelistManagerImpl() {
+	}
 
 	private final Set<UUID> whitelist = new ConcurrentSkipListSet<>();
 	private volatile boolean enabled = true;
