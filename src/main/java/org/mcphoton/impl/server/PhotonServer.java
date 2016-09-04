@@ -23,6 +23,7 @@ import com.electronwill.utils.IntConstant;
 import com.electronwill.utils.SimpleBag;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
@@ -37,7 +38,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
-import static org.mcphoton.Photon.CONFIG_FILE;
 import org.mcphoton.command.ServerCommandRegistry;
 import org.mcphoton.config.ConfigurationSpecification;
 import org.mcphoton.config.TomlConfiguration;
@@ -70,6 +70,7 @@ public final class PhotonServer implements Server {
 
 	private static final Logger log = LoggerFactory.getLogger(PhotonServer.class);
 	private static final ConfigurationSpecification CONFIG_SPEC = new ConfigurationSpecification();
+	private static final File CONFIG_FILE = new File(Photon.MAIN_DIR, "server-config.toml");
 
 	static {
 		CONFIG_SPEC.defineInt("port", 25565, 1, 65535);
@@ -205,7 +206,7 @@ public final class PhotonServer implements Server {
 	}
 
 	public void loadConfig() {
-		log.info("Loading the server's configuration from \"server_config.toml\"...");
+		log.info("Loading the server's configuration from server-config.toml ...");
 		try {
 			TomlConfiguration config;
 			if (CONFIG_FILE.exists()) {
@@ -213,13 +214,12 @@ public final class PhotonServer implements Server {
 				int corrected = config.correct(CONFIG_SPEC);
 				if (corrected > 0) {
 					config.writeTo(CONFIG_FILE);
-					log.warn("Corrected {} invalid entry(ies) in server_config.toml", corrected);
+					log.warn("Corrected {} invalid entry(ies) in server-config.toml", corrected);
 				}
-
 			} else {
 				config = new TomlConfiguration();
 				int corrected = config.correct(CONFIG_SPEC);
-				log.info("Added {} missing entries in server_config.toml", corrected);
+				log.info("Added {} missing entries in server-config.toml", corrected);
 				config.writeTo(CONFIG_FILE);
 			}
 

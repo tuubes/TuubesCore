@@ -33,7 +33,6 @@ import org.mcphoton.server.Server;
 public final class Photon {
 
 	public static final File MAIN_DIR = new File(System.getProperty("user.dir")), PLUGINS_DIR = new File(MAIN_DIR, "plugins"), WORLDS_DIR = new File(MAIN_DIR, "worlds");
-	public static final File CONFIG_FILE = new File(MAIN_DIR, "server_config.toml");
 	private static final GameRegistry GAME_REGISTRY = new GameRegistryImpl();
 	private static final boolean CONSOLE_ADVANCED = !System.getProperty("os.name").toLowerCase().contains("windows");
 
