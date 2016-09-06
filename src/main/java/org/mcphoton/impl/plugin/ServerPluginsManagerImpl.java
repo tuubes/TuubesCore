@@ -49,8 +49,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 
+	private static final Logger log = LoggerFactory.getLogger("ServerPluginsManager");
 	static final ClassSharer GLOBAL_CLASS_SHARER = new ClassSharerImpl();
-	static final Logger LOGGER = LoggerFactory.getLogger("PluginsManager");
 	static final File PLUGINS_CONFIG = new File(Photon.PLUGINS_DIR, "plugins_config.toml");
 	private final Map<String, ServerPlugin> serverPlugins = new HashMap<>();
 
@@ -98,7 +98,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		try {
 			loadOtherPlugin(infos.clazz, infos.classLoader, world);
 		} catch (Exception ex) {
-			LOGGER.error("Unable to load the plugin {}.", infos.description.name(), ex);
+			log.error("Unable to load the plugin {}.", infos.description.name(), ex);
 		}
 	}
 
@@ -165,7 +165,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		final List<Throwable> errors = new ArrayList<>();
 
 		//1: Gather informations about the plugins: class + description.
-		LOGGER.debug("Gathering informations about the plugins...");
+		log.debug("Gathering informations about the plugins...");
 		for (File file : files) {
 			try {
 				PluginClassLoader classLoader = new PluginClassLoader(file.toURI().toURL(), GLOBAL_CLASS_SHARER);
@@ -183,7 +183,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 				}
 				PluginInfos infos = new PluginInfos(clazz, classLoader, description);
 				infosMap.put(description.name(), infos);
-				LOGGER.trace("Valid plugin found: {} -> infos: {}.", file, infos);
+				log.trace("Valid plugin found: {} -> infos: {}.", file, infos);
 			} catch (Exception | NoClassDefFoundError error) {
 				errors.add(error);
 			}
@@ -191,7 +191,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 
 		//2: Resolve dependencies for the ServerPlugins and load them.
 		//2.1: Resolve dependencies for the *actual* ServerPlugins.
-		LOGGER.debug("Resolving dependencies for the actual server plugins...");
+		log.debug("Resolving dependencies for the actual server plugins...");
 		DependencyResolver resolver = new DependencyResolver();
 		for (Iterator<String> it = serverPlugins.iterator(); it.hasNext();) {
 			String plugin = it.next();
@@ -207,17 +207,17 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 			}
 		}
 		Solution solution = resolver.resolve(errors);
-		LOGGER.debug("Solution: {}", solution.resolvedOrder);
+		log.debug("Solution: {}", solution.resolvedOrder);
 
 		//2.2: Print informations.
-		LOGGER.info("{} out of {} server plugins will be loaded.", solution.resolvedOrder.size(), serverPluginsVersions.size());
+		log.info("{} out of {} server plugins will be loaded.", solution.resolvedOrder.size(), serverPluginsVersions.size());
 		for (Throwable ex : solution.errors) {
-			LOGGER.error(ex.toString());
+			log.error(ex.toString());
 		}
 		errors.clear();
 
 		//2.3: Load the server plugins.
-		LOGGER.debug("Loading the server plugins...");
+		log.debug("Loading the server plugins...");
 		for (String plugin : solution.resolvedOrder) {
 			PluginInfos infos = infosMap.get(plugin);
 			infos.setWorlds(serverWorlds);//load in every server's world
@@ -225,13 +225,13 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		}
 
 		//3: Resolve dependencies for the other (non server) plugins, per world, and load them.
-		LOGGER.info("Loading plugins per world...");
+		log.info("Loading plugins per world...");
 		for (Map.Entry<World, List<String>> entry : worldPlugins.entrySet()) {
 			final World world = entry.getKey();
 			final List<String> plugins = entry.getValue();
 
 			//3.1: Resolve dependencies for the world's plugins.
-			LOGGER.debug("Resolving dependencies for the plugins of the world {}...", world.getName());
+			log.debug("Resolving dependencies for the plugins of the world {}...", world.getName());
 			resolver = new DependencyResolver();
 			resolver.addAvailable(serverPlugins, serverPluginsVersions);//the server plugins are available to all the plugins
 			for (String plugin : plugins) {
@@ -239,16 +239,16 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 				resolver.addToResolve(infos.description);
 			}
 			solution = resolver.resolve(errors);
-			LOGGER.debug("Solution: {}", solution.resolvedOrder);
+			log.debug("Solution: {}", solution.resolvedOrder);
 
 			//3.2: Print informations.
-			LOGGER.info("{} out of {} plugins will be loaded in world {}.", solution.resolvedOrder.size(), plugins.size(), world);
+			log.info("{} out of {} plugins will be loaded in world {}.", solution.resolvedOrder.size(), plugins.size(), world);
 			for (Throwable ex : solution.errors) {
-				LOGGER.error(ex.toString());
+				log.error(ex.toString());
 			}
 
 			//3.3: Load the world's plugins.
-			LOGGER.debug("Loading the plugins in world {}...", world.getName());
+			log.debug("Loading the plugins in world {}...", world.getName());
 			for (String plugin : solution.resolvedOrder) {
 				PluginInfos infos = infosMap.get(plugin);
 				try {
@@ -262,13 +262,13 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 						loadOtherPlugin(infos, world);
 					}
 				} catch (Exception ex) {
-					LOGGER.error("Unable to load the plugin {}.", plugin, ex);
+					log.error("Unable to load the plugin {}.", plugin, ex);
 				}
 			}
 		}
 
 		//4: Actually load the server plugins that aren't loaded on the entire server.
-		LOGGER.info("Loading the non-global server plugins...");
+		log.info("Loading the non-global server plugins...");
 		for (PluginInfos infos : nonGlobalServerPlugins) {
 			loadServerPlugin(infos);
 		}
@@ -278,7 +278,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		try {
 			loadServerPlugin(infos.clazz, infos.classLoader, infos.description, infos.worlds);
 		} catch (Exception ex) {
-			LOGGER.error("Unable to load the server plugin {}.", infos.description.name(), ex);
+			log.error("Unable to load the server plugin {}.", infos.description.name(), ex);
 		}
 	}
 
@@ -298,7 +298,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		try {
 			loadWorldPlugin(infos.clazz, infos.classLoader, infos.description, world);
 		} catch (Exception ex) {
-			LOGGER.error("Unable to load the world plugin {}.", infos.description.name(), ex);
+			log.error("Unable to load the world plugin {}.", infos.description.name(), ex);
 		}
 	}
 
@@ -317,7 +317,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 			try {
 				unloadServerPlugin(serverPlugin);
 			} catch (Exception ex) {
-				LOGGER.error("Unable to unload the server plugin {}.", serverPlugin.getName(), ex);
+				log.error("Unable to unload the server plugin {}.", serverPlugin.getName(), ex);
 			}
 		}
 		for (World world : Photon.getServer().getWorlds()) {

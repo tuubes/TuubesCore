@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import org.mcphoton.impl.plugin.DependencyResolver.Solution;
 import static org.mcphoton.impl.plugin.ServerPluginsManagerImpl.GLOBAL_CLASS_SHARER;
-import static org.mcphoton.impl.plugin.ServerPluginsManagerImpl.LOGGER;
 import org.mcphoton.plugin.Plugin;
 import org.mcphoton.plugin.PluginDescription;
 import org.mcphoton.plugin.ServerPlugin;
@@ -36,6 +35,8 @@ import org.mcphoton.plugin.SharedClassLoader;
 import org.mcphoton.plugin.WorldPlugin;
 import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.world.World;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of WorldPluginsManager.
@@ -44,6 +45,7 @@ import org.mcphoton.world.World;
  */
 public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 
+	private static final Logger log = LoggerFactory.getLogger("WorldPluginsManager");
 	private final Map<String, Plugin> plugins = new HashMap<>();
 	private final World world;
 
@@ -97,7 +99,7 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 		final List<Throwable> errors = new ArrayList<>();
 
 		//1: Gather informations about the plugins: class + description.
-		LOGGER.debug("Gathering informations about the plugins...");
+		log.debug("Gathering informations about the plugins...");
 		for (File file : files) {
 			try {
 				PluginClassLoader classLoader = new PluginClassLoader(file.toURI().toURL(), GLOBAL_CLASS_SHARER);
@@ -115,29 +117,29 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 				}
 				PluginInfos infos = new PluginInfos(clazz, classLoader, description);
 				infosMap.put(description.name(), infos);
-				LOGGER.trace("Valid plugin found: {} -> infos: {}.", file, infos);
+				log.trace("Valid plugin found: {} -> infos: {}.", file, infos);
 			} catch (Exception | NoClassDefFoundError error) {
 				errors.add(error);
 			}
 		}
 
 		//2: Resolve the dependencies.
-		LOGGER.debug("Resolving plugins' dependencies...");
+		log.debug("Resolving plugins' dependencies...");
 		DependencyResolver resolver = new DependencyResolver();
 		for (PluginInfos infos : infosMap.values()) {
 			resolver.addToResolve(infos.description);
 		}
 		Solution solution = resolver.resolve(errors);
-		LOGGER.debug("Solution: {}", solution.resolvedOrder);
+		log.debug("Solution: {}", solution.resolvedOrder);
 
 		//3: Print informations.
-		LOGGER.info("{} out of {} server plugins will be loaded.", solution.resolvedOrder.size(), files.length);
+		log.info("{} out of {} server plugins will be loaded.", solution.resolvedOrder.size(), files.length);
 		for (Throwable ex : solution.errors) {
-			LOGGER.error(ex.toString());
+			log.error(ex.toString());
 		}
 
 		//4: Load the plugins.
-		LOGGER.debug("Loading the plugins...");
+		log.debug("Loading the plugins...");
 		for (String plugin : solution.resolvedOrder) {
 			try {
 				PluginInfos infos = infosMap.get(plugin);
@@ -155,7 +157,7 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 				plugins.put(instance.getName(), instance);
 				loadedPlugins.add(instance);
 			} catch (Exception ex) {
-				LOGGER.error("Unable to load the plugin {} in world {}.", plugin, world.getName());
+				log.error("Unable to load the plugin {} in world {}.", plugin, world.getName());
 			}
 		}
 		return loadedPlugins;
@@ -172,7 +174,7 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 			try {
 				unloadPlugin(plugin);
 			} catch (Exception ex) {
-				LOGGER.error("Unable to unload the plugin {}", plugin, ex);
+				log.error("Unable to unload the plugin {}", plugin, ex);
 			}
 		}
 	}
