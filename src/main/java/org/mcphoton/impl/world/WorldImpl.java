@@ -39,7 +39,7 @@ import org.mcphoton.world.protection.WorldAccessManager;
  *
  * @author TheElectronWill
  */
-public class PhotonWorld implements World {
+public class WorldImpl implements World {
 
 	protected volatile String name;
 	protected volatile File directory = new File(Photon.WORLDS_DIR, name);
@@ -52,7 +52,7 @@ public class PhotonWorld implements World {
 	protected final WorldEventsManager eventsManager = new WorldEventsManagerImpl();
 	protected final WorldCommandRegistry commandRegistry = new WorldCommandRegistryImpl();
 
-	public PhotonWorld(String name, WorldType type) {
+	public WorldImpl(String name, WorldType type) {
 		this.name = name;
 		this.type = type;
 	}
