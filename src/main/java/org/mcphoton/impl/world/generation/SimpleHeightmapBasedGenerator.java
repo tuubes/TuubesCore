@@ -19,8 +19,8 @@
 package org.mcphoton.impl.world.generation;
 
 import java.util.Random;
+import org.mcphoton.impl.world.ChunkColumnImpl;
 import org.mcphoton.impl.world.ChunkSectionImpl;
-import org.mcphoton.impl.world.SynchronizedChunkColumn;
 import org.mcphoton.world.ChunkColumn;
 import org.mcphoton.world.ChunkGenerator;
 import org.mcphoton.world.ChunkSection;
@@ -101,7 +101,7 @@ public class SimpleHeightmapBasedGenerator implements ChunkGenerator {
 				}
 			}
 		}
-		return new SynchronizedChunkColumn(ID_SAND, ID_SAND, world, sections, biomesData);
+		return new ChunkColumnImpl(biomesData, sections);
 	}
 
 }
