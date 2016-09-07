@@ -29,11 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * @see http://wiki.vg/Server_List_Ping
  * @author TheElectronWill
  */
 public class RequestHandler implements PacketHandler<RequestPacket> {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
 	@Override
@@ -50,7 +50,13 @@ public class RequestHandler implements PacketHandler<RequestPacket> {
 		jsonBuilder.append("},");
 		jsonBuilder.append("\"description\":{");
 		jsonBuilder.append("\"text\":\"").append(SERVER.motd).append("\"");
-		jsonBuilder.append("}}");
+		if (SERVER.encodedFavicon != null) {
+			jsonBuilder.append("},");
+			jsonBuilder.append("\"favicon\":\"").append(SERVER.encodedFavicon).append("\"");
+			jsonBuilder.append("}");
+		} else {
+			jsonBuilder.append("}}");
+		}
 		response.jsonResponse = jsonBuilder.toString();
 		log.debug("Sending ResponsePacket to the client: {}", jsonBuilder);
 		SERVER.packetsManager.sendPacket(response, client);
