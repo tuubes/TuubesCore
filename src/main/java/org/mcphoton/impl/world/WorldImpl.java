@@ -34,7 +34,6 @@ import org.mcphoton.impl.plugin.WorldPluginsManagerImpl;
 import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.utils.ImmutableLocation;
 import org.mcphoton.utils.Location;
-import org.mcphoton.utils.MutableLocation;
 import org.mcphoton.world.ChunkGenerator;
 import org.mcphoton.world.World;
 import org.mcphoton.world.WorldType;
@@ -94,13 +93,9 @@ public class WorldImpl implements World {
 				nextId = removedIds.get(0);// reuse this id
 				removedIds.remove(0);
 			}
-			entity.initEntityId(nextId);
+			entity.init(nextId, x, y, z, this);
 			entities.put(nextId, entity);
 		}
-		MutableLocation loc = (MutableLocation) entity.getLocation();
-		loc.setX(x);
-		loc.setY(y);
-		loc.setZ(z);
 		//TODO spawn packet
 	}
 
