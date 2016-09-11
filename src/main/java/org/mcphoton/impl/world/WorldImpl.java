@@ -61,6 +61,8 @@ public class WorldImpl implements World {
 	protected volatile ChunkGenerator chunkGenerator;
 	protected volatile WorldAccessManager accessManager;
 
+	protected final WorldChunksManager chunksManager = new WorldChunksManager(this);
+
 	public WorldImpl(String name, WorldType type) {
 		this.name = name;
 		this.type = type;
@@ -154,7 +156,7 @@ public class WorldImpl implements World {
 
 	@Override
 	public void save() {
-		//TODO
+		chunksManager.writeAll();
 	}
 
 	@Override
