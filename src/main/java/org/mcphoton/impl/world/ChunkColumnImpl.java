@@ -18,6 +18,8 @@
  */
 package org.mcphoton.impl.world;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import org.mcphoton.world.ChunkColumn;
 import org.mcphoton.world.ChunkSection;
 
@@ -165,6 +167,19 @@ public final class ChunkColumnImpl implements ChunkColumn {
 				section = sections[i];
 			}
 			section.replaceBlockId(toReplace, replacement);
+		}
+	}
+
+	@Override
+	public void writeTo(OutputStream out) throws IOException {
+		out.write(biomes);
+		out.write(sections.length);
+		for (ChunkSection section : sections) {
+			if (section == null) {
+				out.write(0);
+			} else {
+				section.writeTo(out);
+			}
 		}
 	}
 

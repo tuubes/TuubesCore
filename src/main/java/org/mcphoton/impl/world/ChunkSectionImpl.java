@@ -19,6 +19,7 @@
 package org.mcphoton.impl.world;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import net.magik6k.bitbuffer.BitBuffer;
 import org.mcphoton.network.ProtocolOutputStream;
 import org.mcphoton.world.ChunkSection;
@@ -45,6 +46,12 @@ public final class ChunkSectionImpl implements ChunkSection {
 	public ChunkSectionImpl(int bitsPerBlock) {
 		int bits = bitsPerBlock * 4096;
 		this.dataBytes = new byte[(int) Math.ceil(bits / 8)];
+		this.data = BitBuffer.wrap(dataBytes);
+		this.bitsPerBlock = bitsPerBlock;
+	}
+
+	public ChunkSectionImpl(int bitsPerBlock, byte[] dataBytes) {
+		this.dataBytes = dataBytes;
 		this.data = BitBuffer.wrap(dataBytes);
 		this.bitsPerBlock = bitsPerBlock;
 	}
@@ -145,6 +152,12 @@ public final class ChunkSectionImpl implements ChunkSection {
 		out.writeVarInt((int) (data.limit() / 8));
 		out.write(dataBytes);
 		out.write(EMPTY_LIGHT_DATA);//this writes the skylight data, so it works only in the overworld.
+	}
+
+	@Override
+	public void writeTo(OutputStream out) throws IOException {
+		out.write(bitsPerBlock);
+		out.write(dataBytes);
 	}
 
 }
