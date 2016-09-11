@@ -48,6 +48,7 @@ import org.mcphoton.impl.command.StopCommand;
 import org.mcphoton.impl.network.NioNetworkThread;
 import org.mcphoton.impl.network.PacketsManagerImpl;
 import org.mcphoton.impl.plugin.ServerPluginsManagerImpl;
+import org.mcphoton.impl.world.WorldImpl;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.plugin.ServerPluginsManager;
 import org.mcphoton.server.BansManager;
@@ -55,6 +56,7 @@ import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
+import org.mcphoton.world.WorldType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.LoggingLevel;
@@ -306,7 +308,11 @@ public final class PhotonServer implements Server {
 
 	void loadWorlds() {
 		log.info("Loading game worlds...");
-
+		for (File worldDir : Photon.WORLDS_DIR.listFiles((File f) -> f.isDirectory())) {
+			World world = new WorldImpl(worldDir.getName(), WorldType.OVERWORLD);
+			worlds.put(world.getName(), world);
+		}
+		log.info("{} worlds loaded!", worlds.size());
 	}
 
 	void registerCommands() {
@@ -342,7 +348,7 @@ public final class PhotonServer implements Server {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			log.info("Unloading plugins...");
 			pluginsManager.unloadAllPlugins();
-			
+
 			log.info("Saving configurations...");
 			saveConfig();
 			saveBanlist();
