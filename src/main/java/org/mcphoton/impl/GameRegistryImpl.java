@@ -41,6 +41,7 @@ public final class GameRegistryImpl implements GameRegistry {
 
 	private final IndexMap<EntityType> entitiesIds = new IndexMap<>();
 	private final Map<String, EntityType> entitiesNames = new HashMap<>();
+
 	private final IndexMap<ItemType> itemsIds = new IndexMap<>();
 	private final Map<String, ItemType> itemsNames = new HashMap<>();
 
