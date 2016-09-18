@@ -24,16 +24,14 @@ package org.slf4j.impl;
  */
 public enum LoggingLevel {
 
-	ERROR(0), WARN(1), INFO(2), DEBUG(3), TRACE(4);
+	ERROR(0, "ERROR"), WARN(1, "WARN "), INFO(2, "INFO "), DEBUG(3, "DEBUG"), TRACE(4, "TRACE");
 
-	private final int id;
+	public final int id;
+	public final String displayName;//aligned in the console
 
-	private LoggingLevel(int id) {
+	private LoggingLevel(int id, String displayName) {
 		this.id = id;
-	}
-
-	public int getId() {
-		return id;
+		this.displayName = displayName;
 	}
 
 }
