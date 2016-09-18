@@ -17,3 +17,6 @@ You can fork this project and send me pull requests :)
 
 ## Branches
 The *develop* branch contains the latest **in development** version of the Photon server. It's probably unstable and may not work at all. More stable releases can be found in the *master* branch.
+
+## Current status
+The Photon server **doesn't work** yet, that is, you can't connect to it. This will be possible in the next release "0.4.0", which will be ready in the next days.
