@@ -5,7 +5,9 @@ Photon server implementation of the API. **Supports Minecraft version 1.10**.
 All the files in this repository (except the LICENSE file which is copyrighted by the Free Software Foundation) are copyrighted by TheElectronWill and others who wrote them (the contributors).
 
 ## How to build
-Photon uses [gradle](http://gradle.org) to manage the dependencies. The files `build.gradle` and `settings.gradle` are provided in this github repository. The simplest way for you to build Photon-Server is probably to create a gradle project in your favorite IDE (you may need to install a plugin for that), and to copy the Photon-Server's content into this project (replace existing files).
+Photon uses [gradle](http://gradle.org) to manage its dependencies. Building the project is very easy:
+1. Install the Java 8 SDK (aka JDK 8) if you don't already have it.
+2. Run the following command in the project's root directory: `./gradlew build`
 
 ## How to contribute
 You can fork this project and send me pull requests :)

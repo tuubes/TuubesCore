@@ -40,3 +40,8 @@ dependencies {
 	compile 'com.github.TheElectronWill:JSON-javalib:v1.2.1'
 	compile 'com.github.TheElectronWill:TOML-javalib:v1.2.2'
 }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14.1'
+}
+
