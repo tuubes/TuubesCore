@@ -25,6 +25,7 @@ import org.mcphoton.entity.living.AbstractLivingEntity;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.inventory.Inventory;
 import org.mcphoton.messaging.ChatMessage;
+import org.mcphoton.network.Client;
 import org.mcphoton.network.Packet;
 import org.mcphoton.network.play.clientbound.SpawnPlayerPacket;
 import org.mcphoton.utils.Location;
@@ -38,45 +39,54 @@ public class PlayerImpl extends AbstractLivingEntity implements Player {
 	private final UUID accoundId;
 	private final String name;
 	private volatile String nameInChat, nameInList;
+	private volatile Location compassTarget;
+	private final Client client;
 
-	public PlayerImpl(String name, UUID accoundId) {
+	public Client getClient() {
+		return client;
+	}
+
+	public PlayerImpl(String name, UUID accoundId, Client client) {
 		this.name = name;
 		this.accoundId = accoundId;
 		this.nameInChat = name;
+		this.client = client;
 	}
 
 	@Override
 	public Packet constructSpawnPacket() {
 		return new SpawnPlayerPacket(this);
 	}
+
 	@Override
 	public UUID getAccountId() {
 		return accoundId;
 	}
+
 	@Override
 	public Location getCompassTarget() {
-		; //TODO
+		return compassTarget;
 	}
+
 	@Override
 	public void setCompassTarget(Location target) {
-		; //TODO
+		this.compassTarget = target;
 	}
 
 	@Override
 	public Inventory getEnderChest() {
-		; //TODO
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Inventory getInventory() {
-		; //TODO
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void setLocation(Location l) {
-		; //TODO
+		throw new UnsupportedOperationException();
 	}
-
 
 	@Override
 	public float getMaxHealth() {
@@ -87,7 +97,6 @@ public class PlayerImpl extends AbstractLivingEntity implements Player {
 	public String getName() {
 		return name;
 	}
-
 
 	@Override
 	public String getNameInChat() {
@@ -108,29 +117,35 @@ public class PlayerImpl extends AbstractLivingEntity implements Player {
 	public void setNameInPlayerList(String name) {
 		this.nameInList = name;
 	}
+
 	@Override
 	public EntityType getType() {
-		; //TODO
+		throw new UnsupportedOperationException();
 	}
+
 	@Override
 	public boolean hasPermission(String permission) {
 		return true;//TODO
 	}
+
 	@Override
 	public boolean hasPlayedBefore() {
 		return false;//TODO
 	}
+
 	@Override
 	public boolean isBanned() {
 		return false; //TODO
 	}
+
 	@Override
 	public void setBanned(boolean b) {
 		; //TODO
 	}
+
 	@Override
 	public boolean isOnline() {
-		; //TODO
+		return true;
 	}
 
 	@Override
@@ -143,17 +158,15 @@ public class PlayerImpl extends AbstractLivingEntity implements Player {
 		; //TODO
 	}
 
-
 	@Override
 	public boolean isWhitelisted() {
-		; //TODO
+		return true; //TODO
 	}
 
 	@Override
 	public void setWhitelisted(boolean b) {
 		; //TODO
 	}
-
 
 	@Override
 	public void kickPlayer(String message) {
@@ -182,7 +195,7 @@ public class PlayerImpl extends AbstractLivingEntity implements Player {
 
 	@Override
 	public boolean teleport(Location location) {
-		; //TODO
+		throw new UnsupportedOperationException(); //TODO
 	}
 
 	@Override
