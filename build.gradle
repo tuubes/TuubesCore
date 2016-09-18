@@ -1,7 +1,10 @@
-apply plugin: 'java'
+// Project description
 version = 'dev-alpha'
-description 'Implementation of the multi-threaded minecraft server Photon'
+status = 'indev'
+description 'Photon server implementation'
 
+// Java plugin
+apply plugin: 'java'
 sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -9,28 +12,29 @@ if (!hasProperty('mainClass')) {
 	ext.mainClass = 'org.mcphoton.impl.server.Main'
 }
 
-repositories {
-	mavenCentral()
-	maven { url "https://jitpack.io" }
-}
-
+// License plugin
 buildscript {
 	repositories {
-		maven { url "https://plugins.gradle.org/m2/"}
+		maven {url 'https://plugins.gradle.org/m2/'}
 	}
 	dependencies {
-		classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.12.1"
+		classpath 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1'
 	}
 }
-
-apply plugin: "com.github.hierynomus.license"
+apply plugin: 'com.github.hierynomus.license'
 
 license {
 	header file('HEADER.txt')
 	strictCheck true
-	mapping("java", "SLASHSTAR_STYLE")
+	mapping('java', 'SLASHSTAR_STYLE')
 	ext.year = Calendar.getInstance().get(Calendar.YEAR)
 	exclude "org/slf4j/impl/Static*.java"
+}
+
+// Dependencies
+repositories {
+	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -41,6 +45,7 @@ dependencies {
 	compile 'com.github.TheElectronWill:TOML-javalib:v1.2.2'
 }
 
+// Wrapper config
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.14.1'
+	gradleVersion = '2.14.1'
 }
