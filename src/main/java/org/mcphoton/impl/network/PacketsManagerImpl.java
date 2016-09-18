@@ -22,6 +22,7 @@ import com.electronwill.utils.ConcurrentIndexMap;
 import com.electronwill.utils.SimpleBag;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
+import java.security.KeyPair;
 import java.util.Collection;
 import java.util.Random;
 import org.mcphoton.impl.network.handlers.EncryptionResponseHandler;
@@ -57,8 +58,8 @@ public final class PacketsManagerImpl implements PacketsManager {
 	private final ConcurrentIndexMap<Class<? extends Packet>> clientInitPackets, clientStatusPackets, clientLoginPackets, clientPlayPackets;
 	private final ConcurrentIndexMap<Collection<PacketHandler>> clientInitHandlers, clientStatusHandlers, clientLoginHandlers, clientPlayHandlers;
 
-	public PacketsManagerImpl() throws GeneralSecurityException {
-		this.authenticator = new Authenticator(SERVER.keyPair);
+	public PacketsManagerImpl(KeyPair keyPair) throws GeneralSecurityException {
+		this.authenticator = new Authenticator(keyPair);
 
 		//TODO set the correct sizes
 		this.serverInitPackets = new ConcurrentIndexMap<>();
