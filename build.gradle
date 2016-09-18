@@ -1,5 +1,5 @@
 apply plugin: 'java'
-version = '0.3.0'
+version = 'dev-alpha'
 description 'Implementation of the multi-threaded minecraft server Photon'
 
 sourceCompatibility = '1.8'
@@ -44,4 +44,3 @@ dependencies {
 task wrapper(type: Wrapper) {
     gradleVersion = '2.14.1'
 }
-
