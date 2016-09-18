@@ -81,6 +81,10 @@ public final class WhitelistManagerImpl implements WhitelistManager {
 	}
 
 	public void load() throws IOException {
+		if (!FILE.exists()) {
+			FILE.createNewFile();
+			return;
+		}
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(FILE), StandardCharsets.UTF_8))) {
 			String line;
 			while ((line = reader.readLine()) != null) {

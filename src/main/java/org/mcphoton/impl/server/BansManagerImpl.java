@@ -93,6 +93,10 @@ public final class BansManagerImpl implements BansManager {
 	}
 
 	public void load() throws IOException {
+		if (!FILE.exists()) {
+			FILE.createNewFile();
+			return;
+		}
 		TomlConfiguration config = new TomlConfiguration(FILE);
 		if (config.isEmpty()) {
 			return;
