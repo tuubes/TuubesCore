@@ -50,7 +50,7 @@ public final class WorldChunksManager {
 	//TODO a ReferenceQueue that removes the chunk from the map when its reference is collected.
 	//TODO save the chunk, if it has been modified, before it gets garbage-collected!
 
-	ChunkColumn getChunk(int cx, int cz, boolean createIfNeeded) {
+	public ChunkColumn getChunk(int cx, int cz, boolean createIfNeeded) {
 		ChunkCoordinates coords = new ChunkCoordinates(cx, cz);
 		SoftReference<ChunkColumn> ref = chunks.get(coords);
 		ChunkColumn chunk;
