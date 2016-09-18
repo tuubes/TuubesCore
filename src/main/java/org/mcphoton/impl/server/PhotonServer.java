@@ -89,7 +89,7 @@ public final class PhotonServer implements Server {
 	public final KeyPair keyPair;
 	public final NioNetworkThread networkThread;
 	public final ConsoleThread consoleThread = new ConsoleThread();
-	public final PacketsManagerImpl packetsManager = new PacketsManagerImpl();
+	public final PacketsManagerImpl packetsManager;
 	public final ServerPluginsManagerImpl pluginsManager = new ServerPluginsManagerImpl();
 	public final ServerCommandRegistryImpl commandRegistry = new ServerCommandRegistryImpl();
 	public final Constant<ScheduledExecutorService> executorService = new Constant<>();
@@ -110,6 +110,8 @@ public final class PhotonServer implements Server {
 		KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
 		generator.initialize(512);
 		keyPair = generator.genKeyPair();
+		
+		packetsManager = new PacketsManagerImpl();
 
 		loadConfig();
 		networkThread = new NioNetworkThread(address.get());
