@@ -3,4 +3,6 @@
 build
 logs
 plugins
-server_config.toml
+server-config.toml
+whitelist.txt
+bans.toml
