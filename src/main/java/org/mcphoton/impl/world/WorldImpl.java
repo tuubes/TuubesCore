@@ -29,8 +29,10 @@ import org.mcphoton.entity.Entity;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.event.WorldEventsManager;
 import org.mcphoton.impl.command.WorldCommandRegistryImpl;
+import org.mcphoton.impl.entity.PlayerImpl;
 import org.mcphoton.impl.event.WorldEventsManagerImpl;
 import org.mcphoton.impl.plugin.WorldPluginsManagerImpl;
+import org.mcphoton.network.Packet;
 import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.utils.ImmutableLocation;
 import org.mcphoton.utils.Location;
@@ -47,7 +49,7 @@ import org.mcphoton.world.protection.WorldAccessManager;
 public class WorldImpl implements World {
 
 	protected volatile String name;
-	protected volatile File directory = new File(Photon.WORLDS_DIR, name);
+	protected volatile File directory;
 	protected volatile double spawnX = 0, spawnY = 0, spawnZ = 0;
 
 	protected final WorldType type;
@@ -65,6 +67,7 @@ public class WorldImpl implements World {
 
 	public WorldImpl(String name, WorldType type) {
 		this.name = name;
+		this.directory = new File(Photon.WORLDS_DIR, name);
 		this.type = type;
 	}
 
@@ -98,7 +101,11 @@ public class WorldImpl implements World {
 			entity.init(nextId, x, y, z, this);
 			entities.put(nextId, entity);
 		}
-		//TODO spawn packet
+		Packet spawnPacket = entity.constructSpawnPacket();
+		for (Player p : players) {
+			Photon.getPacketsManager().sendPacket(spawnPacket, ((PlayerImpl) p).getClient());
+			//TODO revise this: don't send the packet to every player, just to the nearest ones.
+		}
 	}
 
 	@Override
@@ -187,6 +194,10 @@ public class WorldImpl implements World {
 	@Override
 	public WorldPluginsManager getPluginsManager() {
 		return pluginsManager;
+	}
+
+	public WorldChunksManager getChunksManager() {
+		return chunksManager;
 	}
 
 }

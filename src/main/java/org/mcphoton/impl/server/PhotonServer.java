@@ -54,6 +54,7 @@ import org.mcphoton.plugin.ServerPluginsManager;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
+import org.mcphoton.utils.ImmutableLocation;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
 import org.mcphoton.world.WorldType;
@@ -100,6 +101,8 @@ public final class PhotonServer implements Server {
 	public volatile String motd, encodedFavicon;
 	public volatile int maxPlayers;
 	public volatile Location spawn;
+	private String spawnWorldName;//Only used at startup to detect if the spawn's world needs to be created
+	private double spawnX, spawnY, spawnZ;//Only used at startup to detect if the spawn's world needs to be created
 
 	//---- Runtime data ----
 	public final Collection<Player> onlinePlayers = new SimpleBag<>();
@@ -110,8 +113,8 @@ public final class PhotonServer implements Server {
 		KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
 		generator.initialize(512);
 		keyPair = generator.genKeyPair();
-		
-		packetsManager = new PacketsManagerImpl();
+
+		packetsManager = new PacketsManagerImpl(keyPair);
 
 		loadConfig();
 		networkThread = new NioNetworkThread(address.get());
@@ -270,12 +273,11 @@ public final class PhotonServer implements Server {
 			maxPlayers = config.getInt("maxPlayers");
 			WhitelistManagerImpl.getInstance().setEnabled(config.getBoolean("whitelist"));
 
-			String spawnWorld = config.getString("world");
+			spawnWorldName = config.getString("world");
 			String[] coords = config.getString("spawn").split(",");
-			double spawnX = Double.parseDouble(coords[0].trim());
-			double spawnY = Double.parseDouble(coords[1].trim());
-			double spawnZ = Double.parseDouble(coords[2].trim());
-			//TODO look for a world with the specified name and create a Location instance
+			spawnX = Double.parseDouble(coords[0].trim());
+			spawnY = Double.parseDouble(coords[1].trim());
+			spawnZ = Double.parseDouble(coords[2].trim());
 
 			motd = config.getString("motd");
 
@@ -310,10 +312,26 @@ public final class PhotonServer implements Server {
 
 	void loadWorlds() {
 		log.info("Loading game worlds...");
+		if (!Photon.WORLDS_DIR.isDirectory()) {
+			Photon.WORLDS_DIR.mkdir();
+		}
 		for (File worldDir : Photon.WORLDS_DIR.listFiles((File f) -> f.isDirectory())) {
 			World world = new WorldImpl(worldDir.getName(), WorldType.OVERWORLD);
-			worlds.put(world.getName(), world);
+			registerWorld(world);
 		}
+		World spawnWorld = worlds.get(spawnWorldName);
+		if (spawnWorld == null) {
+			log.info("Spawn world doesn't exist. Creating it...");
+			File worldDir = new File(Photon.WORLDS_DIR, spawnWorldName);
+			boolean dirCreated = worldDir.mkdirs();
+			if (!dirCreated) {
+				log.error("Unable to create a directory for the spawn world.");
+			}
+			spawnWorld = new WorldImpl(worldDir.getName(), WorldType.OVERWORLD);
+			registerWorld(spawnWorld);
+			log.info("Spawn world \"{}\" created.", spawnWorldName);
+		}
+		this.spawn = new ImmutableLocation(spawnX, spawnY, spawnZ, spawnWorld);
 		log.info("{} worlds loaded!", worlds.size());
 	}
 
@@ -367,6 +385,7 @@ public final class PhotonServer implements Server {
 			} finally {
 				LoggingService.close();
 			}
+			log.info("Stopped.");
 		}));
 	}
 
@@ -374,6 +393,7 @@ public final class PhotonServer implements Server {
 		log.info("Starting threads...");
 		consoleThread.start();
 		networkThread.start();
+		log.info("Threads started!");
 	}
 
 	@Override

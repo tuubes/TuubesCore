@@ -52,13 +52,15 @@ public final class Main {
 	}
 
 	public static void main(String[] args) {
-		SERVER.setShutdownHook();
+		SERVER.loadWorlds();
 		SERVER.loadBanlist();
 		SERVER.loadWhitelist();
 		SERVER.registerCommands();
 		SERVER.registerPackets();
+		SERVER.setShutdownHook();
 		SERVER.loadPlugins();
 		SERVER.startThreads();
+		log.info("Server ready :-)");
 	}
 
 	private static void printFramed(String... strings) {

@@ -96,7 +96,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				pm.sendPacket(AUTH_FAILED, client);
 				return;
 			}
-			ClientImpl pc = (ClientImpl) client;
+			ClientImpl clientImpl = (ClientImpl) client;
 			//--- Get informations about the player ---
 			/* TODO read skin. See wiki.vg for a description of the format used.
 			 * TODO set the last player location if available
@@ -116,14 +116,17 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 
 			Location location = Main.SERVER.spawn;
 
-			PlayerImpl player = new PlayerImpl(username, accountId, location);
+			PlayerImpl player = new PlayerImpl(username, accountId, clientImpl);
+			location.getWorld().spawnEntity(player, location);
 			log.debug("Player instance created: {}", player);
-			pc.setPlayer(player);
+			
+			clientImpl.setPlayer(player);
 
 			//--- Enable encryption ---
 			try {
 				AESCodec cipherCodec = new AESCodec(sharedKey);
-				pc.enableEncryption(cipherCodec);
+				clientImpl.enableEncryption(cipherCodec);
+				log.debug("Encryption enabled for client {}", client);
 			} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException ex) {
 				log.error("Failed to enable encryption for client {}.", client, ex);
 				pm.sendPacket(AUTH_FAILED, client, () -> {
@@ -141,6 +144,9 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 			loginSuccessPacket.username = playerName;
 			loginSuccessPacket.uuid = playerUuid;
 			pm.sendPacket(loginSuccessPacket, client);
+			
+			//--- Send ChunkData packets ---
+			
 		},
 				(Exception ex) -> {//on failure
 					pm.sendPacket(AUTH_FAILED, client);
