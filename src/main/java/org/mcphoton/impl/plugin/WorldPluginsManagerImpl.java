@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 
-	private static final Logger log = LoggerFactory.getLogger("WorldPluginsManager");
+	private static final Logger log = LoggerFactory.getLogger(WorldPluginsManagerImpl.class);
 	private final Map<String, Plugin> plugins = new HashMap<>();
 	private final World world;
 

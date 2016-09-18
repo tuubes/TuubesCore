@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 
-	private static final Logger log = LoggerFactory.getLogger("ServerPluginsManager");
+	private static final Logger log = LoggerFactory.getLogger(ServerPluginsManagerImpl.class);
 	static final ClassSharer GLOBAL_CLASS_SHARER = new ClassSharerImpl();
 	static final File PLUGINS_CONFIG = new File(Photon.PLUGINS_DIR, "plugins_config.toml");
 	private final Map<String, ServerPlugin> serverPlugins = new HashMap<>();
