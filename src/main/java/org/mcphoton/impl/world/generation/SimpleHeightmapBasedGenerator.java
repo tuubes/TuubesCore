@@ -59,7 +59,7 @@ public class SimpleHeightmapBasedGenerator implements ChunkGenerator {
 	public ChunkColumn generate(int startBlockX, int startBlockZ) {
 		byte[] biomesData = new byte[256];
 
-		int maxHeight = 0;// maximum height in this chunk
+		int maxHeight = 150;// maximum height in this chunk
 		int[][] heightmap = new int[16][16];
 		for (int x = startBlockX; x < startBlockX + 16; x++) {
 			for (int z = startBlockZ; z < startBlockZ + 16; z++) {
@@ -73,13 +73,12 @@ public class SimpleHeightmapBasedGenerator implements ChunkGenerator {
 		ChunkSection[] sections = new ChunkSection[(int) Math.ceil(maxHeight / 16.0)];
 		for (int i = 0; i < sections.length; i++) {
 			sections[i] = new ChunkSectionImpl(13);
-
 		}
 		// Bedrock layer
 		ChunkSection zeroth = sections[0];
 		for (int x = 0; x < 16; x++) {
 			for (int z = 0; z < 16; z++) {
-				zeroth.setBlockId(x, 0, z, ID_BEDROCK);
+				zeroth.setBlockFullId(x, 0, z, ID_BEDROCK);
 			}
 		}
 		// Terrain
@@ -87,15 +86,15 @@ public class SimpleHeightmapBasedGenerator implements ChunkGenerator {
 			for (int z = 0; z < 16; z++) {
 				int height = heightmap[x][z];
 				for (int y = 1; y < height; y++) {// stone ground
-					sections[y / 16].setBlockId(x, y % 16, z, ID_STONE);
+					sections[y / 16].setBlockFullId(x, y % 16, z, ID_STONE);
 				}
 				if (height > seaLevel) {// in land
-					sections[height / 16].setBlockId(x, height, z, ID_GRASS);
+					sections[height / 16].setBlockFullId(x, height, z, ID_GRASS);
 					biomesData[z << 4 | x] = BIOME_PLAINS;
 				} else {// in sea
-					sections[height / 16].setBlockId(x, height, z, ID_SAND);
+					sections[height / 16].setBlockFullId(x, height, z, ID_SAND);
 					for (int y = height; y <= seaLevel; y++) {
-						sections[y / 16].setBlockId(x, y, z, ID_WATER);
+						sections[y / 16].setBlockFullId(x, y % 16, z, ID_WATER);
 					}
 					biomesData[z << 4 | x] = BIOME_OCEAN;
 				}
