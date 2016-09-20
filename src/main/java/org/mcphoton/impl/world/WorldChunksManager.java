@@ -40,7 +40,7 @@ public final class WorldChunksManager {
 	private static final Logger log = LoggerFactory.getLogger(WorldChunksManager.class);
 	private final World world;
 	private final File chunksDirectory;
-			
+
 	public WorldChunksManager(World world) {
 		this.world = world;
 		this.chunksDirectory = new File(world.getDirectory(), "chunks");
@@ -51,17 +51,22 @@ public final class WorldChunksManager {
 	//TODO save the chunk, if it has been modified, before it gets garbage-collected!
 
 	public ChunkColumn getChunk(int cx, int cz, boolean createIfNeeded) {
+		log.trace("Requested chunk at cx={}  cz={}", cx, cz);
 		ChunkCoordinates coords = new ChunkCoordinates(cx, cz);
 		SoftReference<ChunkColumn> ref = chunks.get(coords);
 		ChunkColumn chunk;
 		if (ref == null || (chunk = ref.get()) == null) {//chunk not loaded
 			File chunkFile = getChunkFile(cx, cz);
 			if (chunkFile.exists()) {//the chunk exists on the disk -> read it
+				log.trace("Chunk {} {} exists on disk -> reading it.", cx, cz);
 				chunk = tryReadChunk(chunkFile);
 				chunks.put(coords, new SoftReference<>(chunk));
+				log.trace("Chunk {} {} has been read.", cx, cz);
 			} else {//the chunk doesn't exist at all -> generate it
+				log.trace("Chunk {} {} doesn't exist on disk -> generating it.", cx, cz);
 				chunk = generateChunk(cx, cz);
 				chunks.put(coords, new SoftReference<>(chunk));
+				log.trace("Chunk {} {} has been generated.", cx, cz);
 			}
 		}
 		return chunk;
