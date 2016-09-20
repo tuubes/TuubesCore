@@ -24,23 +24,38 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import org.mcphoton.Photon;
 import org.mcphoton.impl.entity.PlayerImpl;
 import org.mcphoton.impl.network.AESCodec;
 import org.mcphoton.impl.network.Authenticator;
 import org.mcphoton.impl.network.ClientImpl;
 import org.mcphoton.impl.server.Main;
+import org.mcphoton.impl.world.ChunkColumnImpl;
+import org.mcphoton.impl.world.WorldImpl;
 import org.mcphoton.messaging.TextChatMessage;
+import org.mcphoton.network.ByteArrayProtocolOutputStream;
 import org.mcphoton.network.Client;
 import org.mcphoton.network.PacketHandler;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.network.login.clientbound.DisconnectPacket;
 import org.mcphoton.network.login.clientbound.LoginSuccessPacket;
 import org.mcphoton.network.login.serverbound.EncryptionResponsePacket;
+import org.mcphoton.network.play.clientbound.ChunkDataPacket;
+import org.mcphoton.network.play.clientbound.JoinGamePacket;
+import org.mcphoton.network.play.clientbound.KeepAlivePacket;
+import org.mcphoton.network.play.clientbound.PlayerAbilitiesPacket;
+import org.mcphoton.network.play.clientbound.PlayerPositionAndLookPacket;
+import org.mcphoton.network.play.clientbound.PluginMessagePacket;
+import org.mcphoton.network.play.clientbound.ServerDifficultyPacket;
+import org.mcphoton.network.play.clientbound.SpawnPositionPacket;
 import org.mcphoton.utils.Location;
+import org.mcphoton.world.Difficulty;
+import org.mcphoton.world.WorldType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,12 +106,28 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 			return;
 		}
 		String username = authenticator.getAndForgetUsername(client);
-		authenticator.authenticate(username, sharedKey, (Map<String, Object> response) -> {//on success
+		ClientImpl cImpl = (ClientImpl) client;
+		authenticator.authenticate(username, sharedKey, new AuthSuccessHandler(cImpl, username, sharedKey), new AuthFailureHandler(cImpl, username));
+	}
+
+	private class AuthSuccessHandler implements Consumer<Map<String, Object>> {
+
+		private final ClientImpl client;
+		private final String clientName;
+		private final byte[] sharedKey;
+
+		public AuthSuccessHandler(ClientImpl client, String clientName, byte[] sharedKey) {
+			this.client = client;
+			this.clientName = clientName;
+			this.sharedKey = sharedKey;
+		}
+
+		@Override
+		public void accept(Map<String, Object> response) {
 			if (response.isEmpty()) {//bad auth
 				pm.sendPacket(AUTH_FAILED, client);
 				return;
 			}
-			ClientImpl clientImpl = (ClientImpl) client;
 			//--- Get informations about the player ---
 			/* TODO read skin. See wiki.vg for a description of the format used.
 			 * TODO set the last player location if available
@@ -114,18 +145,10 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 			}
 			UUID accountId = UUID.fromString(playerUuid);
 
-			Location location = Main.SERVER.spawn;
-
-			PlayerImpl player = new PlayerImpl(username, accountId, clientImpl);
-			location.getWorld().spawnEntity(player, location);
-			log.debug("Player instance created: {}", player);
-			
-			clientImpl.setPlayer(player);
-
 			//--- Enable encryption ---
 			try {
 				AESCodec cipherCodec = new AESCodec(sharedKey);
-				clientImpl.enableEncryption(cipherCodec);
+				client.enableEncryption(cipherCodec);
 				log.debug("Encryption enabled for client {}", client);
 			} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | InvalidAlgorithmParameterException ex) {
 				log.error("Failed to enable encryption for client {}.", client, ex);
@@ -139,20 +162,134 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				return;
 			}
 
-			//--- Send LoginSuccess packet ---
-			LoginSuccessPacket loginSuccessPacket = new LoginSuccessPacket();
-			loginSuccessPacket.username = playerName;
-			loginSuccessPacket.uuid = playerUuid;
-			pm.sendPacket(loginSuccessPacket, client);
-			
-			//--- Send ChunkData packets ---
-			
-		},
-				(Exception ex) -> {//on failure
-					pm.sendPacket(AUTH_FAILED, client);
-					log.error("Unable to authenticate {}.", username, ex);
+			//--- Finish join sequence:
+			final String finalPlayerUUID = playerUuid;//TODO improve :|
+			Photon.getExecutorService().execute(() -> {
+				//Spawn
+				log.trace("Spawning the player entity...");
+				Location spawnLocation = Main.SERVER.spawn;
+
+				PlayerImpl player = new PlayerImpl(clientName, accountId, client);
+				spawnLocation.getWorld().spawnEntity(player, spawnLocation);
+				log.debug("Player instance created: {}", player);
+				client.setPlayer(player);
+
+				//LoginSuccess
+				log.trace("Sending LoginSuccess...");
+				LoginSuccessPacket loginSuccessPacket = new LoginSuccessPacket();
+				loginSuccessPacket.username = playerName;
+				loginSuccessPacket.uuid = finalPlayerUUID;
+				pm.sendPacket(loginSuccessPacket, client);
+
+				//Server brand
+				log.trace("Sending server brand (PluginMessage)...");
+				ByteArrayProtocolOutputStream pos = new ByteArrayProtocolOutputStream();
+				pos.writeString("Photon");
+				PluginMessagePacket pluginMessagePacket = new PluginMessagePacket();
+				pluginMessagePacket.channel = "MC|Brand";
+				pluginMessagePacket.data = pos.getBytes();
+
+				//Join game
+				//TODO use real player values
+				log.trace("Sending JoinGame...");
+				JoinGamePacket joinGamePacket = new JoinGamePacket();
+				joinGamePacket.difficulty = Difficulty.NORMAL.id;
+				joinGamePacket.entityId = player.getEntityId();
+				joinGamePacket.gamemode = 0;
+				joinGamePacket.levelType = "default";
+				joinGamePacket.maxPlayers = Photon.getServer().getMaxPlayers();
+				joinGamePacket.reducedDebugInfo = false;
+				joinGamePacket.worldType = WorldType.OVERWORLD.id;
+				pm.sendPacket(joinGamePacket, client);
+
+				//Difficulty
+				//TODO use real world settings
+				log.trace("Sending ServerDifficulty...");
+				ServerDifficultyPacket difficultyPacket = new ServerDifficultyPacket();
+				difficultyPacket.difficulty = Difficulty.NORMAL.id;
+				pm.sendPacket(difficultyPacket, client);
+
+				//Spawn position (player's respawn point aka "home")
+				//TODO use real player values
+				log.trace("Sending SpawnPosition...");
+				SpawnPositionPacket spawnPositionPacket = new SpawnPositionPacket();
+				spawnPositionPacket.x = spawnPositionPacket.y = spawnPositionPacket.z = 0;
+
+				//Abilities
+				//TODO use real player values
+				log.trace("Sending PlayerAbilities...");
+				PlayerAbilitiesPacket abilitiesPacket = new PlayerAbilitiesPacket();
+				abilitiesPacket.fieldViewModifier = 1f;
+				abilitiesPacket.flags = 0;
+				abilitiesPacket.flyingSpeed = 1f;
+
+				//Position (where the player spawns now)
+				log.trace("Sending PlayerPositionAndLook...");
+				PlayerPositionAndLookPacket palPacket = new PlayerPositionAndLookPacket();
+				palPacket.flags = 0;
+				palPacket.pitch = palPacket.yaw = 0;
+				palPacket.x = spawnLocation.getBlockX();
+				palPacket.y = spawnLocation.getBlockY();
+				palPacket.z = spawnLocation.getBlockZ();
+				palPacket.teleportId = 0;
+
+				//KeepAlive
+				//log.trace("Starting to send KeepAlive packets...");
+				//Photon.getExecutorService().scheduleWithFixedDelay(new KeepClientAlive(client), 15, 15, TimeUnit.SECONDS);
+				//--- Send block chunks ---
+				log.trace("Sending block chunks...");
+				WorldImpl wi = (WorldImpl) spawnLocation.getWorld();
+				for (int cx = spawnLocation.getBlockX() / 32 - 2; cx <= spawnLocation.getBlockX() / 32 + 2; cx++) {
+					for (int cz = spawnLocation.getBlockZ() / 32 - 2; cz <= spawnLocation.getBlockZ() / 32 + 2; cz++) {
+						log.trace("Sending chunk {}  {}", cx, cz);
+						try {
+							ChunkColumnImpl chunk = (ChunkColumnImpl) wi.getChunksManager().getChunk(cx, cz, true);
+							ChunkDataPacket chunkDataPacket = new ChunkDataPacket(cx, cz, chunk.getSections(), chunk.getBiomes());
+							pm.sendPacket(chunkDataPacket, client);
+						} catch (Exception ex) {
+							log.error("Unable to send chunk {}  {}", cx, cz, ex);
+						}
+					}
 				}
-		);
+				log.trace("Join sequence completed!");
+			});
+		}
+
+	}
+
+	private class KeepClientAlive implements Runnable {
+
+		private final Client client;
+
+		public KeepClientAlive(Client client) {
+			this.client = client;
+		}
+
+		@Override
+		public void run() {
+			KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
+			keepAlivePacket.keepAliveId = 0b1010;
+			pm.sendPacket(keepAlivePacket, client);
+		}
+
+	}
+
+	private class AuthFailureHandler implements Consumer<Exception> {
+
+		private final ClientImpl client;
+		private final String clientName;
+
+		public AuthFailureHandler(ClientImpl client, String clientName) {
+			this.client = client;
+			this.clientName = clientName;
+		}
+
+		@Override
+		public void accept(Exception ex) {
+			pm.sendPacket(AUTH_FAILED, client);
+			log.error("Unable to authenticate {}.", clientName, ex);
+		}
+
 	}
 
 }
