@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import javax.crypto.BadPaddingException;
@@ -162,12 +164,12 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				return;
 			}
 
-			//--- Finish join sequence:
+			//--- Finish join sequence ---
+			Location spawnLocation = Main.SERVER.spawn;
 			final String finalPlayerUUID = playerUuid;//TODO improve :|
 			Photon.getExecutorService().execute(() -> {
 				//Spawn
 				log.trace("Spawning the player entity...");
-				Location spawnLocation = Main.SERVER.spawn;
 
 				PlayerImpl player = new PlayerImpl(clientName, accountId, client);
 				spawnLocation.getWorld().spawnEntity(player, spawnLocation);
@@ -180,14 +182,6 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				loginSuccessPacket.username = playerName;
 				loginSuccessPacket.uuid = finalPlayerUUID;
 				pm.sendPacket(loginSuccessPacket, client);
-
-				//Server brand
-				log.trace("Sending server brand (PluginMessage)...");
-				ByteArrayProtocolOutputStream pos = new ByteArrayProtocolOutputStream();
-				pos.writeString("Photon");
-				PluginMessagePacket pluginMessagePacket = new PluginMessagePacket();
-				pluginMessagePacket.channel = "MC|Brand";
-				pluginMessagePacket.data = pos.getBytes();
 
 				//Join game
 				//TODO use real player values
@@ -202,6 +196,15 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				joinGamePacket.worldType = WorldType.OVERWORLD.id;
 				pm.sendPacket(joinGamePacket, client);
 
+				//Server brand
+				log.trace("Sending server brand (PluginMessage)...");
+				ByteArrayProtocolOutputStream pos = new ByteArrayProtocolOutputStream();
+				pos.writeString("Photon");
+				PluginMessagePacket pluginMessagePacket = new PluginMessagePacket();
+				pluginMessagePacket.channel = "MC|Brand";
+				pluginMessagePacket.data = Arrays.copyOf(pos.getBytes(), pos.size());
+				pm.sendPacket(pluginMessagePacket, client);
+
 				//Difficulty
 				//TODO use real world settings
 				log.trace("Sending ServerDifficulty...");
@@ -214,6 +217,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				log.trace("Sending SpawnPosition...");
 				SpawnPositionPacket spawnPositionPacket = new SpawnPositionPacket();
 				spawnPositionPacket.x = spawnPositionPacket.y = spawnPositionPacket.z = 0;
+				pm.sendPacket(spawnPositionPacket, client);
 
 				//Abilities
 				//TODO use real player values
@@ -222,6 +226,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				abilitiesPacket.fieldViewModifier = 1f;
 				abilitiesPacket.flags = 0;
 				abilitiesPacket.flyingSpeed = 1f;
+				pm.sendPacket(abilitiesPacket, client);
 
 				//Position (where the player spawns now)
 				log.trace("Sending PlayerPositionAndLook...");
@@ -232,15 +237,18 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 				palPacket.y = spawnLocation.getBlockY();
 				palPacket.z = spawnLocation.getBlockZ();
 				palPacket.teleportId = 0;
+				pm.sendPacket(palPacket, client);
+			});
+			//KeepAlive
+			log.trace("Starting to send KeepAlive packets...");
+			Photon.getExecutorService().scheduleWithFixedDelay(new KeepClientAlive(client), 15, 15, TimeUnit.SECONDS);
 
-				//KeepAlive
-				//log.trace("Starting to send KeepAlive packets...");
-				//Photon.getExecutorService().scheduleWithFixedDelay(new KeepClientAlive(client), 15, 15, TimeUnit.SECONDS);
+			Photon.getExecutorService().execute(() -> {
 				//--- Send block chunks ---
 				log.trace("Sending block chunks...");
 				WorldImpl wi = (WorldImpl) spawnLocation.getWorld();
-				for (int cx = spawnLocation.getBlockX() / 32 - 2; cx <= spawnLocation.getBlockX() / 32 + 2; cx++) {
-					for (int cz = spawnLocation.getBlockZ() / 32 - 2; cz <= spawnLocation.getBlockZ() / 32 + 2; cz++) {
+				for (int cx = spawnLocation.getBlockX() / 32 - 1; cx <= spawnLocation.getBlockX() / 32 + 1; cx++) {
+					for (int cz = spawnLocation.getBlockZ() / 32 - 1; cz <= spawnLocation.getBlockZ() / 32 + 1; cz++) {
 						log.trace("Sending chunk {}  {}", cx, cz);
 						try {
 							ChunkColumnImpl chunk = (ChunkColumnImpl) wi.getChunksManager().getChunk(cx, cz, true);
@@ -261,7 +269,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 
 		private final Client client;
 
-		public KeepClientAlive(Client client) {
+		KeepClientAlive(Client client) {
 			this.client = client;
 		}
 
@@ -279,7 +287,7 @@ public class EncryptionResponseHandler implements PacketHandler<EncryptionRespon
 		private final ClientImpl client;
 		private final String clientName;
 
-		public AuthFailureHandler(ClientImpl client, String clientName) {
+		AuthFailureHandler(ClientImpl client, String clientName) {
 			this.client = client;
 			this.clientName = clientName;
 		}
