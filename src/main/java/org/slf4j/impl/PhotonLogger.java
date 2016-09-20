@@ -55,7 +55,7 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 			.toFormatter();
 
 	private static final boolean USE_COLORS = !System.getProperty("os.name").toLowerCase().contains("windows") && System.console() != null;
-	private static volatile LoggingLevel level;
+	private static volatile LoggingLevel level = LoggingLevel.INFO;
 
 	public static LoggingLevel getLevel() {
 		return level;
@@ -68,11 +68,6 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	private final String name;
 
 	public PhotonLogger(String name) {
-		this(LoggingLevel.INFO, name);
-	}
-
-	public PhotonLogger(LoggingLevel level, String name) {
-		PhotonLogger.level = level;
 		this.name = name;
 	}
 
