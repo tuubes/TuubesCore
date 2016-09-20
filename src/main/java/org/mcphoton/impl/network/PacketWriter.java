@@ -89,7 +89,7 @@ public final class PacketWriter {
 		log.trace("packet to write: {}", packetSending);
 		log.trace("currentBuffer: {}", currentBuffer);
 		log.trace("output stream: {}", out);
-		log.trace("pending queue: {}", pendingQueue);
+		//log.trace("pending queue: {}", pendingQueue);
 		if (!pendingQueue.isEmpty() || currentBuffer != null) {
 			//cannot write now because an other packet must be written before
 			enqueue(packetSending);

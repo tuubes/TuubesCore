@@ -23,6 +23,8 @@ import java.io.OutputStream;
 import net.magik6k.bitbuffer.BitBuffer;
 import org.mcphoton.network.ProtocolOutputStream;
 import org.mcphoton.world.ChunkSection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Basic implementation of ChunkSection. It is thread-safe.
@@ -32,6 +34,7 @@ import org.mcphoton.world.ChunkSection;
  */
 public final class ChunkSectionImpl implements ChunkSection {
 
+	private static final Logger log = LoggerFactory.getLogger(ChunkSectionImpl.class);
 	private final byte[] dataBytes;
 	private final BitBuffer data;
 	private final int bitsPerBlock;
@@ -149,7 +152,7 @@ public final class ChunkSectionImpl implements ChunkSection {
 	public synchronized void writeTo(ProtocolOutputStream out) throws IOException {
 		out.writeByte(bitsPerBlock);
 		out.writeVarInt(0);//use the global palette
-		out.writeVarInt((int) (data.limit() / 8));
+		out.writeVarInt(dataBytes.length / 8);
 		out.write(dataBytes);
 		out.write(EMPTY_LIGHT_DATA);//this writes the skylight data, so it works only in the overworld.
 	}

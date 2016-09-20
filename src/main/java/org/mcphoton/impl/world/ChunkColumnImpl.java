@@ -33,6 +33,16 @@ public final class ChunkColumnImpl implements ChunkColumn {
 
 	private final byte[] biomes;
 	private final ChunkSection[] sections;
+	
+	//Temp:
+	public byte[] getBiomes() {
+		return biomes;
+	}
+
+	public ChunkSection[] getSections() {
+		return sections;
+	}
+	
 
 	public ChunkColumnImpl(byte[] biomes, ChunkSection[] sections) {
 		this.biomes = biomes;

@@ -81,7 +81,7 @@ public final class PhotonServer implements Server {
 		CONFIG_SPEC.defineString("world", "world");
 		CONFIG_SPEC.defineString("spawn", "0,60,0");
 		CONFIG_SPEC.defineString("motd", "Photon server, version alpha");
-		CONFIG_SPEC.defineString("loggingLevel", "DEBUG", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
+		CONFIG_SPEC.defineString("loggingLevel", "TRACE", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
 		CONFIG_SPEC.defineInt("executionThreads", Math.max(1, Runtime.getRuntime().availableProcessors() - 1), 1, 100);
 		CONFIG_SPEC.defineBoolean("whitelist", false);
 	}
