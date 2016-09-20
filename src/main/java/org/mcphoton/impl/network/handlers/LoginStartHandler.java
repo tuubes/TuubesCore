@@ -31,6 +31,7 @@ import org.mcphoton.impl.world.ChunkColumnImpl;
 import org.mcphoton.impl.world.WorldImpl;
 import org.mcphoton.network.ByteArrayProtocolOutputStream;
 import org.mcphoton.network.Client;
+import org.mcphoton.network.ConnectionState;
 import org.mcphoton.network.PacketHandler;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.network.login.clientbound.LoginSuccessPacket;
@@ -95,6 +96,7 @@ public class LoginStartHandler implements PacketHandler<LoginStartPacket> {
 			spawnLocation.getWorld().spawnEntity(player, spawnLocation);
 			log.debug("Player instance created: {}", player);
 			client.setPlayer(player);
+			client.setConnectionState(ConnectionState.PLAY);
 
 			//LoginSuccess
 			log.trace("Sending LoginSuccess...");
