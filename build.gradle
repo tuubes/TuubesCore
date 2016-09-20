@@ -49,3 +49,13 @@ dependencies {
 task wrapper(type: Wrapper) {
 	gradleVersion = '2.14.1'
 }
+
+// Build runnable jar
+task fatJar(type: Jar) {
+	manifest {
+        attributes 'Main-Class': 'org.mcphoton.impl.server.Main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
