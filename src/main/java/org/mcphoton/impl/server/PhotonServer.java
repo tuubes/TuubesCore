@@ -79,7 +79,7 @@ public final class PhotonServer implements Server {
 		CONFIG_SPEC.defineInt("port", 25565, 1, 65535);
 		CONFIG_SPEC.defineInt("maxPlayers", 10, 1, 1000);
 		CONFIG_SPEC.defineString("world", "world");
-		CONFIG_SPEC.defineString("spawn", "0,60,0");
+		CONFIG_SPEC.defineString("spawn", "0,200,0");
 		CONFIG_SPEC.defineString("motd", "Photon server, version alpha");
 		CONFIG_SPEC.defineString("loggingLevel", "TRACE", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
 		CONFIG_SPEC.defineInt("executionThreads", Math.max(1, Runtime.getRuntime().availableProcessors() - 1), 1, 100);
