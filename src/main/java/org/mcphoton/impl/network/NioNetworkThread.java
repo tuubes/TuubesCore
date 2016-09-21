@@ -165,6 +165,7 @@ public class NioNetworkThread extends Thread {
 					log.debug("END OF STREAM for {}", client.address);
 					key.cancel();
 					client.getPlayer().ifPresent(SERVER.onlinePlayers::remove);
+					client.closeConnection();
 					return;
 				} else if (packetData == null) {//not enough bytes available to read the packet
 					return;
