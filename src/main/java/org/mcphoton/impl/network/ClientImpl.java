@@ -53,6 +53,7 @@ public final class ClientImpl implements Client {
 	volatile int authVerifyToken = -1;
 	volatile ConnectionState state = ConnectionState.INIT;
 	volatile Codec cipherCodec, compressionCodec;
+	volatile boolean closed = false;
 
 	public ClientImpl(SocketChannel channel) throws IOException {
 		this(channel, new NoCodec(), new NoCodec());
@@ -90,8 +91,19 @@ public final class ClientImpl implements Client {
 	@Override
 	public void closeConnection() throws IOException {
 		channel.close();
+		closed = true;
 	}
 
+	@Override
+	public boolean isClosed() {
+		return closed;
+	}
+	
+	@Override
+	public boolean isLocal() {
+		return address.getAddress().getHostAddress().equals("127.0.0.1");
+	}
+	
 	@Override
 	public String toString() {
 		return "PhotonClient{" + "address=" + address + ", player=" + player + ", state=" + state + '}';
@@ -112,5 +124,4 @@ public final class ClientImpl implements Client {
 	public void setPlayer(Player player) {
 		this.player = Optional.of(player);
 	}
-
 }

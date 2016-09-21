@@ -27,16 +27,14 @@ import org.mcphoton.impl.entity.PlayerImpl;
 import org.mcphoton.impl.network.Authenticator;
 import org.mcphoton.impl.network.ClientImpl;
 import org.mcphoton.impl.server.Main;
-import org.mcphoton.impl.world.ChunkColumnImpl;
-import org.mcphoton.impl.world.WorldImpl;
 import org.mcphoton.network.ByteArrayProtocolOutputStream;
 import org.mcphoton.network.Client;
 import org.mcphoton.network.ConnectionState;
 import org.mcphoton.network.PacketHandler;
 import org.mcphoton.network.PacketsManager;
+import org.mcphoton.network.login.clientbound.EncryptionRequestPacket;
 import org.mcphoton.network.login.clientbound.LoginSuccessPacket;
 import org.mcphoton.network.login.serverbound.LoginStartPacket;
-import org.mcphoton.network.play.clientbound.ChunkDataPacket;
 import org.mcphoton.network.play.clientbound.JoinGamePacket;
 import org.mcphoton.network.play.clientbound.KeepAlivePacket;
 import org.mcphoton.network.play.clientbound.PlayerAbilitiesPacket;
@@ -69,23 +67,25 @@ public class LoginStartHandler implements PacketHandler<LoginStartPacket> {
 
 	@Override
 	public void handle(LoginStartPacket packet, Client client) {
-		/* EncryptionRequestPacket requestPacket = new EncryptionRequestPacket();
-		 * byte[] randomBytes = new byte[4];
-		 * random.nextBytes(randomBytes);
-		 * authenticator.store(randomBytes, client);
-		 * authenticator.store(packet.username, client);
-		 *
-		 * requestPacket.serverId = "";
-		 * requestPacket.verifyToken = randomBytes;
-		 * requestPacket.publicKey = authenticator.getEncodedPublicKey();
-		 * pm.sendPacket(requestPacket, client); */
-		joinNow((ClientImpl) client);
+		if(!client.isLocal() && Main.SERVER.isOnlineMode()) {
+			EncryptionRequestPacket requestPacket = new EncryptionRequestPacket();
+			byte[] randomBytes = new byte[4];
+			random.nextBytes(randomBytes);
+			authenticator.store(randomBytes, client);
+			authenticator.store(packet.username, client);
+			requestPacket.serverId = "";
+			requestPacket.verifyToken = randomBytes;
+			requestPacket.publicKey = authenticator.getEncodedPublicKey();
+			pm.sendPacket(requestPacket, client);
+			log.debug("Encryption sent !");
+		}
+		joinNow((ClientImpl) client, packet.username);
 	}
 
-	private void joinNow(ClientImpl client) {
+	private void joinNow(ClientImpl client, String username) {
 		//--- Finish join sequence ---
 		final UUID accountId = UUID.randomUUID();
-		final String clientName = "ElectronWill", playerName = "ElectronWill";
+		final String clientName = username, playerName = username;
 		final Location spawnLocation = Main.SERVER.spawn;
 		final String finalPlayerUUID = accountId.toString();
 		Photon.getExecutorService().execute(() -> {
@@ -160,12 +160,14 @@ public class LoginStartHandler implements PacketHandler<LoginStartPacket> {
 			palPacket.z = spawnLocation.getBlockZ();
 			palPacket.teleportId = 0;
 			pm.sendPacket(palPacket, client);
+			
+			Main.SERVER.onlinePlayers.add(player);
 		});
 		//KeepAlive
 		log.trace("Starting to send KeepAlive packets...");
 		Photon.getExecutorService().scheduleWithFixedDelay(new KeepClientAlive(client), 15, 15, TimeUnit.SECONDS);
 
-		Photon.getExecutorService().execute(() -> {
+		/**Photon.getExecutorService().execute(() -> {
 			//--- Send block chunks ---
 			log.trace("Sending block chunks...");
 			WorldImpl wi = (WorldImpl) spawnLocation.getWorld();
@@ -183,7 +185,7 @@ public class LoginStartHandler implements PacketHandler<LoginStartPacket> {
 				}
 			}
 			log.trace("Join sequence completed!");
-		});
+		});*/
 	}
 
 	private class KeepClientAlive implements Runnable {
@@ -196,9 +198,15 @@ public class LoginStartHandler implements PacketHandler<LoginStartPacket> {
 
 		@Override
 		public void run() {
-			KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
-			keepAlivePacket.keepAliveId = 0b1010;
-			pm.sendPacket(keepAlivePacket, client);
+			if(client.isClosed()){
+				Thread.currentThread().stop();
+			} else {
+				KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
+				keepAlivePacket.keepAliveId = 0b1010;
+				pm.sendPacket(keepAlivePacket, client);
+			}
+			
+			
 		}
 
 	}
