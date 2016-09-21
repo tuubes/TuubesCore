@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Optional;
+import java.util.concurrent.ScheduledFuture;
+
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.network.Client;
 import org.mcphoton.network.ConnectionState;
@@ -54,6 +56,7 @@ public final class ClientImpl implements Client {
 	volatile ConnectionState state = ConnectionState.INIT;
 	volatile Codec cipherCodec, compressionCodec;
 	volatile boolean closed = false;
+	volatile ScheduledFuture<?> keepClientRunnable;
 
 	public ClientImpl(SocketChannel channel) throws IOException {
 		this(channel, new NoCodec(), new NoCodec());
@@ -123,5 +126,15 @@ public final class ClientImpl implements Client {
 
 	public void setPlayer(Player player) {
 		this.player = Optional.of(player);
+	}
+
+	public void setKeepClientRunnable(ScheduledFuture<?> futur) {
+		keepClientRunnable = futur;
+	}
+	
+	
+	@Override
+	public ScheduledFuture<?> getKeepClientRunnable() {
+		return keepClientRunnable;
 	}
 }

@@ -165,7 +165,7 @@ public class LoginStartHandler implements PacketHandler<LoginStartPacket> {
 		});
 		//KeepAlive
 		log.trace("Starting to send KeepAlive packets...");
-		Photon.getExecutorService().scheduleWithFixedDelay(new KeepClientAlive(client), 15, 15, TimeUnit.SECONDS);
+		client.setKeepClientRunnable(Photon.getExecutorService().scheduleWithFixedDelay(new KeepClientAlive(client), 15, 15, TimeUnit.SECONDS));
 
 		/**Photon.getExecutorService().execute(() -> {
 			//--- Send block chunks ---
@@ -199,7 +199,7 @@ public class LoginStartHandler implements PacketHandler<LoginStartPacket> {
 		@Override
 		public void run() {
 			if(client.isClosed()){
-				Thread.currentThread().stop();
+				client.getKeepClientRunnable().cancel(true);
 			} else {
 				KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
 				keepAlivePacket.keepAliveId = 0b1010;
