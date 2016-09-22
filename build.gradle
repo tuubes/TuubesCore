@@ -35,6 +35,7 @@ license {
 repositories {
 	mavenCentral()
 	maven { url 'https://jitpack.io' }
+	maven { url 'https://repo.spacehq.org/content/repositories/snapshots/' }
 }
 
 dependencies {
@@ -47,7 +48,7 @@ dependencies {
 
 // Wrapper config
 task wrapper(type: Wrapper) {
-	gradleVersion = '2.14.1'
+	gradleVersion = '3.1'
 }
 
 // Build runnable jar
