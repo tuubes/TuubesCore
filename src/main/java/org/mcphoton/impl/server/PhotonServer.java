@@ -45,10 +45,12 @@ import org.mcphoton.entity.living.Player;
 import org.mcphoton.impl.command.ListCommand;
 import org.mcphoton.impl.command.ServerCommandRegistryImpl;
 import org.mcphoton.impl.command.StopCommand;
+import org.mcphoton.impl.inventory.recipe.ServerRecipeRegistryImpl;
 import org.mcphoton.impl.network.NioNetworkThread;
 import org.mcphoton.impl.network.PacketsManagerImpl;
 import org.mcphoton.impl.plugin.ServerPluginsManagerImpl;
 import org.mcphoton.impl.world.WorldImpl;
+import org.mcphoton.inventory.recipe.ServerRecipeRegistry;
 import org.mcphoton.network.PacketsManager;
 import org.mcphoton.plugin.ServerPluginsManager;
 import org.mcphoton.server.BansManager;
@@ -93,6 +95,7 @@ public final class PhotonServer implements Server {
 	public final PacketsManagerImpl packetsManager;
 	public final ServerPluginsManagerImpl pluginsManager = new ServerPluginsManagerImpl();
 	public final ServerCommandRegistryImpl commandRegistry = new ServerCommandRegistryImpl();
+	public final ServerRecipeRegistryImpl recipeRegistry = new ServerRecipeRegistryImpl();
 	public final Constant<ScheduledExecutorService> executorService = new Constant<>();
 
 	//---- Configuration ----
@@ -133,6 +136,11 @@ public final class PhotonServer implements Server {
 	@Override
 	public ServerCommandRegistry getCommandRegistry() {
 		return commandRegistry;
+	}
+
+	@Override
+	public ServerRecipeRegistry getRecipeRegistry() {
+		return recipeRegistry;
 	}
 
 	@Override
