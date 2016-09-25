@@ -31,8 +31,10 @@ import org.mcphoton.event.WorldEventsManager;
 import org.mcphoton.impl.command.WorldCommandRegistryImpl;
 import org.mcphoton.impl.entity.PlayerImpl;
 import org.mcphoton.impl.event.WorldEventsManagerImpl;
+import org.mcphoton.impl.inventory.recipe.WorldRecipeRegistryImpl;
 import org.mcphoton.impl.plugin.WorldPluginsManagerImpl;
 import org.mcphoton.impl.world.generation.SimpleHeightmapBasedGenerator;
+import org.mcphoton.inventory.recipe.WorldRecipeRegistry;
 import org.mcphoton.network.Packet;
 import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.utils.ImmutableLocation;
@@ -61,6 +63,7 @@ public class WorldImpl implements World {
 	protected final WorldPluginsManager pluginsManager = new WorldPluginsManagerImpl(this);
 	protected final WorldEventsManager eventsManager = new WorldEventsManagerImpl();
 	protected final WorldCommandRegistry commandRegistry = new WorldCommandRegistryImpl();
+	protected final WorldRecipeRegistry recipeRegistry = new WorldRecipeRegistryImpl();
 	protected volatile ChunkGenerator chunkGenerator = new SimpleHeightmapBasedGenerator(this);
 	protected volatile WorldAccessManager accessManager = new OpenWorldAccessManager(this);
 
@@ -185,6 +188,11 @@ public class WorldImpl implements World {
 	@Override
 	public WorldCommandRegistry getCommandRegistry() {
 		return commandRegistry;
+	}
+
+	@Override
+	public WorldRecipeRegistry getRecipeRegistry() {
+		return recipeRegistry;
 	}
 
 	@Override
