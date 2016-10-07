@@ -1,8 +1,9 @@
 .nb-gradle*
-.gradle
+.gradle*
 build
 logs
 plugins
 server-config.toml
 whitelist.txt
 bans.toml
+/bin/

@@ -37,8 +37,8 @@ repositories {
 	maven { url 'https://jitpack.io' }
 	maven { url 'https://repo.spacehq.org/content/repositories/snapshots/' }
 }
-
 dependencies {
+	//compile ':Photon-API'
 	compile project(':Photon-API')
 	compile 'net.magik6k:bitbuffer:1.5.1'
 	compile 'com.github.TheElectronWill:NBT-javalib:v2.0'
