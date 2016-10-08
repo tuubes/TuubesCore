@@ -1,9 +1,20 @@
-.nb-gradle*
+# Build files
+bin/
+build/
+
+# Gradle cache
 .gradle*
-build
-logs
-plugins
-server-config.toml
-whitelist.txt
-bans.toml
-/bin/
+
+# Netbeans files
+.nb-gradle*
+nbproject
+
+# Eclipse files
+.classpath
+.project
+.settings
+
+# IntelliJ files
+*.iml
+.idea
+
