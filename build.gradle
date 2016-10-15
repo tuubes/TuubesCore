@@ -31,6 +31,7 @@ repositories {
 }
 dependencies {
 	compile project(':Photon-API')
+	compile project(':Photon-ProtocolLib')
 	compile 'net.magik6k:bitbuffer:1.5.1'
 	compile 'com.github.TheElectronWill:NBT-javalib:v2.0'
 	compile 'com.github.TheElectronWill:JSON-javalib:v1.2.1'
