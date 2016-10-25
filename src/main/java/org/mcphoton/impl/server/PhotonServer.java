@@ -87,10 +87,7 @@ public final class PhotonServer implements Server {
 	}
 
 	//---- Utilities ----
-	public final KeyPair keyPair;
-	public final NioNetworkThread networkThread;
 	public final ConsoleThread consoleThread = new ConsoleThread();
-	public final PacketsManagerImpl packetsManager;
 	public final ServerPluginsManagerImpl pluginsManager = new ServerPluginsManagerImpl();
 	public final ServerCommandRegistryImpl commandRegistry = new ServerCommandRegistryImpl();
 	public final Constant<ScheduledExecutorService> executorService = new Constant<>();

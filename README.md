@@ -9,7 +9,8 @@ Photon uses [gradle](http://gradle.org) to manage its dependencies. Building the
 
 1. Install the Java 8 SDK (aka JDK 8) if you don't already have it.
 2. Put the [Photon API](https://github.com/mcphoton/Photon-API) in the same directory as the Photon Server project folder.
-3. Run the following command in the Photon Server project's directory: `./gradlew build`
+3. Put the [Photon Protocol library](https://github.com/mcphoton/Photon-ProtocolLib) in the same directory as the Photon Server project folder. 
+4. Run the following command in the Photon Server project's directory: `./gradlew build`
 
 ## How to contribute
 You can fork this project and send me pull requests :)
@@ -21,4 +22,4 @@ You can fork this project and send me pull requests :)
 The *develop* branch contains the latest **in development** version of the Photon server. It's probably unstable and may not work at all. More stable releases can be found in the *master* branch.
 
 ## Current status
-The Photon server **doesn't work** yet, that is, you can't connect to it. This will be possible in the next release "0.4.0", which will be ready in the next days.
+The Photon server **isn't ready** yet. As of release "0.4.0" you can connect to it, but you can't do anything in the world (well, actually there's no real world: the map is completely empty).
