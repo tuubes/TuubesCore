@@ -1,6 +1,10 @@
-# Photon Server
+![](https://img.shields.io/badge/next%20version-0.5.0-yellow.svg)
+![](https://img.shields.io/badge/progress-5%25-red.svg)
+[![](https://img.shields.io/badge/discord-join%20chat!-7289DA.svg)](https://discord.gg/vWYembz)
+
 Photon server implementation. **Supports Minecraft version 1.10**.  
 
+## License
 **This project is licensed under the terms of the GNU Affero General Public License version 3**, which you can find in the LICENSE file.
 All the files in this repository (except the LICENSE file which is copyrighted by the Free Software Foundation) are copyrighted by TheElectronWill and others who wrote them (the contributors).
 
