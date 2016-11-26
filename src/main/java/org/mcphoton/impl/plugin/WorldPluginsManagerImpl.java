@@ -27,10 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.mcphoton.impl.plugin.DependencyResolver.Solution;
-import static org.mcphoton.impl.plugin.ServerPluginsManagerImpl.GLOBAL_CLASS_SHARER;
+import static org.mcphoton.impl.plugin.GlobalPluginsManagerImpl.GLOBAL_CLASS_SHARER;
 import org.mcphoton.plugin.Plugin;
 import org.mcphoton.plugin.PluginDescription;
-import org.mcphoton.plugin.ServerPlugin;
+import org.mcphoton.plugin.GlobalPlugin;
 import org.mcphoton.plugin.SharedClassLoader;
 import org.mcphoton.plugin.WorldPlugin;
 import org.mcphoton.plugin.WorldPluginsManager;
@@ -73,12 +73,12 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 		final PluginDescription description = clazz.getAnnotation(PluginDescription.class);
 		final Plugin instance = clazz.newInstance();
 
-		if (ServerPlugin.class.isAssignableFrom(clazz)) {
+		if (GlobalPlugin.class.isAssignableFrom(clazz)) {
 			if (description == null) {
 				throw new MissingPluginDescriptionException(clazz);
 			}
 			Collection<World> worlds = Collections.synchronizedCollection(new SimpleBag<>(world));
-			((ServerPlugin) instance).init(description, worlds);
+			((GlobalPlugin) instance).init(description, worlds);
 		} else if (WorldPlugin.class.isAssignableFrom(clazz)) {
 			if (description == null) {
 				throw new MissingPluginDescriptionException(clazz);
@@ -145,9 +145,9 @@ public final class WorldPluginsManagerImpl implements WorldPluginsManager {
 				PluginInfos infos = infosMap.get(plugin);
 				Plugin instance = infos.clazz.newInstance();
 
-				if (ServerPlugin.class.isAssignableFrom(infos.clazz)) {
+				if (GlobalPlugin.class.isAssignableFrom(infos.clazz)) {
 					Collection<World> worlds = Collections.synchronizedCollection(new SimpleBag<>(world));
-					((ServerPlugin) instance).init(infos.description, worlds);
+					((GlobalPlugin) instance).init(infos.description, worlds);
 				} else if (WorldPlugin.class.isAssignableFrom(infos.clazz)) {
 					((WorldPlugin) instance).init(infos.description, world);
 				}

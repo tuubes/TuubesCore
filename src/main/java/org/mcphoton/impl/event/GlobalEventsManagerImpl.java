@@ -21,20 +21,20 @@ package org.mcphoton.impl.event;
 import org.mcphoton.event.Event;
 import org.mcphoton.event.EventHandler;
 import org.mcphoton.event.ListenOrder;
-import org.mcphoton.event.ServerEventsManager;
+import org.mcphoton.event.GlobalEventsManager;
 import org.mcphoton.event.WorldEventsManager;
-import org.mcphoton.plugin.ServerPlugin;
+import org.mcphoton.plugin.GlobalPlugin;
 import org.mcphoton.world.World;
 
 /**
- * Implementation of the {@link ServerEventsManager}. It internally uses the {@link WorldEventsManager}.
+ * Implementation of the {@link GlobalEventsManager}. It internally uses the {@link WorldEventsManager}.
  *
  * @author TheElectronWill
  */
-public class ServerEventsManagerImpl implements ServerEventsManager {
+public class GlobalEventsManagerImpl implements GlobalEventsManager {
 
 	@Override
-	public void registerAll(Object listener, ServerPlugin plugin) {
+	public void registerAll(Object listener, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
 			world.getEventsManager().registerAll(listener);
 		}
@@ -43,21 +43,21 @@ public class ServerEventsManagerImpl implements ServerEventsManager {
 	}
 
 	@Override
-	public void unregisterAll(Object listener, ServerPlugin plugin) {
+	public void unregisterAll(Object listener, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
 			world.getEventsManager().unregisterAll(listener);
 		}
 	}
 
 	@Override
-	public <E extends Event> void register(Class<E> eventClass, EventHandler<? super E> eventHandler, ListenOrder listenOrder, ServerPlugin plugin) {
+	public <E extends Event> void register(Class<E> eventClass, EventHandler<? super E> eventHandler, ListenOrder listenOrder, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
 			world.getEventsManager().register(eventClass, eventHandler, listenOrder);
 		}
 	}
 
 	@Override
-	public <E extends Event> void unregister(Class<E> eventClass, EventHandler<? super E> eventHandler, ListenOrder listenOrder, ServerPlugin plugin) {
+	public <E extends Event> void unregister(Class<E> eventClass, EventHandler<? super E> eventHandler, ListenOrder listenOrder, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
 			world.getEventsManager().unregister(eventClass, eventHandler, listenOrder);
 		}

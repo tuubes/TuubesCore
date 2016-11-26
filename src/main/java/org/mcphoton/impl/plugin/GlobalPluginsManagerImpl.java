@@ -30,29 +30,24 @@ import java.util.Map;
 import org.mcphoton.Photon;
 import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.impl.plugin.DependencyResolver.Solution;
-import org.mcphoton.plugin.ClassSharer;
-import org.mcphoton.plugin.Plugin;
-import org.mcphoton.plugin.PluginDescription;
-import org.mcphoton.plugin.ServerPlugin;
-import org.mcphoton.plugin.ServerPluginsManager;
-import org.mcphoton.plugin.SharedClassLoader;
-import org.mcphoton.plugin.WorldPlugin;
+import org.mcphoton.plugin.*;
+import org.mcphoton.plugin.GlobalPlugin;
 import org.mcphoton.server.Server;
 import org.mcphoton.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of ServerPluginsManager
+ * Implementation of GlobalPluginsManager
  *
  * @author TheElectronWill
  */
-public final class ServerPluginsManagerImpl implements ServerPluginsManager {
+public final class GlobalPluginsManagerImpl implements GlobalPluginsManager {
 
-	private static final Logger log = LoggerFactory.getLogger(ServerPluginsManagerImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(GlobalPluginsManagerImpl.class);
 	static final ClassSharer GLOBAL_CLASS_SHARER = new ClassSharerImpl();
 	static final File PLUGINS_CONFIG = new File(Photon.PLUGINS_DIR, "plugins_config.toml");
-	private final Map<String, ServerPlugin> serverPlugins = new HashMap<>();
+	private final Map<String, GlobalPlugin> serverPlugins = new HashMap<>();
 
 	@Override
 	public ClassSharer getClassSharer() {
@@ -60,7 +55,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	}
 
 	@Override
-	public ServerPlugin getServerPlugin(String name) {
+	public GlobalPlugin getServerPlugin(String name) {
 		return serverPlugins.get(name);
 	}
 
@@ -124,7 +119,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		}
 		final PluginDescription description = clazz.getAnnotation(PluginDescription.class);
 
-		if (ServerPlugin.class.isAssignableFrom(clazz)) {//ServerPlugin -> one global instance.
+		if (GlobalPlugin.class.isAssignableFrom(clazz)) {//GlobalPlugin -> one global instance.
 			if (description == null) {
 				throw new MissingPluginDescriptionException(clazz);
 			}
@@ -154,7 +149,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	 *
 	 * @param files the files to load the plugins from (1 plugin per file).
 	 * @param worldPlugins the plugins to load for each world.
-	 * @param serverPlugins the plugins to load for the entire server. They don't have to extend ServerPlugin.
+	 * @param serverPlugins the plugins to load for the entire server. They don't have to extend GlobalPlugin.
 	 * @param serverWorlds the worlds where the serverPlugins will be loaded.
 	 */
 	@Override
@@ -196,10 +191,10 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		for (Iterator<String> it = serverPlugins.iterator(); it.hasNext();) {
 			String plugin = it.next();
 			PluginInfos infos = infosMap.get(plugin);
-			if (ServerPlugin.class.isAssignableFrom(infos.clazz)) {//actual ServerPlugin
+			if (GlobalPlugin.class.isAssignableFrom(infos.clazz)) {//actual GlobalPlugin
 				serverPluginsVersions.add(infos.description.version());
 				resolver.addToResolve(infos.description);
-			} else {//not a ServerPlugin -> distribute to every world
+			} else {//not a GlobalPlugin -> distribute to every world
 				it.remove();
 				for (Map.Entry<World, List<String>> entry : worldPlugins.entrySet()) {
 					entry.getValue().add(plugin);
@@ -252,7 +247,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 			for (String plugin : solution.resolvedOrder) {
 				PluginInfos infos = infosMap.get(plugin);
 				try {
-					if (ServerPlugin.class.isAssignableFrom(infos.clazz)) {
+					if (GlobalPlugin.class.isAssignableFrom(infos.clazz)) {
 						//ServerPlugins need a Collection<World> so we "collect" all the worlds first and load them later, at step 4.
 						infos.getWorlds().add(world);
 						nonGlobalServerPlugins.add(infos);
@@ -282,8 +277,8 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 		}
 	}
 
-	private ServerPlugin loadServerPlugin(Class clazz, PluginClassLoader classLoader, PluginDescription description, Collection<World> worlds) throws Exception {
-		ServerPlugin instance = (ServerPlugin) clazz.newInstance();
+	private GlobalPlugin loadServerPlugin(Class clazz, PluginClassLoader classLoader, PluginDescription description, Collection<World> worlds) throws Exception {
+		GlobalPlugin instance = (GlobalPlugin) clazz.newInstance();
 		instance.init(description, worlds);
 		instance.onLoad();
 		for (World world : worlds) {
@@ -313,11 +308,11 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 
 	@Override
 	public void unloadAllPlugins() {
-		for (ServerPlugin serverPlugin : serverPlugins.values()) {
+		for (GlobalPlugin globalPlugin : serverPlugins.values()) {
 			try {
-				unloadServerPlugin(serverPlugin);
+				unloadServerPlugin(globalPlugin);
 			} catch (Exception ex) {
-				log.error("Unable to unload the server plugin {}.", serverPlugin.getName(), ex);
+				log.error("Unable to unload the server plugin {}.", globalPlugin.getName(), ex);
 			}
 		}
 		for (World world : Photon.getServer().getWorlds()) {
@@ -326,7 +321,7 @@ public final class ServerPluginsManagerImpl implements ServerPluginsManager {
 	}
 
 	@Override
-	public void unloadServerPlugin(ServerPlugin plugin) throws Exception {
+	public void unloadServerPlugin(GlobalPlugin plugin) throws Exception {
 		plugin.onUnload();
 		SharedClassLoader classLoader = (SharedClassLoader) plugin.getClass().getClassLoader();
 		for (World world : plugin.getActiveWorlds()) {

@@ -26,7 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.util.Base64;
 import java.util.Collection;
@@ -38,19 +37,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
-import org.mcphoton.command.ServerCommandRegistry;
+import org.mcphoton.command.GlobalCommandRegistry;
 import org.mcphoton.config.ConfigurationSpecification;
 import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.impl.command.ListCommand;
-import org.mcphoton.impl.command.ServerCommandRegistryImpl;
+import org.mcphoton.impl.command.GlobalCommandRegistryImpl;
 import org.mcphoton.impl.command.StopCommand;
 import org.mcphoton.impl.network.NioNetworkThread;
 import org.mcphoton.impl.network.PacketsManagerImpl;
-import org.mcphoton.impl.plugin.ServerPluginsManagerImpl;
+import org.mcphoton.impl.plugin.GlobalPluginsManagerImpl;
 import org.mcphoton.impl.world.WorldImpl;
 import org.mcphoton.network.PacketsManager;
-import org.mcphoton.plugin.ServerPluginsManager;
+import org.mcphoton.plugin.GlobalPluginsManager;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
@@ -88,8 +87,8 @@ public final class PhotonServer implements Server {
 
 	//---- Utilities ----
 	public final ConsoleThread consoleThread = new ConsoleThread();
-	public final ServerPluginsManagerImpl pluginsManager = new ServerPluginsManagerImpl();
-	public final ServerCommandRegistryImpl commandRegistry = new ServerCommandRegistryImpl();
+	public final GlobalPluginsManagerImpl pluginsManager = new GlobalPluginsManagerImpl();
+	public final GlobalCommandRegistryImpl commandRegistry = new GlobalCommandRegistryImpl();
 	public final Constant<ScheduledExecutorService> executorService = new Constant<>();
 
 	//---- Configuration ----
@@ -128,7 +127,7 @@ public final class PhotonServer implements Server {
 	}
 
 	@Override
-	public ServerCommandRegistry getCommandRegistry() {
+	public GlobalCommandRegistry getCommandRegistry() {
 		return commandRegistry;
 	}
 
@@ -176,7 +175,7 @@ public final class PhotonServer implements Server {
 	}
 
 	@Override
-	public ServerPluginsManager getPluginsManager() {
+	public GlobalPluginsManager getPluginsManager() {
 		return pluginsManager;
 	}
 

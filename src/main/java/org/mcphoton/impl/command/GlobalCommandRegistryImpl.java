@@ -20,17 +20,17 @@ package org.mcphoton.impl.command;
 
 import org.mcphoton.Photon;
 import org.mcphoton.command.Command;
-import org.mcphoton.command.ServerCommandRegistry;
+import org.mcphoton.command.GlobalCommandRegistry;
 import org.mcphoton.command.WorldCommandRegistry;
-import org.mcphoton.plugin.ServerPlugin;
+import org.mcphoton.plugin.GlobalPlugin;
 import org.mcphoton.world.World;
 
 /**
- * Implementation of {@link ServerCommandRegistry}. It internally uses the {@link WorldCommandRegistry}.
+ * Implementation of {@link GlobalCommandRegistry}. It internally uses the {@link WorldCommandRegistry}.
  *
  * @author TheElectronWill
  */
-public class ServerCommandRegistryImpl implements ServerCommandRegistry {
+public class GlobalCommandRegistryImpl implements GlobalCommandRegistry {
 
 	/**
 	 * Registers a server command.
@@ -44,14 +44,14 @@ public class ServerCommandRegistryImpl implements ServerCommandRegistry {
 	}
 
 	@Override
-	public void register(Command cmd, ServerPlugin plugin) {
+	public void register(Command cmd, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
 			world.getCommandRegistry().register(cmd, plugin);
 		}
 	}
 
 	@Override
-	public void unregister(Command cmd, ServerPlugin plugin) {
+	public void unregister(Command cmd, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
 			world.getCommandRegistry().unregister(cmd, plugin);
 		}
