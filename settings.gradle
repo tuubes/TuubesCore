@@ -1,3 +1,6 @@
 rootProject.name = 'Photon-Server'
 include ':api'
 include ':impl'
+
+include ':protocol-lib'
+project(':protocol-lib').projectDir = new File('../Photon-ProtocolLib')

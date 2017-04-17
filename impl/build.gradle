@@ -23,24 +23,21 @@ license {
 repositories {
 	mavenCentral()
 	maven { url 'https://jitpack.io' }
-	maven { url 'https://repo.spacehq.org/content/repositories/releases/'}
-	maven { url 'https://repo.spacehq.org/content/repositories/snapshots/' }
 }
 dependencies {
 	compile project(':api')
-	//compile project(':Photon-ProtocolLib')
+	compile project(':protocol-lib')
 	compile 'net.magik6k:bitbuffer:1.5.1'
-	compile 'com.github.TheElectronWill:NBT-javalib:v2.0'
-	compile 'com.github.TheElectronWill:JSON-javalib:v1.2.1'
-	compile 'com.github.TheElectronWill:TOML-javalib:v1.2.2'
+	compile 'com.github.TheElectronWill:Night-Config:v2.0-beta2'
+	compile 'org.slf4j:slf4j-api:1.7.25'
 }
 
 // Build runnable jar
 task fatJar(type: Jar) {
 	manifest {
-        attributes 'Main-Class': 'org.mcphoton.impl.server.Main'
-    }
-    baseName = project.name + '-all'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
+		attributes 'Main-Class': 'org.mcphoton.impl.server.Main'
+	}
+	baseName = project.name + '-all'
+	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+	with jar
 }
