@@ -2,7 +2,7 @@
 ![](https://img.shields.io/badge/progress-5%25-red.svg)
 [![](https://img.shields.io/badge/discord-join%20chat!-7289DA.svg)](https://discord.gg/vWYembz)
 
-Photon server implementation. **Supports Minecraft version 1.10**.  
+From-scratch, extensible and multithreaded minecraft server.
 
 ## License
 **This project is licensed under the terms of the GNU Affero General Public License version 3**, which you can find in the LICENSE file.

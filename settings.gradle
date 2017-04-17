@@ -1,6 +1,3 @@
 rootProject.name = 'Photon-Server'
-
-include ':Photon-API'
-project(':Photon-API').projectDir = new File('../Photon-API')
-include ':Photon-ProtocolLib'
-project(':Photon-ProtocolLib').projectDir = new File('../Photon-ProtocolLib')
+include ':api'
+include ':impl'

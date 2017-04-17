@@ -1,0 +1,32 @@
+plugins {
+    id 'com.github.hierynomus.license' version '0.13.1'
+}
+
+version = 'indev'
+description 'The Photon API for creating plugins'
+
+// Java plugin
+apply plugin: 'java'
+sourceCompatibility = '1.8'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+// License plugin
+license {
+	header file('HEADER.txt')
+	strictCheck true
+	mapping('java', 'SLASHSTAR_STYLE')
+	ext.year = Calendar.getInstance().get(Calendar.YEAR)
+	exclude 'src/main/java/org/mcphoton/network/NetInput.java'
+	exclude 'src/main/java/org/mcphoton/network/NetOutput.java'
+}
+
+// Dependencies
+repositories {
+	mavenCentral()
+	maven { url 'https://jitpack.io' }
+}
+dependencies {
+	compile 'org.slf4j:slf4j-api:1.7.13+'
+	compile 'commons-cli:commons-cli:1.3.1'
+}
+

@@ -2,10 +2,8 @@ plugins {
 	id 'com.github.hierynomus.license' version '0.13.1'
 }
 
-// Project description
-version = 'dev-alpha'
-status = 'indev'
-description 'Photon server implementation'
+version = 'indev'
+description 'The runnable Photon server'
 
 // Java plugin
 apply plugin: 'java'
@@ -13,7 +11,6 @@ sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 // License plugin
-apply plugin: 'com.github.hierynomus.license'
 license {
 	header file('HEADER.txt')
 	strictCheck true
@@ -30,17 +27,12 @@ repositories {
 	maven { url 'https://repo.spacehq.org/content/repositories/snapshots/' }
 }
 dependencies {
-	compile project(':Photon-API')
-	compile project(':Photon-ProtocolLib')
+	compile project(':api')
+	//compile project(':Photon-ProtocolLib')
 	compile 'net.magik6k:bitbuffer:1.5.1'
 	compile 'com.github.TheElectronWill:NBT-javalib:v2.0'
 	compile 'com.github.TheElectronWill:JSON-javalib:v1.2.1'
 	compile 'com.github.TheElectronWill:TOML-javalib:v1.2.2'
-}
-
-// Wrapper config
-task wrapper(type: Wrapper) {
-	gradleVersion = '3.1'
 }
 
 // Build runnable jar
