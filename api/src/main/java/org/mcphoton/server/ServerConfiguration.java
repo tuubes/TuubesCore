@@ -36,16 +36,15 @@ public interface ServerConfiguration {
 	void setMaxPlayers(int maxPlayers);
 
 	/**
-	 * @return the server's address.
+	 * @return the server's port
 	 */
-	InetSocketAddress getAddress();
+	int getPort();
 
 	/**
-	 * Sets the server's address.
-	 *
-	 * @param address the server's address.
+	 * Sets the local port used by the server.
+	 * @param port the server's port.
 	 */
-	void setAddress(InetSocketAddress address);
+	void setPort(int port);
 
 	/**
 	 * @return the server's icon.
