@@ -1,5 +1,5 @@
 plugins {
-	id 'com.github.hierynomus.license' version '0.13.1'
+	id 'com.github.hierynomus.license' version '0.14.0'
 }
 
 version = 'indev'
@@ -28,7 +28,7 @@ dependencies {
 	compile project(':api')
 	compile project(':protocol-lib')
 	compile 'net.magik6k:bitbuffer:1.5.1'
-	compile 'com.github.TheElectronWill:Night-Config:v2.0-beta2'
+	compile 'com.github.TheElectronWill:Night-Config:v2.1'
 	compile 'org.slf4j:slf4j-api:1.7.25'
 }
 
