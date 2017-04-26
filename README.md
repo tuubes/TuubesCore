@@ -20,8 +20,8 @@ part of this repository.
 
 ## How to contribute
 You can fork this project and send me pull requests :)
-* To contribute to the Photon implementation, you must first understand the Photon API. Please read [the API wiki](https://github.com/mcphoton/Photon-API/wiki) to know about the project's guidelines and architecture.
-* Please also read *the server architecture* (coming soon) to understand how the server is organized.
+* To contribute to the Photon implementation, you must first understand the Photon API. ~~Please read [the API wiki](https://github.com/mcphoton/Photon-API/wiki) to know about the project's guidelines and architecture.~~ The wiki isn't exactly up-to-date, and since major changes are coming it won't be updated in a near future.
+* Please respect [the coding style](https://github.com/mcphoton/Photon-Server/blob/develop/Coding%20Style.md).
 * Good java skills are required.
 
 ## Branches
