@@ -23,20 +23,25 @@ import org.mcphoton.impl.server.Main;
 import org.mcphoton.messaging.Messageable;
 
 public class ListCommand implements Command {
-
 	@Override
 	public void execute(Messageable source, String[] args) {
-		
-		switch(Main.SERVER.getOnlinePlayers().size()) {
-		case 0:
-			source.sendMessage("No player is connected.");
-			break;
-		case 1:
-			source.sendMessage("There is 1 of " + Main.SERVER.getMaxPlayers() + " player connected.");
-			break;
-		default:
-			source.sendMessage("There are " + Main.SERVER.getOnlinePlayers().size() + " of " + Main.SERVER.getMaxPlayers() + " players connected.");
-			break;
+
+		switch (Main.SERVER.getOnlinePlayers().size()) {
+			case 0:
+				source.sendMessage("No player is connected.");
+				break;
+			case 1:
+				source.sendMessage("There is 1 out of "
+								   + Main.SERVER.getConfiguration().getMaxPlayers()
+								   + " player connected.");
+				break;
+			default:
+				source.sendMessage("There are "
+								   + Main.SERVER.getOnlinePlayers().size()
+								   + " out of "
+								   + Main.SERVER.getConfiguration().getMaxPlayers()
+								   + " players connected.");
+				break;
 		}
 	}
 
@@ -49,5 +54,4 @@ public class ListCommand implements Command {
 	public String getName() {
 		return "list";
 	}
-
 }
