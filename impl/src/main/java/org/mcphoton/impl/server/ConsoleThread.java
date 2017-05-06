@@ -52,11 +52,11 @@ public class ConsoleThread extends Thread implements Messageable {
 
 	@Override
 	public void run() {
-		world = Photon.getServer().getSpawn().getWorld();
+		world = Photon.getServer().getConfiguration().getSpawnLocation().getWorld();
 		while (run) {
 			String line = sc.nextLine();
 			String[] parts = line.split(" ", 2);
-			Command cmd = world.getCommandRegistry().getRegistered(parts[0]);
+			Command cmd = world.getCommandRegistry().getRegisteredCommand(parts[0]);
 			if (cmd == null) {
 				System.out.println("Unknown command.");
 				continue;
