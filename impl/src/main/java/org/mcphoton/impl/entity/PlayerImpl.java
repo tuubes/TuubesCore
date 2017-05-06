@@ -24,13 +24,9 @@ import org.mcphoton.entity.living.AbstractLivingEntity;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.inventory.Inventory;
 import org.mcphoton.messaging.ChatMessage;
-import org.mcphoton.network.Client;
-import org.mcphoton.network.Packet;
-import org.mcphoton.network.play.clientbound.SpawnPlayerPacket;
 import org.mcphoton.utils.Location;
 
 /**
- *
  * @author TheElectronWill
  */
 public class PlayerImpl extends AbstractLivingEntity implements Player {
@@ -39,22 +35,16 @@ public class PlayerImpl extends AbstractLivingEntity implements Player {
 	private final String name;
 	private volatile String nameInChat, nameInList;
 	private volatile Location compassTarget;
-	private final Client client;
 
-	public Client getClient() {
-		return client;
-	}
-
-	public PlayerImpl(String name, UUID accoundId, Client client) {
+	public PlayerImpl(String name, UUID accoundId) {
 		this.name = name;
 		this.accoundId = accoundId;
 		this.nameInChat = name;
-		this.client = client;
 	}
 
 	@Override
-	public Packet constructSpawnPacket() {
-		return new SpawnPlayerPacket(this);
+	public Player asPlayer() {
+		return this;
 	}
 
 	@Override
@@ -70,11 +60,6 @@ public class PlayerImpl extends AbstractLivingEntity implements Player {
 	@Override
 	public void setCompassTarget(Location target) {
 		this.compassTarget = target;
-	}
-
-	@Override
-	public Inventory getEnderChest() {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -123,48 +108,13 @@ public class PlayerImpl extends AbstractLivingEntity implements Player {
 	}
 
 	@Override
-	public boolean hasPermission(String permission) {
-		return true;//TODO
+	public boolean isPermissionSet(String permission) {
+		return false;// TODO
 	}
 
 	@Override
-	public boolean hasPlayedBefore() {
-		return false;//TODO
-	}
-
-	@Override
-	public boolean isBanned() {
-		return false; //TODO
-	}
-
-	@Override
-	public void setBanned(boolean b) {
-		; //TODO
-	}
-
-	@Override
-	public boolean isOnline() {
-		return true;
-	}
-
-	@Override
-	public boolean isOp() {
-		return false;//TODO
-	}
-
-	@Override
-	public void setOp(boolean b) {
-		; //TODO
-	}
-
-	@Override
-	public boolean isWhitelisted() {
-		return true; //TODO
-	}
-
-	@Override
-	public void setWhitelisted(boolean b) {
-		; //TODO
+	public boolean hasPermission(String permission, boolean ifNotSet) {
+		return false;// TODO
 	}
 
 	@Override
@@ -201,14 +151,4 @@ public class PlayerImpl extends AbstractLivingEntity implements Player {
 	public String toString() {
 		return "PhotonPlayer{" + "name=" + name + ", accoundId=" + accoundId + '}';
 	}
-
-	@Override
-	public void writeMetadata(MetadataWriter writer) {
-		super.writeMetadata(writer);
-		//TODO 11: additional hearts
-		//TODO 12: score
-		//TODO 13: skins parts
-		writer.writeByte(14, 1);//main hand = right, TODO choose
-	}
-
 }
