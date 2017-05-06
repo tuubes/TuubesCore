@@ -1,15 +1,25 @@
 package org.mcphoton.impl.server;
 
 import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig;
+import com.electronwill.nightconfig.core.conversion.Conversion;
+import com.electronwill.nightconfig.core.conversion.Converter;
 import com.electronwill.nightconfig.core.conversion.ObjectConverter;
+import com.electronwill.nightconfig.core.conversion.SpecIntInRange;
 import com.electronwill.nightconfig.toml.TomlConfig;
 import com.electronwill.nightconfig.toml.TomlParser;
+import com.electronwill.utils.StringUtils;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
 import org.mcphoton.server.ServerConfiguration;
+import org.mcphoton.utils.ImmutableLocation;
 import org.mcphoton.utils.Location;
+import org.mcphoton.world.World;
+import org.slf4j.impl.LoggingLevel;
 
 /**
  * The server configuration, loaded from the file server-config.toml with the Night-Config library.
@@ -17,12 +27,23 @@ import org.mcphoton.utils.Location;
  * @author TheElectronWill
  */
 public final class ServerConfigImpl implements ServerConfiguration {
-	private static final File configFile = new File(Photon.getMainDirectory(), "server-config.toml");
+	private static final File configFile = new File(Photon.getMainDirectory(),
+													"server-config.toml");
 
-	private volatile String motd;
-	private volatile int maxPlayers, port;
+	private volatile String motd = "Default MOTD. Change it in the config.";
+	private volatile int maxPlayers = 10;
+	private volatile int port = 25565;
+
+	@Conversion(ServerConfigImpl.LocationConverter.class)
 	private volatile Location spawnLocation;
-	private volatile boolean onlineMode;
+	private volatile boolean onlineMode = false;
+
+	@Conversion(ServerConfigImpl.LoggingLevelConverter.class)
+	private volatile LoggingLevel logLevel = LoggingLevel.TRACE;
+
+	@SpecIntInRange(min = 1, max = 100)
+	private volatile int threadNumber;
+
 	private volatile transient BufferedImage icon;// not saved in the config but loaded from icon.jpg or .png
 	private volatile transient Map<String, UnmodifiableCommentedConfig.CommentNode> savedComments;
 
@@ -44,6 +65,16 @@ public final class ServerConfigImpl implements ServerConfiguration {
 	@Override
 	public void setMaxPlayers(int maxPlayers) {
 		this.maxPlayers = maxPlayers;
+	}
+
+	@Override
+	public int getThreadNumber() {
+		return threadNumber;
+	}
+
+	@Override
+	public void setThreadNumber(int threadNumber) {
+		this.threadNumber = threadNumber;
 	}
 
 	@Override
@@ -90,6 +121,7 @@ public final class ServerConfigImpl implements ServerConfiguration {
 		TomlConfig config = new TomlParser().parse(configFile);
 		ServerConfigImpl impl = new ObjectConverter().toObject(config, ServerConfigImpl::new);
 		impl.savedComments = config.getComments();// Remembers the comments
+		impl.icon = readIcon();
 		return impl;
 	}
 
@@ -97,5 +129,55 @@ public final class ServerConfigImpl implements ServerConfiguration {
 		TomlConfig config = new ObjectConverter().toConfig(this, TomlConfig::new);
 		config.setComments(savedComments);// Restores the comments
 		config.write(configFile);
+	}
+
+	private static BufferedImage readIcon() {
+		String[] possibilities = {"icon.png", "icon.jpg", "favicon.png", "favicon.jpg",
+								  "server-icon.png", "server-icon.jpg", "server_icon.png",
+								  "server_icon.jpg", "logo.png", "logo.jpg"};
+		for (String possibility : possibilities) {
+			File file = new File(Photon.getMainDirectory(), possibility);
+			if (file.exists()) {
+				try {
+					return ImageIO.read(file);
+				} catch (IOException e) {
+					throw new RuntimeException("Unable to read the logo from " + file, e);
+				}
+			}
+		}
+		return null;
+	}
+
+	private static class LocationConverter implements Converter<Location, String> {
+
+		@Override
+		public Location convertToField(String value) {
+			List<String> parts = StringUtils.split(value, ',');
+			double x = Double.parseDouble(parts.get(0));
+			double y = Double.parseDouble(parts.get(1));
+			double z = Double.parseDouble(parts.get(2));
+			String world = parts.get(3);
+			World w = Photon.getServer().getWorld(world);
+			return new ImmutableLocation(x, y, z, w);
+		}
+
+		@Override
+		public String convertFromField(Location value) {
+			return value.getX() + "," + value.getY() + "," + value.getZ() + ", " + value.getWorld()
+																						.getName();
+		}
+	}
+
+	private static class LoggingLevelConverter implements Converter<LoggingLevel, String> {
+
+		@Override
+		public LoggingLevel convertToField(String value) {
+			return LoggingLevel.valueOf(value.toUpperCase());
+		}
+
+		@Override
+		public String convertFromField(LoggingLevel value) {
+			return value.name();
+		}
 	}
 }

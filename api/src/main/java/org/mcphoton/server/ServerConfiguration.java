@@ -36,12 +36,25 @@ public interface ServerConfiguration {
 	void setMaxPlayers(int maxPlayers);
 
 	/**
+	 * @return the number of threads.
+	 */
+	int getThreadNumber();
+
+	/**
+	 * Sets the number of threads used to execute the tasks.
+	 *
+	 * @param threadNumber the number of threads
+	 */
+	void setThreadNumber(int threadNumber);
+
+	/**
 	 * @return the server's port
 	 */
 	int getPort();
 
 	/**
 	 * Sets the local port used by the server.
+	 *
 	 * @param port the server's port.
 	 */
 	void setPort(int port);
@@ -83,5 +96,4 @@ public interface ServerConfiguration {
 	 * @param online {@code true} if it is in online mode, {@code false} if it isn't.
 	 */
 	void setOnlineMode(boolean online);
-
 }
