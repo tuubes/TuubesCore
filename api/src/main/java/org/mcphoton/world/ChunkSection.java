@@ -20,7 +20,6 @@ package org.mcphoton.world;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import org.mcphoton.network.ProtocolWriteable;
 
 /**
  * A chunk section: 16x16x16 blocks.
@@ -28,7 +27,7 @@ import org.mcphoton.network.ProtocolWriteable;
  * @author TheElectronWill
  * @see https://github.com/mcphoton/Photon-API/wiki/IDs-of-blocks,-items-and-entities
  */
-public interface ChunkSection extends ProtocolWriteable {
+public interface ChunkSection {
 
 	/**
 	 * @param x X coordinate in the section.
@@ -93,7 +92,7 @@ public interface ChunkSection extends ProtocolWriteable {
 	 * @param x1 final x coordinate in the section.
 	 * @param y1 final y coordinate in the section.
 	 * @param z1 final z coordinate in the section.
-	 * @param blockFullId the block's simple id (without its metadata).
+	 * @param blockId the block's simple id (without its metadata).
 	 */
 	void fillBlockId(int x0, int y0, int z0, int x1, int y1, int z1, int blockId);
 

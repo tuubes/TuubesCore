@@ -19,7 +19,6 @@
 package org.mcphoton.entity.living;
 
 import org.mcphoton.entity.AbstractEntity;
-import org.mcphoton.entity.MetadataWriter;
 
 /**
  *
@@ -116,16 +115,4 @@ public abstract class AbstractLivingEntity extends AbstractEntity implements Liv
 	public void setHeadYaw(float headYaw) {
 		this.headYaw = headYaw;
 	}
-
-	@Override
-	public void writeMetadata(MetadataWriter writer) {
-		super.writeMetadata(writer);
-		writer.writeVarInt(1, airLevel);
-		writer.writeByte(6, 0);// hand inactive
-		writer.writeFloat(7, health);
-		//TODO 8: potion effect (for the color)
-		//TODO 9: is potion effect ambient
-		writer.writeVarInt(10, stuckArrowsNumber);
-	}
-
 }

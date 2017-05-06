@@ -18,11 +18,12 @@
  */
 package org.mcphoton.messaging;
 
+import com.electronwill.nightconfig.json.JsonConfig;
+import com.electronwill.nightconfig.json.MinimalJsonWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.mcphoton.config.JsonConfiguration;
 
 /**
  * A chat message. In the new chat system it is stored as a JSON object, that's why there's a map in this
@@ -252,12 +253,7 @@ public abstract class ChatMessage {
 	 */
 	@Override
 	public String toString() {
-		JsonConfiguration conf = new JsonConfiguration(map);
-		try {
-			return conf.writeToString();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return super.toString();
+		JsonConfig conf = new JsonConfig(map);
+		return new MinimalJsonWriter().writeToString(conf);
 	}
 }

@@ -20,7 +20,6 @@ package org.mcphoton.impl.entity;
 
 import java.util.UUID;
 import org.mcphoton.entity.EntityType;
-import org.mcphoton.entity.MetadataWriter;
 import org.mcphoton.entity.living.AbstractLivingEntity;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.inventory.Inventory;

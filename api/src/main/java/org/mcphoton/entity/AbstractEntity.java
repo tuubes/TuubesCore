@@ -195,29 +195,4 @@ public abstract class AbstractEntity implements Entity {
 	public void setSprinting(boolean sprinting) {
 		this.sprinting = sprinting;
 	}
-
-	@Override
-	public void writeMetadata(MetadataWriter writer) {
-		byte infos = 0;
-		if (onFire) {
-			infos |= 0x1;
-		}
-		if (crouched) {
-			infos |= 0x2;
-		}
-		if (sprinting) {
-			infos |= 0x8;
-		}
-		//TODO eating/drinking/blocking (ie using something with right click) 0x10
-		if (glowing) {
-			infos |= 0x40;
-		}
-		writer.writeByte(0, infos);
-		//1: air is only for LivingEntity
-		writer.writeString(2, customName);
-		writer.writeBoolean(3, customNameVisible);
-		writer.writeBoolean(4, silent);
-		writer.writeBoolean(5, !gravity);
-	}
-
 }

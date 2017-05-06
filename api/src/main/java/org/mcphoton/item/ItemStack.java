@@ -18,20 +18,17 @@
  */
 package org.mcphoton.item;
 
-import org.mcphoton.Photon;
-import org.mcphoton.network.NetOutput;
-import org.mcphoton.network.NetWriteable;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
+import org.mcphoton.Photon;
 
 /**
  * A stack of items.
  *
  * @author TheElectronWill
  */
-public class ItemStack implements NetWriteable {
+public class ItemStack {
 
 	protected ItemType type;
 	protected int maxSize, size, damage;
@@ -119,18 +116,6 @@ public class ItemStack implements NetWriteable {
 	 */
 	void setDamage(int damage) {
 		this.damage = damage;
-	}
-
-	@Override
-	public void writeTo(NetOutput out) throws IOException {
-		if (size == 0) {//empty
-			out.writeShort(-1);
-		} else {
-			out.writeShort(type.getId());
-			out.writeByte(size);
-			out.writeShort(damage);
-			out.writeByte(0);//TODO write NBT data like enchantments
-		}
 	}
 
 	public static ItemStack readFrom(ByteBuffer buff) throws IOException {

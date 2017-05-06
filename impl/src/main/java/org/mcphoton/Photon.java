@@ -20,9 +20,11 @@ package org.mcphoton;
 
 import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
+import org.mcphoton.command.GlobalCommandRegistry;
 import org.mcphoton.impl.GameRegistryImpl;
+import org.mcphoton.impl.command.GlobalCommandRegistryImpl;
 import org.mcphoton.impl.server.Main;
-import org.mcphoton.network.PacketsManager;
+import org.mcphoton.permissions.GlobalPermissionsManager;
 import org.mcphoton.server.Server;
 
 /**
@@ -32,12 +34,16 @@ import org.mcphoton.server.Server;
  */
 public final class Photon {
 
-	public static final File MAIN_DIR = new File(System.getProperty("user.dir")), PLUGINS_DIR = new File(MAIN_DIR, "plugins"), WORLDS_DIR = new File(MAIN_DIR, "worlds");
+	public static final File MAIN_DIR = new File(System.getProperty("user.dir")),
+			PLUGINS_DIR = new File(MAIN_DIR, "plugins"),
+			WORLDS_DIR = new File(MAIN_DIR, "worlds");
 	private static final GameRegistry GAME_REGISTRY = new GameRegistryImpl();
-	private static final boolean CONSOLE_ADVANCED = !System.getProperty("os.name").toLowerCase().contains("windows");
+	private static final GlobalCommandRegistry COMMAND_REGISTRY = new GlobalCommandRegistryImpl();
+	private static final boolean CONSOLE_ADVANCED = !System.getProperty("os.name")
+														   .toLowerCase()
+														   .contains("windows");
 
-	private Photon() {
-	}
+	private Photon() {}
 
 	public static GameRegistry getGameRegistry() {
 		return GAME_REGISTRY;
@@ -50,10 +56,10 @@ public final class Photon {
 	 * <p>
 	 * To achieve better performance, the submitted tasks:
 	 * <ol>
-	 * <li>Musn't be IO-bound, in order to avoid delaying the other tasks. Use an asynchronous IO API
-	 * instead of the ExecutorService.</li>
-	 * <li>Musn't be too short, in order to avoid creating too much overhead. It is advised to group many
-	 * small tasks together into one bigger task.</li>
+	 * <li>Musn't be IO-bound, in order to avoid delaying the other tasks. Use an asynchronous IO
+	 * API instead of the ExecutorService.</li>
+	 * <li>Musn't be too short, in order to avoid creating too much overhead. It is advised to group
+	 * many small tasks together into one bigger task.</li>
 	 * </ol>
 	 * </p>
 	 */
@@ -61,8 +67,12 @@ public final class Photon {
 		return Main.SERVER.executorService.get();
 	}
 
-	public static PacketsManager getPacketsManager() {
-		return Main.SERVER.packetsManager;
+	public static GlobalPermissionsManager getGlobalPermissionsManager() {
+		throw new UnsupportedOperationException("Not implemented yet.");
+	}
+
+	public static GlobalCommandRegistry getGlobalCommandRegistry() {
+		return COMMAND_REGISTRY;
 	}
 
 	public static boolean isClient() {
@@ -82,7 +92,7 @@ public final class Photon {
 	}
 
 	public static String getMinecraftVersion() {
-		return "1.10";
+		return "1.11";
 	}
 
 	public static File getMainDirectory() {

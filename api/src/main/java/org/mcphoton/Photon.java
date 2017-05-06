@@ -20,11 +20,12 @@ package org.mcphoton;
 
 import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
-import org.mcphoton.permissions.PermissionsManager;
+import org.mcphoton.command.GlobalCommandRegistry;
+import org.mcphoton.permissions.GlobalPermissionsManager;
 import org.mcphoton.server.Server;
 
 /**
- * The centralized API core. Gives access to many core points of the API, like the {@link PermissionsManager}.
+ * The centralized API core. Gives access to many core points of the API.
  *
  * @author TheElectronWill
  */
@@ -57,11 +58,16 @@ public final class Photon {
 	}
 
 	/**
-	 * Gets the Photon's PermissionsManager, which handles players' permissions.
-	 *
-	 * @return the PermissionsManager
+	 * @return the GlobalPermissionsManager
 	 */
-	public static PermissionsManager getPermissionsManager() {
+	public static GlobalPermissionsManager getGlobalPermissionsManager() {
+		return null;
+	}
+
+	/**
+	 * @return the GlobalCommandRegistry
+	 */
+	public static GlobalCommandRegistry getGlobalCommandRegistry() {
 		return null;
 	}
 
@@ -106,7 +112,7 @@ public final class Photon {
 	 * @return the Minecraft version the API works with.
 	 */
 	public static String getMinecraftVersion() {
-		return "1.10";
+		return "1.11";
 	}
 
 	/**
@@ -129,5 +135,4 @@ public final class Photon {
 	public static Server getServer() {
 		return null;
 	}
-
 }

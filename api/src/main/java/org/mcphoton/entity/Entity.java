@@ -21,7 +21,6 @@ package org.mcphoton.entity;
 import java.util.Optional;
 import java.util.UUID;
 import org.mcphoton.entity.vehicle.Vehicle;
-import org.mcphoton.network.Packet;
 import org.mcphoton.utils.DoubleVector;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
@@ -220,17 +219,4 @@ public interface Entity {
 	 * Makes the entity leave its vehicle. If the entity isn't in a vehicle then this method has no effect.
 	 */
 	void leaveVehicle();
-
-	/**
-	 * Writes the entity's metadata to a MetadataWriter.
-	 */
-	void writeMetadata(MetadataWriter writer);
-
-	/**
-	 * Constructs a packet that can be sent to a client to spawn the entity.
-	 *
-	 * @return a spawn packet.
-	 */
-	Packet constructSpawnPacket();
-
 }

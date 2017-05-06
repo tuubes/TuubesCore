@@ -18,10 +18,9 @@
  */
 package org.mcphoton.block;
 
-import org.mcphoton.network.ProtocolWriteable;
 import org.mcphoton.utils.Location;
 
-public interface BlockEntity extends ProtocolWriteable {
+public interface BlockEntity {
 
 	Location getLocation();
 
