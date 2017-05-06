@@ -18,6 +18,8 @@
  */
 package org.mcphoton.impl.server;
 
+import com.electronwill.nightconfig.toml.TomlConfig;
+import com.electronwill.nightconfig.toml.TomlParser;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -27,13 +29,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
 import org.mcphoton.Photon;
-import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.server.BansManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author TheElectronWill
  */
 public final class BansManagerImpl implements BansManager {
@@ -97,12 +97,11 @@ public final class BansManagerImpl implements BansManager {
 			FILE.createNewFile();
 			return;
 		}
-		TomlConfiguration config = new TomlConfiguration(FILE);
+		TomlConfig config = new TomlParser().parse(FILE);
 		if (config.isEmpty()) {
 			return;
 		}
-
-		List<String> accounts = (List) config.get("accounts");
+		List<String> accounts = config.getValue("accounts");
 		for (String account : accounts) {
 			try {
 				UUID playerId = UUID.fromString(account);
@@ -111,8 +110,7 @@ public final class BansManagerImpl implements BansManager {
 				log.error("Invalid UUID in ban list.", ex);
 			}
 		}
-
-		List<String> ips = (List) config.get("ips");
+		List<String> ips = config.getValue("ips");
 		for (String ip : ips) {
 			try {
 				InetAddress address = InetAddress.getByName(ip);
@@ -125,10 +123,10 @@ public final class BansManagerImpl implements BansManager {
 	}
 
 	public void save() throws IOException {
-		TomlConfiguration config = new TomlConfiguration();
-		config.put("ips", bannedAddresses);
-		config.put("accounts", bannedAccounts);
-		config.writeTo(FILE);
+		TomlConfig config = new TomlConfig();
+		config.setValue("ips", bannedAddresses);
+		config.setValue("accounts", bannedAccounts);
+		config.write(FILE);
 		log.info("Ban list saved.");
 	}
 }

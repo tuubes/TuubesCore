@@ -18,6 +18,8 @@
  */
 package org.mcphoton.impl.plugin;
 
+import com.electronwill.nightconfig.toml.TomlConfig;
+import com.electronwill.nightconfig.toml.TomlParser;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.mcphoton.Photon;
-import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.impl.plugin.DependencyResolver.Solution;
 import org.mcphoton.plugin.*;
 import org.mcphoton.plugin.GlobalPlugin;
@@ -55,12 +56,12 @@ public final class GlobalPluginsManagerImpl implements GlobalPluginsManager {
 	}
 
 	@Override
-	public GlobalPlugin getServerPlugin(String name) {
+	public GlobalPlugin getGlobalPlugin(String name) {
 		return serverPlugins.get(name);
 	}
 
 	@Override
-	public boolean isServerPluginLoaded(String name) {
+	public boolean isGlobalPluginLoaded(String name) {
 		return serverPlugins.containsKey(name);
 	}
 
@@ -73,14 +74,16 @@ public final class GlobalPluginsManagerImpl implements GlobalPluginsManager {
 			PLUGINS_CONFIG.createNewFile();
 		}
 
-		TomlConfiguration config = new TomlConfiguration(PLUGINS_CONFIG);
+		TomlConfig config = new TomlParser().parse(PLUGINS_CONFIG);
 		Map<World, List<String>> worldPlugins = new HashMap<>(config.size());
-		List<String> serverPlugins = (List<String>) config.getOrDefault("server", Collections.emptyList());
-
+		List<String> serverPlugins = config.getValue("server");
+		if(serverPlugins == null) {
+			serverPlugins = Collections.emptyList();
+		}
 		Server server = Photon.getServer();
 		Collection<World> serverWorlds = server.getWorlds();
 		for (World world : serverWorlds) {
-			List<String> plugins = (List<String>) config.get(world.getName());
+			List<String> plugins = config.getValue(world.getName());
 			if (plugins != null) {
 				worldPlugins.put(world, plugins);
 			}
@@ -310,7 +313,7 @@ public final class GlobalPluginsManagerImpl implements GlobalPluginsManager {
 	public void unloadAllPlugins() {
 		for (GlobalPlugin globalPlugin : serverPlugins.values()) {
 			try {
-				unloadServerPlugin(globalPlugin);
+				unloadGlobalPlugin(globalPlugin);
 			} catch (Exception ex) {
 				log.error("Unable to unload the server plugin {}.", globalPlugin.getName(), ex);
 			}
@@ -321,7 +324,7 @@ public final class GlobalPluginsManagerImpl implements GlobalPluginsManager {
 	}
 
 	@Override
-	public void unloadServerPlugin(GlobalPlugin plugin) throws Exception {
+	public void unloadGlobalPlugin(GlobalPlugin plugin) throws Exception {
 		plugin.onUnload();
 		SharedClassLoader classLoader = (SharedClassLoader) plugin.getClass().getClassLoader();
 		for (World world : plugin.getActiveWorlds()) {
@@ -333,8 +336,7 @@ public final class GlobalPluginsManagerImpl implements GlobalPluginsManager {
 	}
 
 	@Override
-	public void unloadServerPlugin(String name) throws Exception {
-		unloadServerPlugin(serverPlugins.get(name));
+	public void unloadGlobalPlugin(String name) throws Exception {
+		unloadGlobalPlugin(serverPlugins.get(name));
 	}
-
 }
