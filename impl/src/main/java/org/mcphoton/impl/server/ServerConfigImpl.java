@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
+import org.mcphoton.server.LogLevel;
 import org.mcphoton.server.ServerConfiguration;
 import org.mcphoton.utils.ImmutableLocation;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
-import org.slf4j.impl.LoggingLevel;
 
 /**
  * The server configuration, loaded from the file server-config.toml with the Night-Config library.
@@ -39,7 +39,7 @@ public final class ServerConfigImpl implements ServerConfiguration {
 	private volatile boolean onlineMode = false;
 
 	@Conversion(ServerConfigImpl.LoggingLevelConverter.class)
-	private volatile LoggingLevel logLevel = LoggingLevel.TRACE;
+	private volatile LogLevel logLevel = LogLevel.TRACE;
 
 	@SpecIntInRange(min = 1, max = 100)
 	private volatile int threadNumber;
@@ -168,15 +168,15 @@ public final class ServerConfigImpl implements ServerConfiguration {
 		}
 	}
 
-	private static class LoggingLevelConverter implements Converter<LoggingLevel, String> {
+	private static class LoggingLevelConverter implements Converter<LogLevel, String> {
 
 		@Override
-		public LoggingLevel convertToField(String value) {
-			return LoggingLevel.valueOf(value.toUpperCase());
+		public LogLevel convertToField(String value) {
+			return LogLevel.valueOf(value.toUpperCase());
 		}
 
 		@Override
-		public String convertFromField(LoggingLevel value) {
+		public String convertFromField(LogLevel value) {
 			return value.name();
 		}
 	}

@@ -25,6 +25,7 @@ import static java.time.temporal.ChronoField.HOUR_OF_DAY;
 import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
 import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
 import org.mcphoton.messaging.Color;
+import org.mcphoton.server.LogLevel;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
@@ -37,8 +38,8 @@ import org.slf4j.helpers.MessageFormatter;
  * </p>
  * <h2>Log files</h2>
  * <p>
- * They are located in the "logs" directory. There's a log file per day. Each log file is named with the day
- * it correspond to. Name format: <code> DD-MM-YYYY.log</code>
+ * They are located in the "logs" directory. There's a log file per day. Each log file is named with
+ * the day it correspond to. Name format: <code> DD-MM-YYYY.log</code>
  * </p>
  *
  * @author TheElectronWill
@@ -55,13 +56,13 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 			.toFormatter();
 
 	private static final boolean USE_COLORS = !System.getProperty("os.name").toLowerCase().contains("windows") && System.console() != null;
-	private static volatile LoggingLevel level = LoggingLevel.INFO;
+	private static volatile LogLevel level = LogLevel.INFO;
 
-	public static LoggingLevel getLevel() {
+	public static LogLevel getLevel() {
 		return level;
 	}
 
-	public static void setLevel(LoggingLevel level) {
+	public static void setLevel(LogLevel level) {
 		PhotonLogger.level = level;
 	}
 
@@ -81,8 +82,8 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	 *
 	 * @param args the arguments, may be null
 	 */
-	private void formatAndLogArguments(LoggingLevel level, String msg, Object[] args) {
-		if (PhotonLogger.level.id < level.id) {
+	private void formatAndLogArguments(LogLevel level, String msg, Object[] args) {
+		if (PhotonLogger.level.compareTo(level) < 0) {
 			return;
 		}
 		LocalDateTime dateTime = LocalDateTime.now();
@@ -101,12 +102,12 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	 *
 	 * @param args the arguments, may be null
 	 */
-	private void formatAndLogArguments(LoggingLevel level, Color color, String msg, Object[] args) {
+	private void formatAndLogArguments(LogLevel level, Color color, String msg, Object[] args) {
 		if (!USE_COLORS) {
 			formatAndLogArguments(level, msg, args);
 			return;
 		}
-		if (PhotonLogger.level.id < level.id) {
+		if (PhotonLogger.level.compareTo(level) < 0) {
 			return;
 		}
 		LocalDateTime dateTime = LocalDateTime.now();
@@ -123,8 +124,8 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	/**
 	 * Formats and logs a message with a Throwable.
 	 */
-	private void formatAndLogThrowable(LoggingLevel level, String msg, Throwable t) {
-		if (PhotonLogger.level.id < level.id) {
+	private void formatAndLogThrowable(LogLevel level, String msg, Throwable t) {
+		if (PhotonLogger.level.compareTo(level) < 0) {
 			return;
 		}
 		LocalDateTime dateTime = LocalDateTime.now();
@@ -135,12 +136,12 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	/**
 	 * Formats and logs a message with a Throwable.
 	 */
-	private void formatAndLogThrowable(LoggingLevel level, Color color, String msg, Throwable t) {
+	private void formatAndLogThrowable(LogLevel level, Color color, String msg, Throwable t) {
 		if (!USE_COLORS) {
 			formatAndLogThrowable(level, msg, t);
 			return;
 		}
-		if (PhotonLogger.level.id < level.id) {
+		if (PhotonLogger.level.compareTo(level) < 0) {
 			return;
 		}
 		LocalDateTime dateTime = LocalDateTime.now();
@@ -151,10 +152,10 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	/**
 	 * Formats a log line.
 	 */
-	private String formatLogLine(LoggingLevel level, LocalDateTime dateTime, String msg) {
+	private String formatLogLine(LogLevel level, LocalDateTime dateTime, String msg) {
 		StringBuilder sb = new StringBuilder(msg.length() + 20);
 		sb.append(TIME_FORMATTER.format(dateTime));
-		sb.append(' ').append(level.displayName);
+		sb.append(' ').append(level.getAlignedName());
 		sb.append(" [").append(Thread.currentThread().getName()).append(']');
 		sb.append(' ').append(name);
 		sb.append(": ").append(msg);
@@ -163,152 +164,151 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 
 	@Override
 	public boolean isTraceEnabled() {
-		return level.id >= LoggingLevel.TRACE.id;
+		return level.compareTo(LogLevel.TRACE) >= 0;
 	}
 
 	@Override
 	public void trace(String msg) {
-		formatAndLogArguments(LoggingLevel.TRACE, msg, null);
+		formatAndLogArguments(LogLevel.TRACE, msg, null);
 	}
 
 	@Override
 	public void trace(String format, Object arg) {
-		formatAndLogArguments(LoggingLevel.TRACE, format, new Object[] {arg});
+		formatAndLogArguments(LogLevel.TRACE, format, new Object[] {arg});
 	}
 
 	@Override
 	public void trace(String format, Object arg1, Object arg2) {
-		formatAndLogArguments(LoggingLevel.TRACE, format, new Object[] {arg1, arg2});
+		formatAndLogArguments(LogLevel.TRACE, format, new Object[] {arg1, arg2});
 	}
 
 	@Override
 	public void trace(String format, Object... arguments) {
-		formatAndLogArguments(LoggingLevel.TRACE, format, arguments);
+		formatAndLogArguments(LogLevel.TRACE, format, arguments);
 	}
 
 	@Override
 	public void trace(String msg, Throwable t) {
-		formatAndLogThrowable(LoggingLevel.TRACE, msg, t);
+		formatAndLogThrowable(LogLevel.TRACE, msg, t);
 	}
 
 	@Override
 	public boolean isDebugEnabled() {
-		return level.id >= LoggingLevel.DEBUG.id;
+		return level.compareTo(LogLevel.DEBUG) >= 0;
 	}
 
 	@Override
 	public void debug(String msg) {
-		formatAndLogArguments(LoggingLevel.DEBUG, msg, null);
+		formatAndLogArguments(LogLevel.DEBUG, msg, null);
 	}
 
 	@Override
 	public void debug(String format, Object arg) {
-		formatAndLogArguments(LoggingLevel.DEBUG, format, new Object[] {arg});
+		formatAndLogArguments(LogLevel.DEBUG, format, new Object[] {arg});
 	}
 
 	@Override
 	public void debug(String format, Object arg1, Object arg2) {
-		formatAndLogArguments(LoggingLevel.DEBUG, format, new Object[] {arg1, arg2});
+		formatAndLogArguments(LogLevel.DEBUG, format, new Object[] {arg1, arg2});
 	}
 
 	@Override
 	public void debug(String format, Object... arguments) {
-		formatAndLogArguments(LoggingLevel.DEBUG, format, arguments);
+		formatAndLogArguments(LogLevel.DEBUG, format, arguments);
 	}
 
 	@Override
 	public void debug(String msg, Throwable t) {
-		formatAndLogThrowable(LoggingLevel.DEBUG, msg, t);
+		formatAndLogThrowable(LogLevel.DEBUG, msg, t);
 	}
 
 	@Override
 	public boolean isInfoEnabled() {
-		return level.id >= LoggingLevel.INFO.id;
+		return level.compareTo(LogLevel.INFO) >= 0;
 	}
 
 	@Override
 	public void info(String msg) {
-		formatAndLogArguments(LoggingLevel.INFO, msg, null);
+		formatAndLogArguments(LogLevel.INFO, msg, null);
 	}
 
 	@Override
 	public void info(String format, Object arg) {
-		formatAndLogArguments(LoggingLevel.INFO, format, new Object[] {arg});
+		formatAndLogArguments(LogLevel.INFO, format, new Object[] {arg});
 	}
 
 	@Override
 	public void info(String format, Object arg1, Object arg2) {
-		formatAndLogArguments(LoggingLevel.INFO, format, new Object[] {arg1, arg2});
+		formatAndLogArguments(LogLevel.INFO, format, new Object[] {arg1, arg2});
 	}
 
 	@Override
 	public void info(String format, Object... arguments) {
-		formatAndLogArguments(LoggingLevel.INFO, format, arguments);
+		formatAndLogArguments(LogLevel.INFO, format, arguments);
 	}
 
 	@Override
 	public void info(String msg, Throwable t) {
-		formatAndLogThrowable(LoggingLevel.INFO, msg, t);
+		formatAndLogThrowable(LogLevel.INFO, msg, t);
 	}
 
 	@Override
 	public boolean isWarnEnabled() {
-		return level.id >= LoggingLevel.WARN.id;
+		return level.compareTo(LogLevel.WARN) >= 0;
 	}
 
 	@Override
 	public void warn(String msg) {
-		formatAndLogArguments(LoggingLevel.WARN, Color.GOLD, msg, null);
+		formatAndLogArguments(LogLevel.WARN, Color.GOLD, msg, null);
 	}
 
 	@Override
 	public void warn(String format, Object arg) {
-		formatAndLogArguments(LoggingLevel.WARN, Color.GOLD, format, new Object[] {arg});
+		formatAndLogArguments(LogLevel.WARN, Color.GOLD, format, new Object[] {arg});
 	}
 
 	@Override
 	public void warn(String format, Object arg1, Object arg2) {
-		formatAndLogArguments(LoggingLevel.WARN, Color.GOLD, format, new Object[] {arg1, arg2});
+		formatAndLogArguments(LogLevel.WARN, Color.GOLD, format, new Object[] {arg1, arg2});
 	}
 
 	@Override
 	public void warn(String format, Object... arguments) {
-		formatAndLogArguments(LoggingLevel.WARN, Color.GOLD, format, arguments);
+		formatAndLogArguments(LogLevel.WARN, Color.GOLD, format, arguments);
 	}
 
 	@Override
 	public void warn(String msg, Throwable t) {
-		formatAndLogThrowable(LoggingLevel.WARN, Color.GOLD, msg, t);
+		formatAndLogThrowable(LogLevel.WARN, Color.GOLD, msg, t);
 	}
 
 	@Override
 	public boolean isErrorEnabled() {
-		return level.id >= LoggingLevel.ERROR.id;
+		return level.compareTo(LogLevel.ERROR) >= 0;
 	}
 
 	@Override
 	public void error(String msg) {
-		formatAndLogArguments(LoggingLevel.ERROR, Color.RED, msg, null);
+		formatAndLogArguments(LogLevel.ERROR, Color.RED, msg, null);
 	}
 
 	@Override
 	public void error(String format, Object arg) {
-		formatAndLogArguments(LoggingLevel.ERROR, Color.RED, format, new Object[] {arg});
+		formatAndLogArguments(LogLevel.ERROR, Color.RED, format, new Object[] {arg});
 	}
 
 	@Override
 	public void error(String format, Object arg1, Object arg2) {
-		formatAndLogArguments(LoggingLevel.ERROR, Color.RED, format, new Object[] {arg1, arg2});
+		formatAndLogArguments(LogLevel.ERROR, Color.RED, format, new Object[] {arg1, arg2});
 	}
 
 	@Override
 	public void error(String format, Object... arguments) {
-		formatAndLogArguments(LoggingLevel.ERROR, Color.RED, format, arguments);
+		formatAndLogArguments(LogLevel.ERROR, Color.RED, format, arguments);
 	}
 
 	@Override
 	public void error(String msg, Throwable t) {
-		formatAndLogThrowable(LoggingLevel.ERROR, Color.RED, msg, t);
+		formatAndLogThrowable(LogLevel.ERROR, Color.RED, msg, t);
 	}
-
 }
