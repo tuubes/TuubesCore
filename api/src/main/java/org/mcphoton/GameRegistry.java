@@ -31,6 +31,7 @@ import org.mcphoton.world.BiomeType;
 public interface GameRegistry {
 
 	// -------- Blocks --------
+
 	/**
 	 * Registers a BlockType. The id is determined automatically.
 	 *
@@ -43,7 +44,7 @@ public interface GameRegistry {
 	 * Registers a BlockType with the specified id.
 	 *
 	 * @param type the type to register.
-	 * @param id the type's id.
+	 * @param id   the type's id.
 	 */
 	void registerBlock(BlockType type, int id);
 
@@ -58,7 +59,7 @@ public interface GameRegistry {
 	/**
 	 * Gets the BlockType registered with the specified name.
 	 *
-	 * @param id the type's name.
+	 * @param name the type's name.
 	 * @return the corresponding BlockType, or null if not found.
 	 */
 	BlockType getRegisteredBlock(String name);
@@ -80,6 +81,7 @@ public interface GameRegistry {
 	boolean isBlockRegistered(String name);
 
 	// -------- Items --------
+
 	/**
 	 * Registers an ItemType. The id is determined automatically.
 	 *
@@ -92,7 +94,7 @@ public interface GameRegistry {
 	 * Registers an ItemType with the specified id.
 	 *
 	 * @param type the type to register.
-	 * @param id the type's id.
+	 * @param id   the type's id.
 	 */
 	void registerItem(ItemType type, int id);
 
@@ -107,7 +109,7 @@ public interface GameRegistry {
 	/**
 	 * Gets the ItemType registered with the specified name.
 	 *
-	 * @param id the type's name.
+	 * @param name the type's name.
 	 * @return the corresponding ItemType, or null if not found.
 	 */
 	ItemType getRegisteredItem(String name);
@@ -129,6 +131,7 @@ public interface GameRegistry {
 	boolean isItemRegistered(String name);
 
 	// -------- Entities --------
+
 	/**
 	 * Registers an EntityType. The id is determined automatically.
 	 *
@@ -141,7 +144,7 @@ public interface GameRegistry {
 	 * Registers an EntityType with the specified id.
 	 *
 	 * @param type the type to register.
-	 * @param id the type's id.
+	 * @param id   the type's id.
 	 */
 	void registerEntity(EntityType type, int id);
 
@@ -156,7 +159,7 @@ public interface GameRegistry {
 	/**
 	 * Gets the EntityType registered with the specified name.
 	 *
-	 * @param id the type's name.
+	 * @param name the type's name.
 	 * @return the corresponding EntityType, or null if not found.
 	 */
 	EntityType getRegisteredEntity(String name);
@@ -176,8 +179,9 @@ public interface GameRegistry {
 	 * @return true if there is a EntityType with that name, false otherwise.
 	 */
 	boolean isEntityRegistered(String name);
-	
+
 	// -------- Biomes --------
+
 	/**
 	 * Registers a BiomeType. The id is determined automatically.
 	 *
@@ -190,7 +194,7 @@ public interface GameRegistry {
 	 * Registers a BiomeType with the specified id.
 	 *
 	 * @param type the type to register.
-	 * @param id the type's id.
+	 * @param id   the type's id.
 	 */
 	void registerBiome(BiomeType type, int id);
 
@@ -205,7 +209,7 @@ public interface GameRegistry {
 	/**
 	 * Gets the BiomeType registered with the specified name.
 	 *
-	 * @param id the type's name.
+	 * @param name the type's name.
 	 * @return the corresponding BiomeType, or null if not found.
 	 */
 	BiomeType getRegisteredBiome(String name);
