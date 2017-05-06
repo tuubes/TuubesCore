@@ -18,48 +18,40 @@
  */
 package org.mcphoton.user;
 
+import java.util.UUID;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.inventory.InventoryHolder;
 import org.mcphoton.permissions.Permissible;
 import org.mcphoton.utils.Location;
 
-import java.util.UUID;
-
 /**
  * Represents the informations that the Photon server has about a particular user.
  *
  * @author TheElectronWill
- * @author DJmaxZPLAY
  */
 public interface User extends Permissible, InventoryHolder {
 
 	/**
-	 * Gets the user's name, which can be changed by the user.
-	 *
 	 * @return the user's name.
 	 */
 	String getName();
 
 	/**
-	 * Gets the user's account id, which uniquely identifies this user.
-	 *
-	 * @return the user's account id.
+	 * @return the user's (unique) account id.
 	 */
 	UUID getAccountId();
 
 	/**
-	 * Gets the user's location. If the user is currently connected, this method returns his/her current
-	 * location. If he/she isn't connected, this method returns the last known location of the user; where
-	 * he/she will spawn the next time he/she connects.
+	 * Gets the user's location. If they are currently connected, returns their current location.
+	 * If they aren't connected, returns the last known location.
 	 *
 	 * @return the user's location.
 	 */
 	Location getLocation();
 
 	/**
-	 * Sets the user's location. If the user is currently connected, this method teleports him/her. If he/she
-	 * isn't connected, this method modifies the server's data so that the user will spawn at this position
-	 * the next time he/she connects.
+	 * Sets the user's location. If they are currenctly connected, teleport them. If not, set the
+	 * location they will spawn at when they reconnect.
 	 *
 	 * @param l the location to set.
 	 */
@@ -73,9 +65,10 @@ public interface User extends Permissible, InventoryHolder {
 	boolean isConnected();
 
 	/**
-	 * Returns this user as a {@link Player} instance, if he/she is connected to the server.
+	 * Returns this user as a {@link Player} instance, if connected.
 	 *
 	 * @return the Player instance that corresponds to the user.
+	 *
 	 * @throws IllegalStateException if the user isn't connected.
 	 */
 	Player asPlayer();
