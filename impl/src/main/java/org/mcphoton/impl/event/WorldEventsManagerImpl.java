@@ -48,7 +48,8 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 	private final Map<Class<? extends Event>, EnumMap<ListenOrder, Bag<EventHandler>>> handlersMap = new HashMap<>();
 
 	@Override
-	public <E extends Event> void register(Class<E> eventClass, EventHandler<? super E> eventHandler, ListenOrder listenOrder) {
+	public <E extends Event> void registerHandler(Class<E> eventClass, EventHandler<? super E>
+			eventHandler, ListenOrder listenOrder) {
 		synchronized (handlersMap) {
 			EnumMap<ListenOrder, Bag<EventHandler>> orderMap = handlersMap.get(eventClass);
 			if (orderMap == null) {
@@ -65,7 +66,8 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 	}
 
 	@Override
-	public <E extends Event> void unregister(Class<E> eventClass, EventHandler<? super E> eventHandler, ListenOrder listenOrder) {
+	public <E extends Event> void unregisterHandler(Class<E> eventClass, EventHandler<? super E>
+			eventHandler, ListenOrder listenOrder) {
 		synchronized (handlersMap) {
 			EnumMap<ListenOrder, Bag<EventHandler>> orderMap = handlersMap.get(eventClass);
 			if (orderMap == null) {
@@ -80,7 +82,7 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 	}
 
 	@Override
-	public void registerAll(Object listener) {
+	public void registerHandlers(Object listener) {
 		Method[] publicMethods = listener.getClass().getMethods();
 		for (Method method : publicMethods) {
 			//--- Checks if there is a @Listen annotation ---
@@ -108,17 +110,17 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 			if (ignoreCancelled && CancellableEvent.class.isAssignableFrom(pClass)) {//ignore any cancelled event
 				Class<? extends CancellableEvent> eventClass = (Class<? extends CancellableEvent>) pClass;
 				EventHandler<CancellableEvent> handler = new IgnoreCancelledReflectionEventHandler<>(method);
-				register(eventClass, handler, order);
+				registerHandler(eventClass, handler, order);
 			} else {//don't care about the cancelled state of the event
 				Class<? extends Event> eventClass = (Class<? extends Event>) pClass;
 				EventHandler<Event> handler = new ReflectionEventHandler<>(method);
-				register(eventClass, handler, order);
+				registerHandler(eventClass, handler, order);
 			}
 		}
 	}
 
 	@Override
-	public void unregisterAll(Object listener) {
+	public void unregisterHandlers(Object listener) {
 		Method[] publicMethods = listener.getClass().getMethods();
 		for (Method method : publicMethods) {
 			//--- Checks if there is a @Listen annotation ---
@@ -219,5 +221,4 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 			}
 		}
 	}
-
 }

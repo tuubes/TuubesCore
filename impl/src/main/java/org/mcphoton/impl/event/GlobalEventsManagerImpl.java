@@ -34,32 +34,34 @@ import org.mcphoton.world.World;
 public class GlobalEventsManagerImpl implements GlobalEventsManager {
 
 	@Override
-	public void registerAll(Object listener, GlobalPlugin plugin) {
+	public void registerHandlers(Object listener, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
-			world.getEventsManager().registerAll(listener);
+			world.getEventsManager().registerHandlers(listener);
 		}
 		//TODO optimisation possible : récupérer les informations de l'objet listener (annotations, méthodes, etc.) une fois seulement,
 		//et enregistrer des listeners pour chaque monde à partir de ces informations.
 	}
 
 	@Override
-	public void unregisterAll(Object listener, GlobalPlugin plugin) {
+	public void unregisterHandlers(Object listener, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
-			world.getEventsManager().unregisterAll(listener);
+			world.getEventsManager().unregisterHandlers(listener);
 		}
 	}
 
 	@Override
-	public <E extends Event> void register(Class<E> eventClass, EventHandler<? super E> eventHandler, ListenOrder listenOrder, GlobalPlugin plugin) {
+	public <E extends Event> void registerHandler(Class<E> eventClass, EventHandler<? super E>
+			eventHandler, ListenOrder listenOrder, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
-			world.getEventsManager().register(eventClass, eventHandler, listenOrder);
+			world.getEventsManager().registerHandler(eventClass, eventHandler, listenOrder);
 		}
 	}
 
 	@Override
-	public <E extends Event> void unregister(Class<E> eventClass, EventHandler<? super E> eventHandler, ListenOrder listenOrder, GlobalPlugin plugin) {
+	public <E extends Event> void unregisterHandler(Class<E> eventClass, EventHandler<? super E>
+			eventHandler, ListenOrder listenOrder, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
-			world.getEventsManager().unregister(eventClass, eventHandler, listenOrder);
+			world.getEventsManager().unregisterHandler(eventClass, eventHandler, listenOrder);
 		}
 	}
 
