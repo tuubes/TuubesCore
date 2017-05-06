@@ -102,5 +102,4 @@ public class SimpleHeightmapBasedGenerator implements ChunkGenerator {
 		}
 		return new ChunkColumnImpl(biomesData, sections);
 	}
-
 }
