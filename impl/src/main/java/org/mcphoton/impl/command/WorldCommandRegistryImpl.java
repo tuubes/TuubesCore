@@ -38,7 +38,7 @@ public class WorldCommandRegistryImpl implements WorldCommandRegistry {
 	private final Map<Plugin, List<Command>> pluginMap = new HashMap<>();
 
 	@Override
-	public synchronized void register(Command cmd, Plugin plugin) {
+	public synchronized void registerCommand(Command cmd, Plugin plugin) {
 		nameMap.put(cmd.getName(), cmd);
 		List<Command> list = pluginMap.get(plugin);
 		if (list == null) {
@@ -52,7 +52,7 @@ public class WorldCommandRegistryImpl implements WorldCommandRegistry {
 	}
 
 	@Override
-	public synchronized void unregister(Command cmd, Plugin plugin) {
+	public synchronized void unregisterCommand(Command cmd, Plugin plugin) {
 		nameMap.remove(cmd.getName(), cmd);
 		List<Command> list = pluginMap.get(plugin);
 		if (list != null) {
@@ -64,12 +64,12 @@ public class WorldCommandRegistryImpl implements WorldCommandRegistry {
 	}
 
 	@Override
-	public synchronized Command getRegistered(String cmdName) {
+	public synchronized Command getRegisteredCommand(String cmdName) {
 		return nameMap.get(cmdName);
 	}
 
 	@Override
-	public synchronized List<Command> getAllRegistered(Plugin plugin) {
+	public synchronized List<Command> getRegisteredCommands(Plugin plugin) {
 		List list = pluginMap.get(plugin);
 		return list == null ? null : Collections.unmodifiableList(list);
 	}

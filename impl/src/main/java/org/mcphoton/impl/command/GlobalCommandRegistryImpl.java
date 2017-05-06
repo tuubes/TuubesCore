@@ -37,23 +37,23 @@ public class GlobalCommandRegistryImpl implements GlobalCommandRegistry {
 	 *
 	 * @param cmd the command to register.
 	 */
-	public void register(Command cmd) {
+	public void registerInternalCommand(Command cmd) {
 		for (World world : Photon.getServer().getWorlds()) {
-			world.getCommandRegistry().register(cmd, null);
+			world.getCommandRegistry().registerCommand(cmd, null);
 		}
 	}
 
 	@Override
-	public void register(Command cmd, GlobalPlugin plugin) {
+	public void registerCommand(Command cmd, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
-			world.getCommandRegistry().register(cmd, plugin);
+			world.getCommandRegistry().registerCommand(cmd, plugin);
 		}
 	}
 
 	@Override
-	public void unregister(Command cmd, GlobalPlugin plugin) {
+	public void unregisterCommand(Command cmd, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
-			world.getCommandRegistry().unregister(cmd, plugin);
+			world.getCommandRegistry().unregisterCommand(cmd, plugin);
 		}
 	}
 
