@@ -333,8 +333,8 @@ public final class PhotonServer implements Server {
 
 	void registerCommands() {
 		log.info("Registering photon commands...");
-		commandRegistry.register(new StopCommand());
-		commandRegistry.register(new ListCommand());
+		commandRegistry.registerInternalCommand(new StopCommand());
+		commandRegistry.registerInternalCommand(new ListCommand());
 	}
 
 	void registerPackets() {
