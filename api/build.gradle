@@ -23,8 +23,10 @@ license {
 // Dependencies
 repositories {
 	mavenCentral()
+	maven { url 'https://jitpack.io' }
 }
 dependencies {
 	compile 'commons-cli:commons-cli:1.4'
+	compile 'com.github.TheElectronWill:Night-Config:v2.1'
 }
 
