@@ -17,7 +17,6 @@ import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
 import org.mcphoton.server.LogLevel;
 import org.mcphoton.server.ServerConfiguration;
-import org.mcphoton.utils.ImmutableLocation;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
 
@@ -158,7 +157,7 @@ public final class ServerConfigImpl implements ServerConfiguration {
 			double z = Double.parseDouble(parts.get(2));
 			String world = parts.get(3);
 			World w = Photon.getServer().getWorld(world);
-			return new ImmutableLocation(x, y, z, w);
+			return new Location(x, y, z, w);
 		}
 
 		@Override

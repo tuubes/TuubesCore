@@ -19,7 +19,6 @@
 package org.mcphoton.world.areas;
 
 import java.util.Iterator;
-import org.mcphoton.utils.ImmutableLocation;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
 
@@ -124,7 +123,7 @@ public final class CubicArea implements Area {
 
 		@Override
 		public Location next() {
-			Location l = new ImmutableLocation(x, y, z, world);
+			Location l = new Location(x, y, z, world);
 			x++;
 			if (x > x2) {
 				x = x1;

@@ -21,7 +21,7 @@ package org.mcphoton.entity;
 import java.util.Optional;
 import java.util.UUID;
 import org.mcphoton.entity.vehicle.Vehicle;
-import org.mcphoton.utils.DoubleVector;
+import org.mcphoton.utils.Vector;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
 
@@ -90,7 +90,7 @@ public interface Entity {
 	/**
 	 * @return the velocity (speed) per ticks of the entity.
 	 */
-	DoubleVector getVelocity();
+	Vector getVelocity();
 
 	/**
 	 * Sets the entity's velocity. Please consider using {@link #getVelocity()} and modifying the DoubleVector
@@ -98,7 +98,7 @@ public interface Entity {
 	 *
 	 * @param v the new entity velocity.
 	 */
-	void setVelocity(DoubleVector v);
+	void setVelocity(Vector v);
 
 	/**
 	 * @return the current entity's location.

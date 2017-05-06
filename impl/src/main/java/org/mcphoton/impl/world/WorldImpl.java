@@ -35,7 +35,6 @@ import org.mcphoton.impl.plugin.WorldPluginsManagerImpl;
 import org.mcphoton.impl.world.generation.SimpleHeightmapBasedGenerator;
 import org.mcphoton.network.Packet;
 import org.mcphoton.plugin.WorldPluginsManager;
-import org.mcphoton.utils.ImmutableLocation;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.ChunkGenerator;
 import org.mcphoton.world.World;
@@ -147,7 +146,7 @@ public class WorldImpl implements World {
 
 	@Override
 	public Location getSpawn() {
-		return new ImmutableLocation(spawnX, spawnY, spawnZ, this);
+		return new Location(spawnX, spawnY, spawnZ, this);
 	}
 
 	@Override

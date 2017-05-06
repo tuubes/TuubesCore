@@ -22,12 +22,11 @@ package org.mcphoton.utils;
  * An EulerAngle is composed of 3 rotations (yaw, pitch, roll) on 3 axis. All angles are in radians.
  * This class isn't thread-safe.
  *
- * @see https://en.wikipedia.org/wiki/Euler_angles
  * @author DJmaxZPLAY
  * @author TheElectronWill
+ * @see <a href="https://en.wikipedia.org/wiki/Euler_angles">Wikipedia - Euler Angles</a>
  */
 public class EulerAngles {
-
 	private float yaw, pitch, roll;
 
 	/**
@@ -86,6 +85,6 @@ public class EulerAngles {
 
 	@Override
 	public String toString() {
-		return "EulerAngles(" + yaw + ", " + pitch + ", " + roll + ')';
+		return "(yaw:" + yaw + ", pitch:" + pitch + ", roll:" + roll + ')';
 	}
 }

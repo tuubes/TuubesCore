@@ -21,7 +21,7 @@ package org.mcphoton.entity;
 import java.util.Optional;
 import java.util.UUID;
 import org.mcphoton.entity.vehicle.Vehicle;
-import org.mcphoton.utils.DoubleVector;
+import org.mcphoton.utils.Vector;
 import org.mcphoton.utils.Location;
 import org.mcphoton.utils.MutableLocation;
 import org.mcphoton.world.World;
@@ -44,7 +44,7 @@ public abstract class AbstractEntity implements Entity {
 	private Optional<Vehicle> vehicle = Optional.empty();
 
 	private MutableLocation loc;
-	private DoubleVector velocity = new DoubleVector();
+	private Vector velocity = new Vector();
 
 	@Override
 	public String getCustomName() {
@@ -102,12 +102,12 @@ public abstract class AbstractEntity implements Entity {
 	}
 
 	@Override
-	public DoubleVector getVelocity() {
+	public Vector getVelocity() {
 		return velocity;
 	}
 
 	@Override
-	public void setVelocity(DoubleVector v) {
+	public void setVelocity(Vector v) {
 		this.velocity = v;
 	}
 

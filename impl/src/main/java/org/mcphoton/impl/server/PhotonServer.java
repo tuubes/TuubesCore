@@ -21,13 +21,9 @@ package org.mcphoton.impl.server;
 import com.electronwill.utils.Constant;
 import com.electronwill.utils.IntConstant;
 import com.electronwill.utils.SimpleBag;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.security.KeyPairGenerator;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -35,9 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
-import org.mcphoton.command.GlobalCommandRegistry;
 import org.mcphoton.config.ConfigurationSpecification;
 import org.mcphoton.config.TomlConfiguration;
 import org.mcphoton.entity.living.Player;
@@ -53,13 +47,11 @@ import org.mcphoton.plugin.GlobalPluginsManager;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.WhitelistManager;
-import org.mcphoton.utils.ImmutableLocation;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
 import org.mcphoton.world.WorldType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.LoggingLevel;
 import org.slf4j.impl.LoggingService;
 import org.slf4j.impl.PhotonLogger;
 
@@ -71,19 +63,7 @@ import org.slf4j.impl.PhotonLogger;
 public final class PhotonServer implements Server {
 
 	private static final Logger log = LoggerFactory.getLogger(PhotonServer.class);
-	private static final ConfigurationSpecification CONFIG_SPEC = new ConfigurationSpecification();
 	private static final File CONFIG_FILE = new File(Photon.MAIN_DIR, "server-config.toml");
-
-	static {
-		CONFIG_SPEC.defineInt("port", 25565, 1, 65535);
-		CONFIG_SPEC.defineInt("maxPlayers", 10, 1, 1000);
-		CONFIG_SPEC.defineString("world", "world");
-		CONFIG_SPEC.defineString("spawn", "0,200,0");
-		CONFIG_SPEC.defineString("motd", "Photon server, version alpha");
-		CONFIG_SPEC.defineString("loggingLevel", "TRACE", "ERROR", "WARN", "INFO", "DEBUG", "TRACE");
-		CONFIG_SPEC.defineInt("executionThreads", Math.max(1, Runtime.getRuntime().availableProcessors() - 1), 1, 100);
-		CONFIG_SPEC.defineBoolean("whitelist", false);
-	}
 
 	//---- Utilities ----
 	public final ConsoleThread consoleThread = new ConsoleThread();
@@ -105,43 +85,12 @@ public final class PhotonServer implements Server {
 	public final Map<String, World> worlds = new ConcurrentHashMap<>();
 
 	PhotonServer() throws Exception {
-		log.info("Generating RSA keypair...");
-		KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-		generator.initialize(512);
-		keyPair = generator.genKeyPair();
-
-		packetsManager = new PacketsManagerImpl(keyPair);
-
 		loadConfig();
-		networkThread = new NioNetworkThread(address.get());
 	}
 
 	@Override
 	public BansManager getBansManager() {
 		return BansManagerImpl.getInstance();
-	}
-
-	@Override
-	public InetSocketAddress getBoundAddress() {
-		return address.get();
-	}
-
-	@Override
-	public GlobalCommandRegistry getCommandRegistry() {
-		return commandRegistry;
-	}
-
-	@Override
-	public void setFavicon(BufferedImage image) throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ImageIO.write(image, "png", bos);
-		byte[] imageBytes = bos.toByteArray();
-		encodedFavicon = "data:image/png;base64," + Base64.getEncoder().encodeToString(imageBytes);
-	}
-
-	@Override
-	public int getMaxPlayers() {
-		return maxPlayers;
 	}
 
 	@Override
@@ -327,7 +276,7 @@ public final class PhotonServer implements Server {
 			registerWorld(spawnWorld);
 			log.info("Spawn world \"{}\" created.", spawnWorldName);
 		}
-		this.spawn = new ImmutableLocation(spawnX, spawnY, spawnZ, spawnWorld);
+		this.spawn = new Location(spawnX, spawnY, spawnZ, spawnWorld);
 		log.info("{} worlds loaded!", worlds.size());
 	}
 

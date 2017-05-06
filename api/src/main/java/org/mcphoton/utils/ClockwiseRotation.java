@@ -25,16 +25,22 @@ package org.mcphoton.utils;
  */
 public enum ClockwiseRotation {
 
-	CLOCKWISE_0, CLOCKWISE_45,
-	CLOCKWISE_90, CLOCKWISE_135,
-	CLOCKWISE_180, CLOCKWISE_225,
-	CLOCKWISE_270, CLOCKWISE_315;
-	
+	CLOCKWISE_0,
+	CLOCKWISE_45,
+	CLOCKWISE_90,
+	CLOCKWISE_135,
+	CLOCKWISE_180,
+	CLOCKWISE_225,
+	CLOCKWISE_270,
+	CLOCKWISE_315;
+
 	/**
-	 * Gets the ClockwiseRotation that corresponds to the specified number of clockwise 45-degrees rotations, starting from 0.
+	 * Gets the ClockwiseRotation that corresponds to the specified number of clockwise 45-degrees
+	 * rotations, starting from 0.
+	 *
 	 * @param t45 the number of 45-degrees rotations to do.
 	 */
-	public static ClockwiseRotation get(int t45){
+	public static ClockwiseRotation get(int t45) {
 		return ClockwiseRotation.values()[t45 & 7];
 	}
 
@@ -47,18 +53,19 @@ public enum ClockwiseRotation {
 
 	/**
 	 * Turn clockwise starting from this rotation.
+	 *
 	 * @param t45 the number of 45-degrees rotation steps to do.
 	 */
 	public ClockwiseRotation turnClockwise(int t45) {
 		return ClockwiseRotation.values()[(ordinal() + t45) & 7];
 	}
-	
+
 	/**
 	 * Turn counter-clockwise starting from this rotation.
+	 *
 	 * @param t45 the number of 45-degrees rotation steps to do.
 	 */
 	public ClockwiseRotation turnCounterClockwise(int t45) {
 		return ClockwiseRotation.values()[(ordinal() - t45) & 7];
 	}
-
 }
