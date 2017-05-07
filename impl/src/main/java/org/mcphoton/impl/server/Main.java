@@ -19,8 +19,6 @@
 package org.mcphoton.impl.server;
 
 import org.mcphoton.Photon;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The main class which launches the program.
@@ -28,54 +26,26 @@ import org.slf4j.LoggerFactory;
  * @author TheElectronWill
  */
 public final class Main {
-
-	/**
-	 * The unique server instance.
-	 */
-	public static final ServerImpl SERVER;
-
-	/**
-	 * The logger for the Main class (and only for it! One logger per class!).
-	 */
-	private static final Logger log = LoggerFactory.getLogger(Main.class);
-
-	static {
-		printFramed("Photon server version " + Photon.getVersion(), "For minecraft version " + Photon.getMinecraftVersion());
-		ServerImpl server = null;
-		try {
-			server = new ServerImpl();
-		} catch (Exception ex) {
-			log.error("Cannot create the server instance!", ex);
-			System.exit(3);
-		}
-		SERVER = server;
-	}
-
 	public static void main(String[] args) {
-		SERVER.loadWorlds();
-		SERVER.loadBanlist();
-		SERVER.loadWhitelist();
-		SERVER.registerCommands();
-		SERVER.registerPackets();
-		SERVER.setShutdownHook();
-		SERVER.loadPlugins();
-		SERVER.startThreads();
-		log.info("Server ready :-)");
+		printFramed("Photon Server version " + Photon.getServer().getVersion(),
+					"Photon API version " + Photon.getVersion(),
+					"For minecraft version " + Photon.getMinecraftVersion());
 	}
 
 	private static void printFramed(String... strings) {
+		// Determines the maximum length
 		int max = 0;
 		for (String s : strings) {
 			if (s.length() > max) {
 				max = s.length();
 			}
 		}
-
+		// Prints the top bar
 		for (int i = 0; i < max + 4; i++) {
 			System.out.print('-');
 		}
 		System.out.println();
-
+		// Prints the strings
 		for (String s : strings) {
 			System.out.print("| ");
 			System.out.print(s);
@@ -84,11 +54,10 @@ public final class Main {
 			}
 			System.out.println(" |");
 		}
-
+		// Prints the bottom bar
 		for (int i = 0; i < max + 4; i++) {
 			System.out.print('-');
 		}
 		System.out.println();
 	}
-
 }
