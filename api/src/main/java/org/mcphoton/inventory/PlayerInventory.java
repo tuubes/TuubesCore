@@ -24,12 +24,11 @@ import org.mcphoton.item.ItemStack;
 /**
  * A player's inventory.
  *
- * @see http://wiki.vg/Inventory
  * @author DJmaxZPLAY
  * @author TheElectronWill
+ * @see <a href="http://wiki.vg/Inventory">wiki.vg - Inventory</a>
  */
 public interface PlayerInventory extends Inventory {
-
 	/**
 	 * @return the content of the boots slot.
 	 */
@@ -73,22 +72,12 @@ public interface PlayerInventory extends Inventory {
 	/**
 	 * @return the ItemStack currently selected by the player, and in its main hand.
 	 */
-	ItemStack getItemInMainHand();
+	ItemStack getMainHand();
 
 	/**
 	 * Sets the ItemStack in the main hand of an entity.
 	 */
-	void setItemInMainHand(ItemStack stack);
-
-	/**
-	 * @return the content of the offhand slot.
-	 */
-	ItemStack getItemInOffHand();
-
-	/**
-	 * Sets the ItemStack in the off hand of an entity.
-	 */
-	void setItemInOffHand(ItemStack stack);
+	void setMainHand(ItemStack stack);
 
 	/**
 	 * @return the slot number of the currently held stack.
@@ -100,7 +89,16 @@ public interface PlayerInventory extends Inventory {
 	 */
 	void setHeldSlot(int heldSlot);
 
+	/**
+	 * @return the content of the offhand slot.
+	 */
+	ItemStack getOffHand();
+
+	/**
+	 * Sets the ItemStack in the off hand of an entity.
+	 */
+	void setOffHand(ItemStack stack);
+
 	@Override
 	Player getHolder();
-
 }

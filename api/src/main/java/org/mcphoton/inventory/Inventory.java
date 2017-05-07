@@ -18,8 +18,6 @@
  */
 package org.mcphoton.inventory;
 
-import java.util.Collection;
-import java.util.Iterator;
 import org.mcphoton.item.ItemStack;
 
 /**
@@ -29,22 +27,10 @@ import org.mcphoton.item.ItemStack;
  * @author DJmaxZPLAY
  */
 public interface Inventory extends Iterable<ItemStack> {
-
 	/**
 	 * @return the total number of slots in the inventory.
 	 */
 	int getSlotsNumber();
-
-	/**
-	 * @return a Collection that contains the ItemStacks of the inventory. Any modification to this
-	 * collection is reflected in the inventory, and vice-versa.
-	 */
-	Collection<ItemStack> getContent();
-
-	@Override
-	default Iterator<ItemStack> iterator() {
-		return getContent().iterator();
-	}
 
 	/**
 	 * @return the inventory's title.
@@ -80,7 +66,7 @@ public interface Inventory extends Iterable<ItemStack> {
 	/**
 	 * Removes the stack at the specified index.
 	 *
-	 * @return the removed stack.
+	 * @return the removed stack, or null if there was no stack at this index.
 	 */
 	ItemStack removeStack(int index);
 
@@ -88,5 +74,4 @@ public interface Inventory extends Iterable<ItemStack> {
 	 * @return the inventory's holder (block or entity)
 	 */
 	InventoryHolder getHolder();
-
 }
