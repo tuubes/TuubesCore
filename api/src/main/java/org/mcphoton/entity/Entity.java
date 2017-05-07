@@ -34,7 +34,6 @@ import org.mcphoton.world.World;
  * @author DJmaxZPLAY
  */
 public interface Entity {
-
 	/**
 	 * @return the entity's id.
 	 */

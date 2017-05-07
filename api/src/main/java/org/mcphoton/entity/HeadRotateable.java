@@ -19,12 +19,11 @@
 package org.mcphoton.entity;
 
 /**
- * Can rotates its head side way.
+ * Something that can rotates its head side way.
  *
  * @author TheElectronWill
  */
 public interface HeadRotateable extends Rotateable {
-
 	/**
 	 * @return the head yaw, in radians.
 	 */
@@ -36,5 +35,4 @@ public interface HeadRotateable extends Rotateable {
 	 * @param headYaw the yaw to set.
 	 */
 	void setHeadYaw(float headYaw);
-
 }

@@ -21,11 +21,10 @@ package org.mcphoton.entity;
 /**
  * Something that can rotate.
  *
- * @see org.mcphoton.utils.EulerAngles
  * @author TheElectronWill
+ * @see org.mcphoton.utils.EulerAngles
  */
 public interface Rotateable {
-
 	/**
 	 * @return the pitch in radians.
 	 */
@@ -49,5 +48,4 @@ public interface Rotateable {
 	 * @param yaw the yaw to set.
 	 */
 	void setYaw(float yaw);
-
 }
