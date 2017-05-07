@@ -21,10 +21,15 @@ package org.mcphoton;
 import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
 import org.mcphoton.command.GlobalCommandRegistry;
+import org.mcphoton.event.GlobalEventsManager;
 import org.mcphoton.impl.GameRegistryImpl;
 import org.mcphoton.impl.command.GlobalCommandRegistryImpl;
+import org.mcphoton.impl.event.GlobalEventsManagerImpl;
+import org.mcphoton.impl.permissions.GlobalPermissionsManagerImpl;
+import org.mcphoton.impl.plugin.GlobalPluginsManagerImpl;
 import org.mcphoton.impl.server.Main;
 import org.mcphoton.permissions.GlobalPermissionsManager;
+import org.mcphoton.plugin.GlobalPluginsManager;
 import org.mcphoton.server.Server;
 
 /**
@@ -39,15 +44,14 @@ public final class Photon {
 			WORLDS_DIR = new File(MAIN_DIR, "worlds");
 	private static final GameRegistry GAME_REGISTRY = new GameRegistryImpl();
 	private static final GlobalCommandRegistry COMMAND_REGISTRY = new GlobalCommandRegistryImpl();
+	private static final GlobalPluginsManager PLUGINS_MANAGER = new GlobalPluginsManagerImpl();
+	private static final GlobalEventsManager EVENTS_MANAGER = new GlobalEventsManagerImpl();
+	private static final GlobalPermissionsManager PERM_MANAGER = new GlobalPermissionsManagerImpl();
 	private static final boolean CONSOLE_ADVANCED = !System.getProperty("os.name")
 														   .toLowerCase()
 														   .contains("windows");
 
 	private Photon() {}
-
-	public static GameRegistry getGameRegistry() {
-		return GAME_REGISTRY;
-	}
 
 	/**
 	 * Gets the Photon's ScheduledExecutorService, which is used to schedule tasks across multiple
@@ -68,11 +72,23 @@ public final class Photon {
 	}
 
 	public static GlobalPermissionsManager getGlobalPermissionsManager() {
-		throw new UnsupportedOperationException("Not implemented yet.");
+		return PERM_MANAGER;
+	}
+
+	public static GlobalPluginsManager getGlobalPluginsManager() {
+		return PLUGINS_MANAGER;
 	}
 
 	public static GlobalCommandRegistry getGlobalCommandRegistry() {
 		return COMMAND_REGISTRY;
+	}
+
+	public static GlobalEventsManager getGlobalEventsManager() {
+		return EVENTS_MANAGER;
+	}
+
+	public static GameRegistry getGameRegistry() {
+		return GAME_REGISTRY;
 	}
 
 	public static boolean isClient() {

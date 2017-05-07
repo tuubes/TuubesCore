@@ -21,7 +21,9 @@ package org.mcphoton;
 import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
 import org.mcphoton.command.GlobalCommandRegistry;
+import org.mcphoton.event.GlobalEventsManager;
 import org.mcphoton.permissions.GlobalPermissionsManager;
+import org.mcphoton.plugin.GlobalPluginsManager;
 import org.mcphoton.server.Server;
 
 /**
@@ -62,6 +64,20 @@ public final class Photon {
 	 * @return the GlobalPermissionsManager
 	 */
 	public static GlobalPermissionsManager getGlobalPermissionsManager() {
+		return null;
+	}
+
+	/**
+	 * @return the GlobalPluginsManager
+	 */
+	public static GlobalPluginsManager getGlobalPluginsManager() {
+		return null;
+	}
+
+	/**
+	 * @return the GlobalEventsManager
+	 */
+	public static GlobalEventsManager getGlobalEventsManager() {
 		return null;
 	}
 
