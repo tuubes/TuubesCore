@@ -82,7 +82,7 @@ abstract class BWListManager {
 		}
 		int corrected = CONFIG_SPEC.correct(config);
 		if (corrected > 0) {
-			logger.info("Corrected " + corrected + " entries in " + name + ".");
+			logger.info("Corrected {} entries in {}.", corrected, name);
 			save();
 		}
 		if (!config.isEmpty()) {
@@ -92,7 +92,7 @@ abstract class BWListManager {
 					UUID playerId = UUID.fromString((String)account);
 					accountSet.add(playerId);
 				} catch (IllegalArgumentException | ClassCastException e) {
-					logger.warn("Invalid account id in " + name + ": " + account);
+					logger.warn("Invalid account id in {}: {}", name, account);
 				}
 			}
 			List<?> ips = config.getValue("ips");
@@ -101,7 +101,7 @@ abstract class BWListManager {
 					InetAddress address = InetAddress.getByName((String)ip);
 					addressSet.add(address);
 				} catch (IllegalArgumentException | UnknownHostException | ClassCastException e) {
-					logger.warn("Invalid ip address in " + name + ": " + ip);
+					logger.warn("Invalid ip address in {}: {}", name, ip);
 				}
 			}
 		}
