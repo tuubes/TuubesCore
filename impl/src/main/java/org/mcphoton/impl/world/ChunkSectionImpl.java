@@ -21,7 +21,6 @@ package org.mcphoton.impl.world;
 import java.io.IOException;
 import java.io.OutputStream;
 import net.magik6k.bitbuffer.BitBuffer;
-import org.mcphoton.network.ProtocolOutputStream;
 import org.mcphoton.world.ChunkSection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,15 +146,6 @@ public final class ChunkSectionImpl implements ChunkSection {
 		fullId &= ~15;//set metadata to zero
 		fullId |= (blockMetadata & 15);//set metadata to the specified value
 		setBlockFullId(x, y, z, fullId);
-	}
-
-	@Override
-	public synchronized void writeTo(ProtocolOutputStream out) throws IOException {
-		out.writeByte(bitsPerBlock);
-		out.writeVarInt(0);//use the global palette
-		out.writeVarInt(dataBytes.length / 8);
-		out.write(dataBytes);
-		out.write(EMPTY_LIGHT_DATA);//this writes the skylight data, so it works only in the overworld.
 	}
 
 	@Override
