@@ -30,7 +30,6 @@ import org.mcphoton.utils.Location;
  * @author TheElectronWill
  */
 public class PlayerImpl extends AbstractLivingEntity implements Player {
-
 	private final UUID accoundId;
 	private final String name;
 	private volatile String nameInChat, nameInList;
@@ -119,11 +118,6 @@ public class PlayerImpl extends AbstractLivingEntity implements Player {
 
 	@Override
 	public void kickPlayer(String message) {
-		; //TODO
-	}
-
-	@Override
-	public void leaveVehicle() {
 		; //TODO
 	}
 

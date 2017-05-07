@@ -18,11 +18,9 @@
  */
 package org.mcphoton.entity;
 
-import java.util.Optional;
 import java.util.UUID;
-import org.mcphoton.entity.vehicle.Vehicle;
-import org.mcphoton.utils.Vector;
 import org.mcphoton.utils.Location;
+import org.mcphoton.utils.Vector;
 import org.mcphoton.world.World;
 
 /**
@@ -208,14 +206,4 @@ public interface Entity {
 	 * @param silent true if the entity is silent.
 	 */
 	void setSilent(boolean silent);
-
-	/**
-	 * @return the vehicle this entity is in.
-	 */
-	Optional<Vehicle> getVehicle();
-
-	/**
-	 * Makes the entity leave its vehicle. If the entity isn't in a vehicle then this method has no effect.
-	 */
-	void leaveVehicle();
 }

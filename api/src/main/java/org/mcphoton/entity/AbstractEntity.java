@@ -18,12 +18,9 @@
  */
 package org.mcphoton.entity;
 
-import java.util.Optional;
 import java.util.UUID;
-import org.mcphoton.entity.vehicle.Vehicle;
-import org.mcphoton.utils.Vector;
 import org.mcphoton.utils.Location;
-import org.mcphoton.utils.MutableLocation;
+import org.mcphoton.utils.Vector;
 import org.mcphoton.world.World;
 
 /**
@@ -32,7 +29,6 @@ import org.mcphoton.world.World;
  * @author TheElectronWill
  */
 public abstract class AbstractEntity implements Entity {
-
 	private int entityId = -1;
 	private UUID uniqueId;
 
@@ -41,9 +37,9 @@ public abstract class AbstractEntity implements Entity {
 
 	private int fireTicks;
 	private boolean onGround, onFire, crouched, glowing, gravity, silent, sprinting;
-	private Optional<Vehicle> vehicle = Optional.empty();
 
-	private MutableLocation loc;
+	private World world;
+	private Vector coordinates;
 	private Vector velocity = new Vector();
 
 	@Override
@@ -88,17 +84,12 @@ public abstract class AbstractEntity implements Entity {
 
 	@Override
 	public Location getLocation() {
-		return loc;
+		return coordinates.toLocation(world);
 	}
 
 	@Override
 	public UUID getUniqueId() {
 		return uniqueId;
-	}
-
-	@Override
-	public Optional<Vehicle> getVehicle() {
-		return vehicle;
 	}
 
 	@Override
@@ -123,7 +114,8 @@ public abstract class AbstractEntity implements Entity {
 		}
 		this.entityId = entityId;
 		this.uniqueId = new UUID(0, entityId);
-		this.loc = new MutableLocation(x, y, z, w);
+		this.coordinates = new Vector(x, y, z);
+		this.world = w;
 	}
 
 	@Override

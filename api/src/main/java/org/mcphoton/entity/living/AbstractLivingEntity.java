@@ -25,7 +25,6 @@ import org.mcphoton.entity.AbstractEntity;
  * @author TheElectronWill
  */
 public abstract class AbstractLivingEntity extends AbstractEntity implements LivingEntity {
-
 	boolean invulnerable;
 	float health;
 	float pitch, yaw, headYaw;
