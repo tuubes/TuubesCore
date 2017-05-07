@@ -55,6 +55,16 @@ public interface World {
 	void renameTo(String name);
 
 	/**
+	 * Saves this world.
+	 */
+	void save();
+
+	/**
+	 * Deletes this world.
+	 */
+	void delete();
+
+	/**
 	 * @return the world's directory.
 	 */
 	File getDirectory();
@@ -131,22 +141,10 @@ public interface World {
 	 */
 	Entity getEntity(int entityId);
 
-	//---- Misc ----
-
 	/**
 	 * @return the players currently in this world.
 	 */
 	Collection<Player> getPlayers();
-
-	/**
-	 * Saves this world.
-	 */
-	void save();
-
-	/**
-	 * Deletes this world.
-	 */
-	void delete();
 
 	//---- Registries and Managers ----
 
