@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2017 MCPhoton <http://mcphoton.org> and contributors.
+ *
+ * This file is part of the Photon Server Implementation <https://github.com/mcphoton/Photon-Server>.
+ *
+ * The Photon Server Implementation is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * The Photon Server Implementation is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.mcphoton.impl.server;
 
 import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig;
@@ -15,10 +33,12 @@ import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
+import org.mcphoton.impl.world.WorldImpl;
 import org.mcphoton.server.LogLevel;
 import org.mcphoton.server.ServerConfiguration;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
+import org.mcphoton.world.WorldType;
 
 /**
  * The server configuration, loaded from the file server-config.toml with the Night-Config library.
@@ -26,8 +46,7 @@ import org.mcphoton.world.World;
  * @author TheElectronWill
  */
 public final class ServerConfigImpl implements ServerConfiguration {
-	private static final File configFile = new File(Photon.getMainDirectory(),
-													"server-config.toml");
+	private static final File FILE = new File(Photon.getMainDirectory(), "server-config.toml");
 
 	private volatile String motd = "Default MOTD. Change it in the config.";
 	private volatile int maxPlayers = 10;
@@ -126,8 +145,8 @@ public final class ServerConfigImpl implements ServerConfiguration {
 		this.logLevel = logLevel;
 	}
 
-	static ServerConfiguration load() {
-		TomlConfig config = new TomlParser().parse(configFile);
+	static ServerConfigImpl load() {
+		TomlConfig config = new TomlParser().parse(FILE);
 		ServerConfigImpl impl = new ObjectConverter().toObject(config, ServerConfigImpl::new);
 		impl.savedComments = config.getComments();// Remembers the comments
 		impl.icon = readIcon();
@@ -137,7 +156,7 @@ public final class ServerConfigImpl implements ServerConfiguration {
 	void save() {
 		TomlConfig config = new ObjectConverter().toConfig(this, TomlConfig::new);
 		config.setComments(savedComments);// Restores the comments
-		config.write(configFile);
+		config.write(FILE);
 	}
 
 	private static BufferedImage readIcon() {
@@ -164,9 +183,12 @@ public final class ServerConfigImpl implements ServerConfiguration {
 			double x = Double.parseDouble(parts.get(0));
 			double y = Double.parseDouble(parts.get(1));
 			double z = Double.parseDouble(parts.get(2));
-			String world = parts.get(3);
-			World w = Photon.getServer().getWorld(world);
-			return new Location(x, y, z, w);
+			String worldName = parts.get(3);
+			World world = Photon.getServer().getWorld(worldName);
+			if(world == null) {
+				world = new WorldImpl(worldName, WorldType.OVERWORLD);
+			}
+			return new Location(x, y, z, world);
 		}
 
 		@Override
