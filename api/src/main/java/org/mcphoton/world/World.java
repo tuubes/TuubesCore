@@ -25,6 +25,7 @@ import org.mcphoton.command.WorldCommandRegistry;
 import org.mcphoton.entity.Entity;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.event.WorldEventsManager;
+import org.mcphoton.permissions.WorldPermissionsManager;
 import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.areas.Area;
@@ -163,6 +164,11 @@ public interface World {
 	 * @return the world's plugins manager.
 	 */
 	WorldPluginsManager getPluginsManager();
+
+	/**
+	 * @return the world's permissions manager.
+	 */
+	WorldPermissionsManager getPermissionsManager();
 
 	//---- World generation ----
 
