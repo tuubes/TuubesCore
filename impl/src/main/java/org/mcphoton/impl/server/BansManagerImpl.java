@@ -18,115 +18,58 @@
  */
 package org.mcphoton.impl.server;
 
-import com.electronwill.nightconfig.toml.TomlConfig;
-import com.electronwill.nightconfig.toml.TomlParser;
-import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
-import org.mcphoton.Photon;
 import org.mcphoton.server.BansManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author TheElectronWill
  */
-public final class BansManagerImpl implements BansManager {
-
-	private static final Logger log = LoggerFactory.getLogger(WhitelistManagerImpl.class);
-	private static final BansManagerImpl INSTANCE = new BansManagerImpl();
-	private static final File FILE = new File(Photon.MAIN_DIR, "bans.toml");
-
-	public static BansManagerImpl getInstance() {
-		return INSTANCE;
+public final class BansManagerImpl extends BWListManager implements BansManager {
+	BansManagerImpl() {
+		super("blacklist");
 	}
-
-	private BansManagerImpl() {
-	}
-
-	private final Set<UUID> bannedAccounts = new ConcurrentSkipListSet<>();
-	private final Set<InetAddress> bannedAddresses = new ConcurrentSkipListSet<>();
 
 	@Override
 	public boolean isBanned(UUID accountId) {
-		return bannedAccounts.contains(accountId);
+		return accountSet.contains(accountId);
 	}
 
 	@Override
 	public boolean isBanned(InetAddress ip) {
-		return bannedAddresses.contains(ip);
+		return addressSet.contains(ip);
 	}
 
 	@Override
 	public void ban(UUID accountId) {
-		bannedAccounts.add(accountId);
+		accountSet.add(accountId);
 	}
 
 	@Override
 	public void ban(InetAddress ip) {
-		bannedAddresses.add(ip);
+		addressSet.add(ip);
 	}
 
 	@Override
 	public void unban(UUID accountId) {
-		bannedAccounts.remove(accountId);
+		accountSet.remove(accountId);
 	}
 
 	@Override
 	public void unban(InetAddress ip) {
-		bannedAddresses.remove(ip);
+		addressSet.remove(ip);
 	}
 
 	@Override
 	public Collection<UUID> getBannedAccounts() {
-		return bannedAccounts;
+		return accountSet;
 	}
 
 	@Override
 	public Collection<InetAddress> getBannedIPs() {
-		return bannedAddresses;
-	}
-
-	public void load() throws IOException {
-		if (!FILE.exists()) {
-			FILE.createNewFile();
-			return;
-		}
-		TomlConfig config = new TomlParser().parse(FILE);
-		if (config.isEmpty()) {
-			return;
-		}
-		List<String> accounts = config.getValue("accounts");
-		for (String account : accounts) {
-			try {
-				UUID playerId = UUID.fromString(account);
-				bannedAccounts.add(playerId);
-			} catch (IllegalArgumentException ex) {
-				log.error("Invalid UUID in ban list.", ex);
-			}
-		}
-		List<String> ips = config.getValue("ips");
-		for (String ip : ips) {
-			try {
-				InetAddress address = InetAddress.getByName(ip);
-				bannedAddresses.add(address);
-			} catch (IllegalArgumentException ex) {
-				log.error("Invalid IP address in ban list.", ex);
-			}
-		}
-		log.info("Ban list loaded.");
-	}
-
-	public void save() throws IOException {
-		TomlConfig config = new TomlConfig();
-		config.setValue("ips", bannedAddresses);
-		config.setValue("accounts", bannedAccounts);
-		config.write(FILE);
-		log.info("Ban list saved.");
+		return addressSet;
 	}
 }
