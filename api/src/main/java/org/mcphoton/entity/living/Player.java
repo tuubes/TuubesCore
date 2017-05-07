@@ -25,7 +25,7 @@ import org.mcphoton.utils.Location;
 public interface Player extends User, LivingEntity, Messageable {
 
 	@Override
-	default boolean isConnected() {
+	default boolean isOnline() {
 		return true;
 	}
 

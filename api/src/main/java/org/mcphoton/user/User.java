@@ -59,9 +59,9 @@ public interface User extends Permissible, InventoryHolder {
 	/**
 	 * Checks if this user is currently connected.
 	 *
-	 * @return {@code true} if the user is connected, else {@code false}.
+	 * @return {@code true} if the user is online
 	 */
-	boolean isConnected();
+	boolean isOnline();
 
 	/**
 	 * Returns this user as a {@link Player} instance, if connected.
