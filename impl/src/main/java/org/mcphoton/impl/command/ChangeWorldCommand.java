@@ -18,9 +18,9 @@
  */
 package org.mcphoton.impl.command;
 
+import org.mcphoton.Photon;
 import org.mcphoton.command.Command;
 import org.mcphoton.impl.server.ConsoleThread;
-import org.mcphoton.impl.server.Main;
 import org.mcphoton.messaging.Messageable;
 import org.mcphoton.world.World;
 
@@ -38,13 +38,13 @@ public class ChangeWorldCommand implements Command {
 			source.sendMessage("Invalid syntax. Use cw [world]");
 			return;
 		}
-		World world = Main.SERVER.getWorld(args[0]);
+		World world = Photon.getServer().getWorld(args[0]);
 		if (world == null) {
 			source.sendMessage("This world does not exist.");
 			return;
 		}
 		if (source instanceof ConsoleThread) {
-			Main.SERVER.consoleThread.world = world;
+			Photon.getServer().getConsoleThread().world = world;
 		} else {
 			source.sendMessage("This command only works in the server's console!");
 		}
