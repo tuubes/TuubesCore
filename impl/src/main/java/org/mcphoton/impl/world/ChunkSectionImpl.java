@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Basic implementation of ChunkSection. It is thread-safe.
  *
- * @see http://wiki.vg/SMP_Map_Format
  * @author TheElectronWill
  */
 public final class ChunkSectionImpl implements ChunkSection {
@@ -48,7 +47,7 @@ public final class ChunkSectionImpl implements ChunkSection {
 
 	public ChunkSectionImpl(int bitsPerBlock) {
 		int bits = bitsPerBlock * 4096;
-		this.dataBytes = new byte[(int) Math.ceil(bits / 8)];
+		this.dataBytes = new byte[(int)Math.ceil(bits / 8)];
 		this.data = BitBuffer.wrap(dataBytes);
 		this.bitsPerBlock = bitsPerBlock;
 	}
@@ -60,7 +59,8 @@ public final class ChunkSectionImpl implements ChunkSection {
 	}
 
 	@Override
-	public synchronized void fillBlockFullId(int x0, int y0, int z0, int x1, int y1, int z1, int blockFullId) {
+	public synchronized void fillBlockFullId(int x0, int y0, int z0, int x1, int y1, int z1,
+											 int blockFullId) {
 		for (int x = x0; x < x1; x++) {
 			for (int y = y0; y < y1; y++) {
 				for (int z = z0; z < z1; z++) {
@@ -71,7 +71,8 @@ public final class ChunkSectionImpl implements ChunkSection {
 	}
 
 	@Override
-	public synchronized void fillBlockId(int x0, int y0, int z0, int x1, int y1, int z1, int blockId) {
+	public synchronized void fillBlockId(int x0, int y0, int z0, int x1, int y1, int z1,
+										 int blockId) {
 		for (int x = x0; x < x1; x++) {
 			for (int y = y0; y < y1; y++) {
 				for (int z = z0; z < z1; z++) {
@@ -162,5 +163,4 @@ public final class ChunkSectionImpl implements ChunkSection {
 		out.write(bitsPerBlock);
 		out.write(dataBytes);
 	}
-
 }

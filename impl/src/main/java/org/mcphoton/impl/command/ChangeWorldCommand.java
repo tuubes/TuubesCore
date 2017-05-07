@@ -30,7 +30,6 @@ import org.mcphoton.world.World;
  * @author TheElectronWill
  */
 public class ChangeWorldCommand implements Command {
-
 	private static final String[] ALIASES = {"cw"};
 
 	@Override
@@ -65,5 +64,4 @@ public class ChangeWorldCommand implements Command {
 	public String[] getAliases() {
 		return ALIASES;
 	}
-
 }

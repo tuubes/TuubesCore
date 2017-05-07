@@ -26,12 +26,12 @@ import org.mcphoton.plugin.GlobalPlugin;
 import org.mcphoton.world.World;
 
 /**
- * Implementation of {@link GlobalCommandRegistry}. It internally uses the {@link WorldCommandRegistry}.
+ * Implementation of {@link GlobalCommandRegistry}. It internally uses the {@link
+ * WorldCommandRegistry} of each world.
  *
  * @author TheElectronWill
  */
 public class GlobalCommandRegistryImpl implements GlobalCommandRegistry {
-
 	/**
 	 * Registers a server command.
 	 *
@@ -56,5 +56,4 @@ public class GlobalCommandRegistryImpl implements GlobalCommandRegistry {
 			world.getCommandRegistry().unregisterCommand(cmd, plugin);
 		}
 	}
-
 }

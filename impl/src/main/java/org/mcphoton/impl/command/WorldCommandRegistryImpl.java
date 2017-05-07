@@ -33,7 +33,6 @@ import org.mcphoton.plugin.Plugin;
  * @author TheElectronWill
  */
 public class WorldCommandRegistryImpl implements WorldCommandRegistry {
-
 	private final Map<String, Command> nameMap = new HashMap<>();
 	private final Map<Plugin, List<Command>> pluginMap = new HashMap<>();
 
@@ -73,5 +72,4 @@ public class WorldCommandRegistryImpl implements WorldCommandRegistry {
 		List list = pluginMap.get(plugin);
 		return list == null ? null : Collections.unmodifiableList(list);
 	}
-
 }
