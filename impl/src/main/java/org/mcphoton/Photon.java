@@ -28,9 +28,9 @@ import org.mcphoton.impl.event.GlobalEventsManagerImpl;
 import org.mcphoton.impl.permissions.GlobalPermissionsManagerImpl;
 import org.mcphoton.impl.plugin.GlobalPluginsManagerImpl;
 import org.mcphoton.impl.server.Main;
+import org.mcphoton.impl.server.ServerImpl;
 import org.mcphoton.permissions.GlobalPermissionsManager;
 import org.mcphoton.plugin.GlobalPluginsManager;
-import org.mcphoton.server.Server;
 
 /**
  * Implementation of the Photon's class, which is the centralized API core.
@@ -39,6 +39,8 @@ import org.mcphoton.server.Server;
  */
 public final class Photon {
 
+	private static final boolean CONSOLE_ADVANCED = !System.getProperty("os.name").toLowerCase()
+														   .contains("windows");
 	public static final File MAIN_DIR = new File(System.getProperty("user.dir")),
 			PLUGINS_DIR = new File(MAIN_DIR, "plugins"),
 			WORLDS_DIR = new File(MAIN_DIR, "worlds");
@@ -47,9 +49,7 @@ public final class Photon {
 	private static final GlobalPluginsManager PLUGINS_MANAGER = new GlobalPluginsManagerImpl();
 	private static final GlobalEventsManager EVENTS_MANAGER = new GlobalEventsManagerImpl();
 	private static final GlobalPermissionsManager PERM_MANAGER = new GlobalPermissionsManagerImpl();
-	private static final boolean CONSOLE_ADVANCED = !System.getProperty("os.name")
-														   .toLowerCase()
-														   .contains("windows");
+	private static final ServerImpl SERVER_INSTANCE = new ServerImpl();
 
 	private Photon() {}
 
@@ -68,7 +68,7 @@ public final class Photon {
 	 * </p>
 	 */
 	public static ScheduledExecutorService getExecutorService() {
-		return Main.SERVER.executorService.get();
+		return SERVER_INSTANCE.executorService;
 	}
 
 	public static GlobalPermissionsManager getGlobalPermissionsManager() {
@@ -119,7 +119,7 @@ public final class Photon {
 		return PLUGINS_DIR;
 	}
 
-	public static Server getServer() {
-		return Main.SERVER;
+	public static ServerImpl getServer() {
+		return SERVER_INSTANCE;
 	}
 }
