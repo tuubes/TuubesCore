@@ -1,5 +1,3 @@
-package org.mcphoton.utils;
-
 /*
  * Copyright (c) 2016 MCPhoton <http://mcphoton.org> and contributors.
  *
@@ -18,6 +16,7 @@ package org.mcphoton.utils;
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+package org.mcphoton.utils;
 
 import java.util.Objects;
 import org.mcphoton.world.World;
