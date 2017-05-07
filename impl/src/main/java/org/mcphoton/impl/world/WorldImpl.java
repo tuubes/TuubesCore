@@ -29,11 +29,11 @@ import org.mcphoton.entity.Entity;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.event.WorldEventsManager;
 import org.mcphoton.impl.command.WorldCommandRegistryImpl;
-import org.mcphoton.impl.entity.PlayerImpl;
 import org.mcphoton.impl.event.WorldEventsManagerImpl;
+import org.mcphoton.impl.permissions.WorldPermissionsManagerImpl;
 import org.mcphoton.impl.plugin.WorldPluginsManagerImpl;
 import org.mcphoton.impl.world.generation.SimpleHeightmapBasedGenerator;
-import org.mcphoton.network.Packet;
+import org.mcphoton.permissions.WorldPermissionsManager;
 import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.ChunkGenerator;
@@ -47,7 +47,6 @@ import org.mcphoton.world.protection.WorldAccessManager;
  * @author TheElectronWill
  */
 public class WorldImpl implements World {
-
 	protected volatile String name;
 	protected volatile File directory;
 	protected volatile double spawnX = 0, spawnY = 0, spawnZ = 0;
@@ -55,30 +54,28 @@ public class WorldImpl implements World {
 	protected final WorldType type;
 	protected final Collection<Player> players = new SimpleBag<>();
 	protected final IndexMap<Entity> entities = new IndexMap<>();// ids of the world's entities.
-	protected final Bag<Integer> removedIds = new SimpleBag(100, 50);// ids of the removed entities. Reusing them avoids fragmentation.
+	protected final Bag<Integer> removedIds = new SimpleBag<>(100, 50);// ids of the removed
+	// entities. Reusing them avoids fragmentation.
 
 	protected final WorldPluginsManager pluginsManager = new WorldPluginsManagerImpl(this);
 	protected final WorldEventsManager eventsManager = new WorldEventsManagerImpl();
 	protected final WorldCommandRegistry commandRegistry = new WorldCommandRegistryImpl();
 	protected volatile ChunkGenerator chunkGenerator = new SimpleHeightmapBasedGenerator(this);
 	protected volatile WorldAccessManager accessManager = new OpenWorldAccessManager(this);
-
 	protected final WorldChunksManager chunksManager = new WorldChunksManager(this);
+	protected final WorldPermissionsManager permissionsManager = new WorldPermissionsManagerImpl();
 
 	public WorldImpl(String name, WorldType type) {
 		this.name = name;
-		this.directory = new File(Photon.WORLDS_DIR, name);
 		this.type = type;
+		this.directory = new File(Photon.WORLDS_DIR, name);
+		this.directory.mkdir();
 	}
 
-	@Override
-	public ChunkGenerator getChunkGenerator() {
-		return chunkGenerator;
-	}
-
-	@Override
-	public void setChunkGenerator(ChunkGenerator generator) {
-		this.chunkGenerator = generator;
+	public WorldImpl(File directory, WorldType type) {
+		this.name = directory.getName();
+		this.type = type;
+		this.directory = directory;
 	}
 
 	@Override
@@ -101,16 +98,12 @@ public class WorldImpl implements World {
 			entity.init(nextId, x, y, z, this);
 			entities.put(nextId, entity);
 		}
-		Packet spawnPacket = entity.constructSpawnPacket();
-		for (Player p : players) {
-			Photon.getPacketsManager().sendPacket(spawnPacket, ((PlayerImpl) p).getClient());
-			//TODO revise this: don't send the packet to every player, just to the nearest ones.
-		}
+		//TODO send the spawn packet
 	}
 
 	@Override
 	public void removeEntity(Entity entity) {
-		removeEntity(entity.getEntityId());
+		removeEntity(entity.getId());
 	}
 
 	@Override
@@ -172,6 +165,11 @@ public class WorldImpl implements World {
 	}
 
 	@Override
+	public WorldPermissionsManager getPermissionsManager() {
+		return permissionsManager;
+	}
+
+	@Override
 	public WorldAccessManager getAccessManager() {
 		return accessManager;
 	}
@@ -196,8 +194,17 @@ public class WorldImpl implements World {
 		return pluginsManager;
 	}
 
+	@Override
+	public ChunkGenerator getChunkGenerator() {
+		return chunkGenerator;
+	}
+
+	@Override
+	public void setChunkGenerator(ChunkGenerator generator) {
+		this.chunkGenerator = generator;
+	}
+
 	public WorldChunksManager getChunksManager() {
 		return chunksManager;
 	}
-
 }
