@@ -76,11 +76,19 @@ public class EulerAngles {
 		return this;
 	}
 
+	public EulerAngles add(EulerAngles a) {
+		return add(a.yaw, a.pitch, a.roll);
+	}
+
 	public EulerAngles subtract(float yaw, float pitch, float roll) {
 		this.yaw -= yaw;
 		this.pitch -= pitch;
 		this.roll -= roll;
 		return this;
+	}
+
+	public EulerAngles substract(EulerAngles a) {
+		return add(a.yaw, a.pitch, a.roll);
 	}
 
 	@Override
