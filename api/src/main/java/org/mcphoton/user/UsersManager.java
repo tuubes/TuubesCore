@@ -60,6 +60,6 @@ public interface UsersManager {
 	 * @param accountId the user's account id.
 	 */
 	default void saveUserData(UUID accountId) {
-		saveUserData(getUser(accountId).get());
+		getUser(accountId).ifPresent(this::saveUserData);
 	}
 }
