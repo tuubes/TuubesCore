@@ -94,4 +94,22 @@ public interface ServerConfiguration {
 	 * @param online {@code true} if it is in online mode, {@code false} if it isn't.
 	 */
 	void setOnlineMode(boolean online);
+
+	/**
+	 * Gets the log level. Only the messages with a "more important" or with the same level as
+	 * the log level are displayed, the other are discarded. More important levels are declared
+	 * first in {@link LogLevel}.java.
+	 *
+	 * @return the log level
+	 */
+	LogLevel getLogLevel();
+
+	/**
+	 * Sets the log level. Only the messages with a "more important" or with the same level as
+	 * the log level are displayed, the other are discarded. More important levels are declared
+	 * first in {@link LogLevel}.java.
+	 *
+	 * @param level the log level
+	 */
+	void setLogLevel(LogLevel level);
 }

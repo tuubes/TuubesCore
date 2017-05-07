@@ -116,6 +116,16 @@ public final class ServerConfigImpl implements ServerConfiguration {
 		this.onlineMode = online;
 	}
 
+	@Override
+	public LogLevel getLogLevel() {
+		return logLevel;
+	}
+
+	@Override
+	public void setLogLevel(LogLevel logLevel) {
+		this.logLevel = logLevel;
+	}
+
 	static ServerConfiguration load() {
 		TomlConfig config = new TomlParser().parse(configFile);
 		ServerConfigImpl impl = new ObjectConverter().toObject(config, ServerConfigImpl::new);
@@ -148,7 +158,6 @@ public final class ServerConfigImpl implements ServerConfiguration {
 	}
 
 	private static class LocationConverter implements Converter<Location, String> {
-
 		@Override
 		public Location convertToField(String value) {
 			List<String> parts = StringUtils.split(value, ',');
@@ -168,7 +177,6 @@ public final class ServerConfigImpl implements ServerConfiguration {
 	}
 
 	private static class LoggingLevelConverter implements Converter<LogLevel, String> {
-
 		@Override
 		public LogLevel convertToField(String value) {
 			return LogLevel.valueOf(value.toUpperCase());
