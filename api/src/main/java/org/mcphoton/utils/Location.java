@@ -27,7 +27,7 @@ import org.mcphoton.world.World;
  *
  * @author TheElectronWill
  */
-public final class Location {
+public final class Location implements Coordinates, Cloneable {
 	private final double x, y, z;
 	private final World w;
 
@@ -36,6 +36,10 @@ public final class Location {
 		this.y = y;
 		this.z = z;
 		this.w = w;
+	}
+
+	public Location(Coordinates coords, World world) {
+		this(coords.getX(), coords.getY(), coords.getZ(), world);
 	}
 
 	@Override
@@ -53,38 +57,48 @@ public final class Location {
 	}
 
 	/**
-	 * Creates a new location that is the result of adding the vector v to this location.
-	 */
-	public Location add(Vector v) {
-		return new Location(x + v.x, y + v.y, z + v.z, w);
-	}
-
-	/**
-	 * Creates a new location that is the result of adding the location l to this location.
-	 */
-	public Location add(Location l) {
-		return new Location(x + l.x, y + l.y, z + l.z, w);
-	}
-
-	/**
-	 * Creates a new location that is the result of adding the specified numbers to this location.
+	 * Creates a new location by adding some coordinates to this location.
 	 */
 	public Location add(double dx, double dy, double dz) {
 		return new Location(x + dx, y + dy, z + dz, w);
+	}
+
+	/**
+	 * Creates a new location by adding some coordinates to this location.
+	 */
+	public Location add(Coordinates coords) {
+		return add(coords.getX(), coords.getY(), coords.getZ());
+	}
+
+	/**
+	 * Creates a new location by substracting some coordinates to this location.
+	 */
+	public Location sub(double dx, double dy, double dz) {
+		return new Location(x - dx, y - dy, z - dz, w);
+	}
+
+	/**
+	 * Creates a new location by substracting some coordinates to this location.
+	 */
+	public Location sub(Coordinates coords) {
+		return sub(coords.getX(), coords.getY(), coords.getZ());
 	}
 
 	public World getWorld() {
 		return w;
 	}
 
+	@Override
 	public double getX() {
 		return x;
 	}
 
+	@Override
 	public double getY() {
 		return y;
 	}
 
+	@Override
 	public double getZ() {
 		return z;
 	}
@@ -145,36 +159,26 @@ public final class Location {
 	}
 
 	/**
-	 * Creates a location in the middle of the two specified locations. The world will be the one of
-	 * {@code l1}.
+	 * Creates a location in the middle of two locations. The world will be the one of {@code l1}.
+	 *
+	 * @param l1 the first location
+	 * @param l2 the second location
 	 */
 	public static Location middle(Location l1, Location l2) {
-		double x = (l1.x + l2.x) / 2.0;
-		double y = (l1.y + l2.y) / 2.0;
-		double z = (l1.z + l2.z) / 2.0;
-		return new Location(x, y, z, l1.getWorld());
+		return middle(l1, l2, l1.getWorld());
 	}
 
 	/**
-	 * Calculates the squared distance between this location and the l location. This is faster than
-	 * manually multiplying the distance by itself.
+	 * Creates a location in the middle of two points.
 	 *
-	 * @return the squared distance between this location and l.
+	 * @param c1    the first point
+	 * @param c2    the second point
+	 * @param world the location's world
 	 */
-	public double squaredDistance(Location l) {
-		double deltaX = l.x - x;
-		double deltaY = l.y - y;
-		double deltaZ = l.z - z;
-		return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
-	}
-
-	/**
-	 * Calculates the distance between this location and the l location. If you want the squared
-	 * distance use {@link #squaredDistance(org.mcphoton.utils.Location)}.
-	 *
-	 * @return the distance between this location and l.
-	 */
-	public double distance(Location l) {
-		return Math.sqrt(squaredDistance(l));
+	public static Location middle(Coordinates c1, Coordinates c2, World world) {
+		double x = (c1.getX() + c2.getX()) / 2.0;
+		double y = (c1.getY() + c2.getY()) / 2.0;
+		double z = (c1.getZ() + c2.getZ()) / 2.0;
+		return new Location(x, y, z, world);
 	}
 }

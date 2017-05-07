@@ -25,8 +25,8 @@ import org.mcphoton.world.World;
  *
  * @author TheElectronWill
  */
-public final class Vector implements Cloneable {
-	double x, y, z;
+public final class Vector implements Coordinates, Cloneable {
+	private double x, y, z;
 
 	/**
 	 * Creates a new vector (0,0,0).
@@ -44,19 +44,26 @@ public final class Vector implements Cloneable {
 		this.z = z;
 	}
 
+	public Vector(Coordinates coords) {
+		this(coords.getX(), coords.getY(), coords.getZ());
+	}
+
 	@Override
 	public Vector clone() {
 		return new Vector(x, y, z);
 	}
 
+	@Override
 	public double getX() {
 		return x;
 	}
 
+	@Override
 	public double getY() {
 		return y;
 	}
 
+	@Override
 	public double getZ() {
 		return z;
 	}
@@ -98,7 +105,7 @@ public final class Vector implements Cloneable {
 		return this;
 	}
 
-	public Vector substract(Vector v) {
+	public Vector sub(Vector v) {
 		x -= v.x;
 		y -= v.y;
 		z -= v.z;
@@ -127,7 +134,18 @@ public final class Vector implements Cloneable {
 	}
 
 	/**
-	 * Normalizes this vector: divides its coordinates by its norm so that its length is 1.
+	 * Negates this vector: multiply it by -1.
+	 *
+	 * @return this vector
+	 */
+	public Vector negate() {
+		return multiply(-1);
+	}
+
+	/**
+	 * Normalizes this vector: divides its coordinates by its norm so that its length becames 1.
+	 *
+	 * @return this vector
 	 */
 	public Vector normalize() {
 		return divide(norm());
