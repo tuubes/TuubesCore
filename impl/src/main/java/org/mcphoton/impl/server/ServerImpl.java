@@ -60,9 +60,8 @@ import org.slf4j.impl.PhotonLogger;
  *
  * @author TheElectronWill
  */
-public final class PhotonServer implements Server {
-
-	private static final Logger log = LoggerFactory.getLogger(PhotonServer.class);
+public final class ServerImpl implements Server {
+	private static final Logger log = LoggerFactory.getLogger(ServerImpl.class);
 	private static final File CONFIG_FILE = new File(Photon.MAIN_DIR, "server-config.toml");
 
 	//---- Utilities ----
@@ -72,19 +71,12 @@ public final class PhotonServer implements Server {
 	public final Constant<ScheduledExecutorService> executorService = new Constant<>();
 
 	//---- Configuration ----
-	public final Constant<InetSocketAddress> address = new Constant<>();
-	public final IntConstant executionThreads = new IntConstant();
-	public volatile String motd, encodedFavicon;
-	public volatile int maxPlayers;
-	public volatile Location spawn;
-	private String spawnWorldName;//Only used at startup to detect if the spawn's world needs to be created
-	private double spawnX, spawnY, spawnZ;//Only used at startup to detect if the spawn's world needs to be created
 
 	//---- Runtime data ----
 	public final Collection<Player> onlinePlayers = new SimpleBag<>();
 	public final Map<String, World> worlds = new ConcurrentHashMap<>();
 
-	PhotonServer() throws Exception {
+	public ServerImpl() {
 		loadConfig();
 	}
 
@@ -96,11 +88,6 @@ public final class PhotonServer implements Server {
 	@Override
 	public Collection<Player> getOnlinePlayers() {
 		return Collections.unmodifiableCollection(onlinePlayers);
-	}
-
-	@Override
-	public PacketsManager getPacketsManager() {
-		return packetsManager;
 	}
 
 	@Override

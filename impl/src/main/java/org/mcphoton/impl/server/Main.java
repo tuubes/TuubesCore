@@ -32,8 +32,8 @@ public final class Main {
 	/**
 	 * The unique server instance.
 	 */
-	public static final PhotonServer SERVER;
-	
+	public static final ServerImpl SERVER;
+
 	/**
 	 * The logger for the Main class (and only for it! One logger per class!).
 	 */
@@ -41,9 +41,9 @@ public final class Main {
 
 	static {
 		printFramed("Photon server version " + Photon.getVersion(), "For minecraft version " + Photon.getMinecraftVersion());
-		PhotonServer server = null;
+		ServerImpl server = null;
 		try {
-			server = new PhotonServer();
+			server = new ServerImpl();
 		} catch (Exception ex) {
 			log.error("Cannot create the server instance!", ex);
 			System.exit(3);
