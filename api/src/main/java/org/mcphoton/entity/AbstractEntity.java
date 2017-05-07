@@ -18,7 +18,6 @@
  */
 package org.mcphoton.entity;
 
-import java.util.UUID;
 import org.mcphoton.utils.Location;
 import org.mcphoton.utils.Vector;
 import org.mcphoton.world.World;
@@ -29,8 +28,7 @@ import org.mcphoton.world.World;
  * @author TheElectronWill
  */
 public abstract class AbstractEntity implements Entity {
-	private int entityId = -1;
-	private UUID uniqueId;
+	private int id = -1;
 
 	private String customName;
 	private boolean customNameVisible;
@@ -63,8 +61,8 @@ public abstract class AbstractEntity implements Entity {
 	}
 
 	@Override
-	public int getEntityId() {
-		return entityId;
+	public int getId() {
+		return id;
 	}
 
 	@Override
@@ -88,11 +86,6 @@ public abstract class AbstractEntity implements Entity {
 	}
 
 	@Override
-	public UUID getUniqueId() {
-		return uniqueId;
-	}
-
-	@Override
 	public Vector getVelocity() {
 		return velocity;
 	}
@@ -109,23 +102,22 @@ public abstract class AbstractEntity implements Entity {
 
 	@Override
 	public void init(int entityId, double x, double y, double z, World w) {
-		if (this.entityId != -1) {
+		if (this.id != -1) {
 			throw new IllegalStateException("Entity id already initialized!");
 		}
-		this.entityId = entityId;
-		this.uniqueId = new UUID(0, entityId);
+		this.id = entityId;
 		this.coordinates = new Vector(x, y, z);
 		this.world = w;
 	}
 
 	@Override
 	public boolean isValid() {
-		return entityId >= 0;
+		return id >= 0;
 	}
 
 	@Override
 	public void invalidate() {
-		entityId = -1;
+		id = -1;
 	}
 
 	@Override

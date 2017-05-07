@@ -18,7 +18,6 @@
  */
 package org.mcphoton.entity;
 
-import java.util.UUID;
 import org.mcphoton.utils.Location;
 import org.mcphoton.utils.Vector;
 import org.mcphoton.world.World;
@@ -35,12 +34,7 @@ public interface Entity {
 	/**
 	 * @return the entity's id.
 	 */
-	int getEntityId();
-
-	/**
-	 * @return the entity's UUID.
-	 */
-	UUID getUniqueId();
+	int getId();
 
 	/**
 	 * Initializes the entity. This method may only be called once.
