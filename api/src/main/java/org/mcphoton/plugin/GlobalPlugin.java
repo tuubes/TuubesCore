@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
  * @author TheElectronWill
  */
 public abstract class GlobalPlugin implements Plugin {
-
 	protected final Logger logger = LoggerFactory.getLogger(getName());
 	private final File directory = new File(Photon.getPluginsDirectory(), getName());
 	private final File configFile = new File(directory, "config.toml");
@@ -90,5 +89,4 @@ public abstract class GlobalPlugin implements Plugin {
 		this.description.init(description);
 		this.worlds.init(worlds);
 	}
-
 }

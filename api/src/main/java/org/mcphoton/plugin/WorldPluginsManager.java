@@ -27,11 +27,10 @@ import java.util.List;
  * @author TheElectronWill
  */
 public interface WorldPluginsManager {
-
 	/**
 	 * Gets a plugin by its name. If the plugin is not loaded by this manager, this method returns
-	 * <code>null</code>. The returned plugin may be of any type (WorldPlugin, GlobalPlugin, or any other
-	 * Plugin implementation).
+	 * <code>null</code>. The returned plugin may be of any type (WorldPlugin, GlobalPlugin, or any
+	 * other Plugin implementation).
 	 *
 	 * @return the plugin with that name, or <code>null</code>.
 	 */
@@ -57,14 +56,14 @@ public interface WorldPluginsManager {
 	void unloadAllPlugins();
 
 	/**
-	 * Unloads a plugin. If the plugin is a GlobalPlugin it isn't disabled entirely but only in this world, ie
-	 * everything it registered in the managers of this world is unregistered.
+	 * Unloads a plugin. If the plugin is a GlobalPlugin it isn't disabled entirely but only in this
+	 * world, ie everything it registered in the managers of this world is unregistered.
 	 */
 	void unloadPlugin(Plugin plugin) throws Exception;
 
 	/**
-	 * Unloads a plugin. If the plugin is a GlobalPlugin it isn't disabled entirely but only in this world, ie
-	 * everything it registered in the managers of this world is unregistered.
+	 * Unloads a plugin. If the plugin is a GlobalPlugin it isn't disabled entirely but only in this
+	 * world, ie everything it registered in the managers of this world is unregistered.
 	 */
 	void unloadPlugin(String name) throws Exception;
 
@@ -74,8 +73,8 @@ public interface WorldPluginsManager {
 	boolean isPluginLoaded(String name);
 
 	/**
-	 * Registers a plugin to this PluginsManager. After this method, the plugin will be considered as "loaded"
-	 * by this PluginsManager.
+	 * Registers a plugin to this PluginsManager. After this method, the plugin will be considered
+	 * as "loaded" by this PluginsManager.
 	 */
 	void registerPlugin(Plugin plugin);
 
@@ -84,5 +83,4 @@ public interface WorldPluginsManager {
 	 * considered as "loaded" by this PluginsManager.
 	 */
 	void unregisterPlugin(Plugin plugin);
-
 }

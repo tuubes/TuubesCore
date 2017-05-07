@@ -26,7 +26,6 @@ import com.electronwill.utils.IntConstant;
  * @author TheElectronWill
  */
 public abstract class AbstractType implements Type {
-
 	private final IntConstant id = new IntConstant();
 
 	@Override
@@ -54,8 +53,7 @@ public abstract class AbstractType implements Type {
 		if (obj == null || getClass() != obj.getClass()) {
 			return false;
 		}
-		final AbstractType other = (AbstractType) obj;
+		final AbstractType other = (AbstractType)obj;
 		return getId() == other.getId();
 	}
-
 }

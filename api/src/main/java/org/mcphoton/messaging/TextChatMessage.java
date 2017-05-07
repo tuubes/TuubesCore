@@ -23,16 +23,18 @@ import java.util.Map;
 import org.mcphoton.Photon;
 
 /**
- * A textual chat message. This class also provides a way to parse a message that uses '§'-codes, and to
- * create such a message.
+ * A textual chat message. This class also provides a way to parse a message that uses '§'-codes,
+ * and to create such a message.
  *
  * @author TheElectronWill
  */
+@SuppressWarnings("unchecked")
 public class TextChatMessage extends ChatMessage {
 
 	/**
-	 * Parses a "legacy string" that contains color and style codes. Each code consists of 2 characters: the
-	 * '§' character and another character. The second character definds the color/style to apply.
+	 * Parses a "legacy string" that contains color and style codes. Each code consists of 2
+	 * characters: the '§' character and another character which defines the color or style to
+	 * apply.
 	 */
 	public static TextChatMessage parse(CharSequence csq) {
 		TextChatMessage main = null;// the main part of the msg
@@ -41,7 +43,6 @@ public class TextChatMessage extends ChatMessage {
 		for (int i = 0; i < csq.length(); i++) {
 			char c = csq.charAt(i);
 			if (c == '§' && i + 1 < csq.length()) {
-
 				if (main == null) {
 					main = new TextChatMessage(sb.toString());
 					current = main;
@@ -53,7 +54,6 @@ public class TextChatMessage extends ChatMessage {
 					current = new TextChatMessage();
 				}
 				sb = new StringBuilder();
-
 				char c2 = csq.charAt(++i);
 				switch (c2) {
 					case '0':
@@ -145,8 +145,7 @@ public class TextChatMessage extends ChatMessage {
 		return main;
 	}
 
-	public TextChatMessage() {
-	}
+	public TextChatMessage() {}
 
 	public TextChatMessage(Map<String, Object> map) {
 		super(map);
@@ -157,7 +156,7 @@ public class TextChatMessage extends ChatMessage {
 	}
 
 	public String getText() {
-		return (String) map.get("text");
+		return (String)map.get("text");
 	}
 
 	public void setText(String text) {
@@ -165,9 +164,9 @@ public class TextChatMessage extends ChatMessage {
 	}
 
 	/**
-	 * Returns the "legacy string" which represents this TextChatMessage with color and style codes. Each code
-	 * consists of 2 characters: the '§' character and another character. The second character definds the
-	 * color/style to apply.
+	 * Returns the "legacy string" which represents this TextChatMessage with color and style codes.
+	 * Each code consists of 2 characters: the '§' character and a character which defines the
+	 * color or style to apply.
 	 */
 	@Override
 	public String toLegacyString() {
@@ -197,12 +196,20 @@ public class TextChatMessage extends ChatMessage {
 		if (extras != null) {
 			for (Object extra : extras) {
 				if (extra instanceof TextChatMessage) {
-					TextChatMessage extraMessage = (TextChatMessage) extra;
+					TextChatMessage extraMessage = (TextChatMessage)extra;
 					if ((extraMessage.isBoldSet() && !extraMessage.isBold() && this.isBold())
-							|| (extraMessage.isObfuscatedSet() && !extraMessage.isObfuscated() && this.isObfuscated())
-							|| (extraMessage.isStrikethroughSet() && !extraMessage.isStrikethrough() && this.isStrikethrough())
-							|| (extraMessage.isUnderlinedSet() && !extraMessage.isUnderlined() && this.isUnderlined())
-							|| (extraMessage.isItalicSet() && !extraMessage.isItalic() && this.isItalic())) {
+						|| (extraMessage.isObfuscatedSet()
+							&& !extraMessage.isObfuscated()
+							&& this.isObfuscated())
+						|| (extraMessage.isStrikethroughSet()
+							&& !extraMessage.isStrikethrough()
+							&& this.isStrikethrough())
+						|| (extraMessage.isUnderlinedSet()
+							&& !extraMessage.isUnderlined()
+							&& this.isUnderlined())
+						|| (extraMessage.isItalicSet()
+							&& !extraMessage.isItalic()
+							&& this.isItalic())) {
 						sb.append("§r");
 					}
 					sb.append(extraMessage.toLegacyString());
@@ -214,11 +221,6 @@ public class TextChatMessage extends ChatMessage {
 		return sb.toString();
 	}
 
-	/**
-	 * Returns a string which represents this TextChatMessage with console codes, to use it in the Terminal
-	 * (console). Each code consists of a special character sequence. When such a sequence is read by the
-	 * Terminal (console), it creates color/style.
-	 */
 	@Override
 	public String toConsoleString() {
 		return Photon.isConsoleAdvanced() ? toColorfoulConsoleString() : toBasicConsoleString();
@@ -247,12 +249,20 @@ public class TextChatMessage extends ChatMessage {
 		if (extras != null) {
 			for (Object extra : extras) {
 				if (extra instanceof TextChatMessage) {
-					TextChatMessage extraMessage = (TextChatMessage) extra;
+					TextChatMessage extraMessage = (TextChatMessage)extra;
 					if ((extraMessage.isBoldSet() && !extraMessage.isBold() && this.isBold())
-							|| (extraMessage.isObfuscatedSet() && !extraMessage.isObfuscated() && this.isObfuscated())
-							|| (extraMessage.isStrikethroughSet() && !extraMessage.isStrikethrough() && this.isStrikethrough())
-							|| (extraMessage.isUnderlinedSet() && !extraMessage.isUnderlined() && this.isUnderlined())
-							|| (extraMessage.isItalicSet() && !extraMessage.isItalic() && this.isItalic())) {
+						|| (extraMessage.isObfuscatedSet()
+							&& !extraMessage.isObfuscated()
+							&& this.isObfuscated())
+						|| (extraMessage.isStrikethroughSet()
+							&& !extraMessage.isStrikethrough()
+							&& this.isStrikethrough())
+						|| (extraMessage.isUnderlinedSet()
+							&& !extraMessage.isUnderlined()
+							&& this.isUnderlined())
+						|| (extraMessage.isItalicSet()
+							&& !extraMessage.isItalic()
+							&& this.isItalic())) {
 						sb.append("\u001B[0m");
 					}
 					sb.append(extraMessage.toColorfoulConsoleString());
@@ -273,7 +283,7 @@ public class TextChatMessage extends ChatMessage {
 		if (extras != null) {
 			for (Object extra : extras) {
 				if (extra instanceof TextChatMessage) {
-					TextChatMessage extraMessage = (TextChatMessage) extra;
+					TextChatMessage extraMessage = (TextChatMessage)extra;
 					sb.append(extraMessage.toBasicConsoleString());
 				} else {
 					sb.append(extra.toString());
@@ -282,5 +292,4 @@ public class TextChatMessage extends ChatMessage {
 		}
 		return sb.toString();
 	}
-
 }

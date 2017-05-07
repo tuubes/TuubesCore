@@ -39,8 +39,8 @@ import org.mcphoton.world.protection.WorldAccessManager;
  * @author TheElectronWill
  */
 public interface World {
-
 	//---- Properties ----
+
 	/**
 	 * @return the world's name.
 	 */
@@ -87,13 +87,14 @@ public interface World {
 	}
 
 	//---- Entities ---
+
 	/**
 	 * Spawns an entity at the given coordinates.
 	 *
 	 * @param entity the entity to spawn.
-	 * @param x the x coordinate.
-	 * @param y the y coordinate.
-	 * @param z the z coordinate.
+	 * @param x      the x coordinate.
+	 * @param y      the y coordinate.
+	 * @param z      the z coordinate.
 	 */
 	void spawnEntity(Entity entity, double x, double y, double z);
 
@@ -101,7 +102,7 @@ public interface World {
 	 * Spawns an entity at the given location.
 	 *
 	 * @param entity the entity to spawn.
-	 * @param loc the location.
+	 * @param loc    the location.
 	 */
 	default void spawnEntity(Entity entity, Location loc) {
 		spawnEntity(entity, loc.getX(), loc.getY(), loc.getZ());
@@ -130,6 +131,7 @@ public interface World {
 	Entity getEntity(int entityId);
 
 	//---- Misc ----
+
 	/**
 	 * @return the players currently in this world.
 	 */
@@ -146,6 +148,7 @@ public interface World {
 	void delete();
 
 	//---- Registries and Managers ----
+
 	/**
 	 * @return the world's command registry.
 	 */
@@ -162,6 +165,7 @@ public interface World {
 	WorldPluginsManager getPluginsManager();
 
 	//---- World generation ----
+
 	/**
 	 * @return the world's chunk generator.
 	 */
@@ -175,6 +179,7 @@ public interface World {
 	void setChunkGenerator(ChunkGenerator generator);
 
 	//---- Block Access ----
+
 	/**
 	 * @return the world's access manager.
 	 */
@@ -199,7 +204,7 @@ public interface World {
 	/**
 	 * Accesses a world area.
 	 *
-	 * @param area the area to access.
+	 * @param area     the area to access.
 	 * @param accessor the Object that wants to access this area.
 	 * @return an UnlockedAreaAccess, optional.
 	 */
@@ -210,8 +215,8 @@ public interface World {
 	/**
 	 * Accesses a world chunk.
 	 *
-	 * @param x the chunk's x coordinate.
-	 * @param z the chunk's z coordinate.
+	 * @param x        the chunk's x coordinate.
+	 * @param z        the chunk's z coordinate.
 	 * @param accessor the Object that wants to access this chunk.
 	 * @return a ChunkColumn, optional.
 	 */
@@ -228,5 +233,4 @@ public interface World {
 	default Optional<UnlockedWorldAccess> accessAll(Object accessor) {
 		return getAccessManager().unlockWorld(accessor);
 	}
-
 }

@@ -19,72 +19,56 @@
 package org.mcphoton.messaging;
 
 /**
- *
+ * A Color.
  * @author TheElectronWill
  */
 public enum Color {
-
 	/**
 	 * dark black.
 	 */
-	BLACK("\u001B[2m\u001B[30m", "§0"),
-	/**
+	BLACK("\u001B[2m\u001B[30m", "§0"), /**
 	 * light blue.
 	 */
-	BLUE("\u001B[34m", "§9"),
-	/**
+	BLUE("\u001B[34m", "§9"), /**
 	 * aqua, i.e. light cyan.
 	 */
-	AQUA("\u001B[36m", "§b"),
-	/**
+	AQUA("\u001B[36m", "§b"), /**
 	 * dark blue.
 	 */
-	DARK_BLUE("\u001B[2m\u001B[34m", "§1"),
-	/**
+	DARK_BLUE("\u001B[2m\u001B[34m", "§1"), /**
 	 * dark aqua, i.e dark cyan
 	 */
-	DARK_AQUA("\u001B[2m\u001B[36m", "§3"),
-	/**
+	DARK_AQUA("\u001B[2m\u001B[36m", "§3"), /**
 	 * dark green.
 	 */
-	DARK_GREEN("\u001B[2m\u001B[32m", "§2"),
-	/**
+	DARK_GREEN("\u001B[2m\u001B[32m", "§2"), /**
 	 * Dark grey, i.e. light black.
 	 */
-	DARK_GREY("\u001B[30m", "§8"),
-	/**
+	DARK_GREY("\u001B[30m", "§8"), /**
 	 * dark purple, i.e. dark magenta.
 	 */
-	DARK_PURPLE("\u001B[2m\u001B[35m", "§5"),
-	/**
+	DARK_PURPLE("\u001B[2m\u001B[35m", "§5"), /**
 	 * dark red.
 	 */
-	DARK_RED("\u001B[2m\u001B[31m", "§4"),
-	/**
+	DARK_RED("\u001B[2m\u001B[31m", "§4"), /**
 	 * Dark yellow, also called "gold" or "orange".
 	 */
-	GOLD("\u001B[2m\u001B[33m", "§6"),
-	/**
+	GOLD("\u001B[2m\u001B[33m", "§6"), /**
 	 * light green
 	 */
-	GREEN("\u001B[32m", "§a"),
-	/**
+	GREEN("\u001B[32m", "§a"), /**
 	 * Grey, i.e. dark white.
 	 */
-	GREY("\u001B[37m", "§7"),
-	/**
+	GREY("\u001B[37m", "§7"), /**
 	 * purple, i.e. light magenta.
 	 */
-	LIGHT_PURPLE("\u001B[35m", "§d"),
-	/**
+	LIGHT_PURPLE("\u001B[35m", "§d"), /**
 	 * light red.
 	 */
-	RED("\u001B[31m", "§c"),
-	/**
+	RED("\u001B[31m", "§c"), /**
 	 * light white.
 	 */
-	WHITE("\u001B[37m", "§f"),
-	/**
+	WHITE("\u001B[37m", "§f"), /**
 	 * light yellow.
 	 */
 	YELLOW("\u001B[33m", "§e");
@@ -147,5 +131,4 @@ public enum Color {
 				throw new IllegalArgumentException("Invalid color code : " + legacyColorCode);
 		}
 	}
-
 }

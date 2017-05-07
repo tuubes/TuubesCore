@@ -22,13 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility class for manipulating Strings. It provides faster methods than the standard Java library.
+ * Utility class for manipulating Strings. It provides faster methods than the standard Java
+ * library.
  *
  * @author TheElectronWill
- *
  */
 public final class StringUtils {
-
 	/**
 	 * Removes a character from a String.
 	 *
@@ -80,8 +79,8 @@ public final class StringUtils {
 	}
 
 	/**
-	 * Splits a String around occurences of a character, and put the result in a List. The result is similar
-	 * to {@link String#split(String)}.
+	 * Splits a String around occurences of a character, and put the result in a List. The result is
+	 * similar to {@link String#split(String)}.
 	 */
 	public static void split(String str, char sep, List<String> list) {
 		int pos0 = 0;
@@ -136,7 +135,5 @@ public final class StringUtils {
 		}
 	}
 
-	private StringUtils() {
-	}
-
+	private StringUtils() {}
 }

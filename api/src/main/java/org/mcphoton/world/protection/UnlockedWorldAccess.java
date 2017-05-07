@@ -29,7 +29,6 @@ import org.mcphoton.world.World;
  * @author TheElectronWill
  */
 public interface UnlockedWorldAccess extends ReadOnlyBlockAccess, QueryableBlockAccess {
-
 	/**
 	 * @return the world.
 	 */
@@ -98,7 +97,7 @@ public interface UnlockedWorldAccess extends ReadOnlyBlockAccess, QueryableBlock
 	 * Returns true.
 	 */
 	@Override
-	public default boolean mayBreakBlock(int x, int y, int z, Object breaker) {
+	default boolean mayBreakBlock(int x, int y, int z, Object breaker) {
 		return true;
 	}
 
@@ -106,7 +105,7 @@ public interface UnlockedWorldAccess extends ReadOnlyBlockAccess, QueryableBlock
 	 * Returns true.
 	 */
 	@Override
-	public default boolean maySetBlockData(int x, int y, int z, BlockData data, Object setter) {
+	default boolean maySetBlockData(int x, int y, int z, BlockData data, Object setter) {
 		return true;
 	}
 
@@ -114,8 +113,7 @@ public interface UnlockedWorldAccess extends ReadOnlyBlockAccess, QueryableBlock
 	 * Returns true.
 	 */
 	@Override
-	public default boolean maySetBiomeType(int x, int z, BiomeType type, Object setter) {
+	default boolean maySetBiomeType(int x, int z, BiomeType type, Object setter) {
 		return true;
 	}
-
 }

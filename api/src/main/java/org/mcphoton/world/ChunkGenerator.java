@@ -19,11 +19,9 @@
 package org.mcphoton.world;
 
 /**
- *
  * @author TheElectronWill
  */
 public interface ChunkGenerator {
-
 	/**
 	 * Generates a chunk.
 	 *
@@ -32,5 +30,4 @@ public interface ChunkGenerator {
 	 * @return the generated ChunkColumn.
 	 */
 	ChunkColumn generate(int cx, int cz);
-
 }

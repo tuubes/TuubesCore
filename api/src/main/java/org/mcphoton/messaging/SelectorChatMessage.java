@@ -20,8 +20,8 @@ package org.mcphoton.messaging;
 
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class SelectorChatMessage extends ChatMessage {
-
 	public SelectorChatMessage(Map<String, Object> map) {
 		super(map);
 	}
@@ -31,7 +31,7 @@ public class SelectorChatMessage extends ChatMessage {
 	}
 
 	public String getSelector() {
-		return (String) map.get("selector");
+		return (String)map.get("selector");
 	}
 
 	public void setSelector(String selector) {
@@ -47,5 +47,4 @@ public class SelectorChatMessage extends ChatMessage {
 	public String toLegacyString() {
 		return toString();
 	}
-
 }

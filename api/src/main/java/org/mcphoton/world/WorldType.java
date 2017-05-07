@@ -24,13 +24,11 @@ package org.mcphoton.world;
  * @author TheElectronWill
  */
 public enum WorldType {
-
 	OVERWORLD(0), NETHER(-1), END(1);
 
 	public final int id;
 
-	private WorldType(int id) {
+	WorldType(int id) {
 		this.id = id;
 	}
-
 }

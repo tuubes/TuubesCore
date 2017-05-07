@@ -19,13 +19,12 @@
 package com.electronwill.utils;
 
 /**
- * A constant <b>positive</b> integer. Once its value has been set it cannot be changed. An IntConstant is
- * thread-safe.
+ * A constant <b>positive</b> integer. Once its value has been set it cannot be changed. An
+ * IntConstant is thread-safe.
  *
  * @author TheElectronWill
  */
 public final class IntConstant {
-
 	private volatile int value;
 
 	/**
@@ -49,7 +48,8 @@ public final class IntConstant {
 	 */
 	public void init(int value) {
 		if (value == -1) {
-			throw new IllegalArgumentException("IntConstant cannot be initialized with a value of -1");
+			throw new IllegalArgumentException(
+					"IntConstant cannot be initialized with a value of -1");
 		}
 		synchronized (this) {
 			if (this.value != -1) {
@@ -76,5 +76,4 @@ public final class IntConstant {
 	public boolean isInitialized() {
 		return value != -1;
 	}
-
 }

@@ -21,7 +21,6 @@ package org.mcphoton.block;
 import org.mcphoton.utils.Location;
 
 public interface BlockState {
-
 	BlockType getType();
 
 	Location getLocation();

@@ -25,7 +25,6 @@ package com.electronwill.utils;
  * @author TheElectronWill
  */
 public final class Constant<T> {
-
 	private volatile T value;
 
 	/**
@@ -71,5 +70,4 @@ public final class Constant<T> {
 	public boolean isInitialized() {
 		return value != null;
 	}
-
 }

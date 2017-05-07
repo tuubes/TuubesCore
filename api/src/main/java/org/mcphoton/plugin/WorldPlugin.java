@@ -25,12 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A WorldPlugin is associated with a game world, and isn't aware of what happens in the other worlds.
+ * A WorldPlugin is associated with a game world, and isn't aware of what happens in the other
+ * worlds.
  *
  * @author TheElectronWill
  */
 public abstract class WorldPlugin implements Plugin {
-
 	protected final Logger logger = LoggerFactory.getLogger(getName());
 	private final Constant<File> directory = new Constant<>();
 	private final Constant<File> configFile = new Constant<>();
@@ -90,5 +90,4 @@ public abstract class WorldPlugin implements Plugin {
 		this.directory.init(directory);
 		this.configFile.init(new File(directory, "config.toml"));
 	}
-
 }

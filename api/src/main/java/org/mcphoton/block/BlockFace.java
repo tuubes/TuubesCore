@@ -19,8 +19,7 @@
 package org.mcphoton.block;
 
 import org.mcphoton.utils.Location;
-import org.mcphoton.utils.IntVector;
-import org.mcphoton.utils.MutableLocation;
+import org.mcphoton.utils.Vector;
 
 /**
  * A block face.
@@ -28,7 +27,6 @@ import org.mcphoton.utils.MutableLocation;
  * @author TheElectronWill
  */
 public enum BlockFace {
-
 	/**
 	 * Special BlockFace with modX = modY = modZ = 0.
 	 */
@@ -36,53 +34,43 @@ public enum BlockFace {
 		public BlockFace getOppositeFace() {
 			return SELF;
 		}
-	},
-	NORTH(0, 0, -1) {
+	}, NORTH(0, 0, -1) {
 		public BlockFace getOppositeFace() {
 			return SOUTH;
 		}
-	},
-	SOUTH(0, 0, 1) {
+	}, SOUTH(0, 0, 1) {
 		public BlockFace getOppositeFace() {
 			return NORTH;
 		}
-	},
-	EAST(1, 0, 0) {
+	}, EAST(1, 0, 0) {
 		public BlockFace getOppositeFace() {
 			return WEST;
 		}
-	},
-	WEST(-1, 0, 0) {
+	}, WEST(-1, 0, 0) {
 		public BlockFace getOppositeFace() {
 			return EAST;
 		}
-	},
-	UP(0, 1, 0) {
+	}, UP(0, 1, 0) {
 		public BlockFace getOppositeFace() {
 			return DOWN;
 		}
-	},
-	DOWN(0, -1, 0) {
+	}, DOWN(0, -1, 0) {
 		public BlockFace getOppositeFace() {
 			return UP;
 		}
-	},
-	NORTH_EAST(1, 0, -1) {
+	}, NORTH_EAST(1, 0, -1) {
 		public BlockFace getOppositeFace() {
 			return SOUTH_WEST;
 		}
-	},
-	NORTH_WEST(-1, 0, -1) {
+	}, NORTH_WEST(-1, 0, -1) {
 		public BlockFace getOppositeFace() {
 			return SOUTH_EAST;
 		}
-	},
-	SOUTH_EAST(1, 0, 1) {
+	}, SOUTH_EAST(1, 0, 1) {
 		public BlockFace getOppositeFace() {
 			return NORTH_WEST;
 		}
-	},
-	SOUTH_WEST(-1, 0, 1) {
+	}, SOUTH_WEST(-1, 0, 1) {
 		public BlockFace getOppositeFace() {
 			return NORTH_EAST;
 		}
@@ -90,7 +78,7 @@ public enum BlockFace {
 
 	private final int modX, modY, modZ;
 
-	private BlockFace(int modX, int modY, int modZ) {
+	BlockFace(int modX, int modY, int modZ) {
 		this.modX = modX;
 		this.modY = modY;
 		this.modZ = modZ;
@@ -123,39 +111,29 @@ public enum BlockFace {
 	public abstract BlockFace getOppositeFace();
 
 	/**
-	 * Adds modX, modY and modZ to the specified MutableLocation.
+	 * Adds modX, modY and modZ to a Location.
 	 *
-	 * @return a the specified location.
+	 * @param l the location
+	 * @return a new location that is the result of the modification.
 	 */
-	public MutableLocation getModifiedLocation(MutableLocation loc) {
-		return loc.add(modX, modY, modZ);
+	public Location applyMod(Location l) {
+		return l.add(modX, modY, modZ);
 	}
 
 	/**
-	 * Adds modX, modY and modZ to the specified ImmutableLocation.
+	 * Adds modX, modY and modZ to a Vector.
 	 *
-	 * @return a new ImmutableLocation that is the result of adding modX, modY and modZ to the specified
-	 * location.
+	 * @param v the vector to modify
+	 * @return the vector v
 	 */
-	public Location getModifiedLocation(Location loc) {
-		return loc.add(modX, modY, modZ);
+	public Vector applyMod(Vector v) {
+		return v.add(toVector());
 	}
 
 	/**
-	 * Adds modX, modY and modZ to the specified Location.
-	 *
-	 * @return a new ImmutableLocation that is the result of adding modX, modY and modZ to the specified
-	 * location.
+	 * @return a new Vector (modX, modY, modZ).
 	 */
-	public Location getModifiedLocation(Location loc) {
-		return new Location(loc.getX() + modX, loc.getY() + modY, loc.getZ() + modZ, loc.getWorld());
+	public Vector toVector() {
+		return new Vector(modX, modY, modZ);
 	}
-
-	/**
-	 * @return a new IntVector (modX, modY, modZ).
-	 */
-	public IntVector toIntVector() {
-		return new IntVector(modX, modY, modZ);
-	}
-
 }

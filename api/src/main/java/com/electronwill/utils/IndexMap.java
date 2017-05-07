@@ -28,21 +28,20 @@ import java.util.Map;
 
 /**
  * A map implementation that maps integers to values. Values are stored in an array that grows when
- * necessary. IndexMap is a good choice when there are very few gaps between the keys, because it allows for
- * better performance and smaller memory usage than the traditional HashMap.
+ * necessary. IndexMap is a good choice when there are very few gaps between the keys, because it
+ * allows for better performance and smaller memory usage than the traditional HashMap.
  * <p>
- * About null values: the IndexMap does not handle null values. A null value is considered as "no value set".
+ * About null values: the IndexMap does not handle null values. A null value is considered as "no
+ * value set".
  * </p>
  * <p>
- * <b>This class isn't thread-safe. If you need thread-safety, use a ConcurrentIndexMap or synchronize
- * yourself.</b>
+ * <b>This class isn't thread-safe. If you need thread-safety, use a {@link ConcurrentIndexMap} or
+ * synchronize yourself.</b>
  * </p>
  *
  * @author TheElectronWill
- * @param <E>
  */
 public final class IndexMap<E> extends AbstractMap<Integer, E> {
-
 	/**
 	 * The array that contains the values. Indexes are the keys.
 	 */
@@ -63,18 +62,14 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 
 	/**
 	 * Creates a new IndexMap with the given initial capacity.
-	 *
-	 * @param initialCapacity
 	 */
 	public IndexMap(int initialCapacity) {
 		this.array = new Object[initialCapacity];
 	}
 
 	/**
-	 * Creates a new IndexMap with the given underlying array. Any change to this array is reflected in the
-	 * map and vice-versa.
-	 *
-	 * @param array
+	 * Creates a new IndexMap with the given underlying array. Any change to this array is reflected
+	 * in the map and vice-versa.
 	 */
 	public IndexMap(Object[] array) {
 		this.array = array;
@@ -82,8 +77,6 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 
 	/**
 	 * Creates a new IntArrayMap that contains the keys-values pairs of the given map.
-	 *
-	 * @param map
 	 */
 	public IndexMap(Map<Integer, E> map) {
 		this.array = new Object[map.size()];
@@ -91,8 +84,8 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	}
 
 	/**
-	 * Returns the underlying array that contains this map's values. Any change to the array is reflected in
-	 * the map and vice-versa.
+	 * Returns the underlying array that contains this map's values. Any change to the array is
+	 * reflected in the map and vice-versa.
 	 *
 	 * @return the underlying array.
 	 */
@@ -107,8 +100,8 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	}
 
 	/**
-	 * Returns true if this map contains a mapping for the specified key. There can be at most one mapping per
-	 * key.
+	 * Returns true if this map contains a mapping for the specified key. There can be at most one
+	 * mapping per key.
 	 *
 	 * @param key the key.
 	 * @return true if this Map contains a mapping for that key, false if it does not.
@@ -120,7 +113,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	@Override
 	public boolean containsKey(Object key) {
 		if (key instanceof Integer) {
-			return containsKey((int) key);
+			return containsKey((int)key);
 		}
 		return false;
 	}
@@ -141,8 +134,8 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	}
 
 	/**
-	 * Returns the value to which the specified key is mapped, or null if this map contains no mapping for the
-	 * key.
+	 * Returns the value to which the specified key is mapped, or null if this map contains no
+	 * mapping for the key.
 	 *
 	 * @param key the key.
 	 * @return the associated value, or null if there is no mapping for that key.
@@ -150,20 +143,20 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	@Override
 	public E get(Object key) {
 		if (key instanceof Integer) {
-			return get((int) key);
+			return get((int)key);
 		}
 		return null;
 	}
 
 	/**
-	 * Returns the value to which the specified key is mapped, or null if this map contains no mapping for the
-	 * key.
+	 * Returns the value to which the specified key is mapped, or null if this map contains no
+	 * mapping for the key.
 	 *
 	 * @param key the key.
 	 * @return the associated value, or null if there is no mapping for that key.
 	 */
 	public E get(int key) {
-		return key < array.length ? (E) array[key] : null;
+		return key < array.length ? (E)array[key] : null;
 	}
 
 	@Override
@@ -174,19 +167,19 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	@Override
 	public E getOrDefault(Object key, E defaultValue) {
 		if (key instanceof Integer) {
-			return getOrDefault((int) key, defaultValue);
+			return getOrDefault((int)key, defaultValue);
 		}
 		return defaultValue;
 	}
 
 	/**
-	 * Returns the value to which the specified key is mapped, or defaultValue if this map contains no mapping
-	 * for the key.
+	 * Returns the value to which the specified key is mapped, or defaultValue if this map contains
+	 * no mapping for the key.
 	 *
-	 * @param key the key.
+	 * @param key          the key.
 	 * @param defaultValue the value to be returned if this map contains no mapping forthe key.
-	 * @return the value to which the specified key is mapped, or defaultValue if this map contains no mapping
-	 * for the key.
+	 * @return the value to which the specified key is mapped, or defaultValue if this map contains
+	 * no mapping for the key.
 	 */
 	public E getOrDefault(int key, E defaultValue) {
 		E value = get(key);
@@ -194,13 +187,13 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	}
 
 	/**
-	 * If the specified key is not already associated with a value associates it with the given value and
-	 * returns null, else returns the current value.
+	 * If the specified key is not already associated with a value associates it with the given
+	 * value and returns null, else returns the current value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value value to be associated with the specified key.
-	 * @return the previous value associated with the specified key, or null if there was no mapping for the
-	 * key.
+	 * @return the previous value associated with the specified key, or null if there was no mapping
+	 * for the key.
 	 */
 	@Override
 	public E putIfAbsent(Integer key, E value) {
@@ -208,13 +201,13 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	}
 
 	/**
-	 * If the specified key is not already associated with a value associates it with the given value and
-	 * returns null, else returns the current value.
+	 * If the specified key is not already associated with a value associates it with the given
+	 * value and returns null, else returns the current value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value the value to be associated with the specified key.
-	 * @return the previous value associated with the specified key, or null if there was no mapping for the
-	 * key.
+	 * @return the previous value associated with the specified key, or null if there was no mapping
+	 * for the key.
 	 */
 	public E putIfAbsent(int key, E value) {
 		if (value == null) {
@@ -225,7 +218,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 			array = Arrays.copyOf(array, key * 3 / 2 + 1);
 			prev = null;
 		} else {
-			prev = (E) array[key];
+			prev = (E)array[key];
 		}
 		if (prev == null) {
 			array[key] = value;
@@ -242,7 +235,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	/**
 	 * Replaces the entry for the specified key only if currently mapped to the specified value.
 	 *
-	 * @param key the key.
+	 * @param key      the key.
 	 * @param oldValue the value expected to be associated with the specified key.
 	 * @param newValue the value to be associated with the specified key.
 	 * @return true if the value was replaced.
@@ -251,7 +244,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		if (oldValue == null || newValue == null || array.length <= key) {
 			return false;
 		}
-		E prev = (E) array[key];
+		E prev = (E)array[key];
 		if (prev.equals(oldValue)) {
 			array[key] = newValue;
 			size++;
@@ -263,10 +256,10 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	/**
 	 * Replaces the entry for the specified key only if it is currently mapped to some value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value the value to be associated with the specified key.
-	 * @return the previous value associated with the specified key, or null if there was no mapping for the
-	 * key.
+	 * @return the previous value associated with the specified key, or null if there was no mapping
+	 * for the key.
 	 */
 	@Override
 	public E replace(Integer key, E value) {
@@ -276,10 +269,10 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	/**
 	 * Replaces the entry for the specified key only if it is currently mapped to some value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value the value to be associated with the specified key.
-	 * @return the previous value associated with the specified key, or null if there was no mapping for the
-	 * key.
+	 * @return the previous value associated with the specified key, or null if there was no mapping
+	 * for the key.
 	 */
 	public E replace(int key, E value) {
 		if (value == null) {
@@ -288,7 +281,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		if (array.length <= key) {
 			return null;
 		}
-		E prev = (E) array[key];
+		E prev = (E)array[key];
 		if (prev != null) {
 			array[key] = value;
 			size++;
@@ -330,10 +323,10 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	}
 
 	/**
-	 * Associates the specified value with the specified key in this map. If the map previously contained a
-	 * mapping for the key, the old value is replaced by the specified value.
+	 * Associates the specified value with the specified key in this map. If the map previously
+	 * contained a mapping for the key, the old value is replaced by the specified value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value the associated value.
 	 * @return the previous value if there is one, or null if there is none.
 	 */
@@ -343,10 +336,10 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	}
 
 	/**
-	 * Associates the specified value with the specified key in this map. If the map previously contained a
-	 * mapping for the key, the old value is replaced by the specified value.
+	 * Associates the specified value with the specified key in this map. If the map previously
+	 * contained a mapping for the key, the old value is replaced by the specified value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value the associated value.
 	 * @return the previous value if there is one, or null if there is none.
 	 */
@@ -356,7 +349,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		}
 		final E prev;
 		if (key < array.length) {
-			prev = (E) array[key];
+			prev = (E)array[key];
 		} else {
 			array = Arrays.copyOf(array, key * 3 / 2 + 1);
 			prev = null;
@@ -367,8 +360,8 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	}
 
 	/**
-	 * Removes the mapping for a key from this map if it is present. Returns the value to which this map
-	 * previously associated the key, or null if the map contained no mapping for the key.
+	 * Removes the mapping for a key from this map if it is present. Returns the value to which this
+	 * map previously associated the key, or null if the map contained no mapping for the key.
 	 *
 	 * @param key the key.
 	 * @return the previous value if there is one or null if there is none.
@@ -376,14 +369,14 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	@Override
 	public E remove(Object key) {
 		if (key instanceof Integer) {
-			return remove((int) key);
+			return remove((int)key);
 		}
 		return null;
 	}
 
 	/**
-	 * Removes the mapping for a key from this map if it is present. Returns the value to which this map
-	 * previously associated the key, or null if the map contained no mapping for the key.
+	 * Removes the mapping for a key from this map if it is present. Returns the value to which this
+	 * map previously associated the key, or null if the map contained no mapping for the key.
 	 *
 	 * @param key the key.
 	 * @return the previous value if there is one or null if there is none.
@@ -393,7 +386,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		if (array.length <= key) {
 			return null;
 		}
-		prev = (E) array[key];
+		prev = (E)array[key];
 		if (prev != null) {
 			array[key] = null;
 			size--;
@@ -404,15 +397,16 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	@Override
 	public boolean remove(Object key, Object value) {
 		if (key instanceof Integer) {
-			remove((int) key, value);
+			remove((int)key, value);
 		}
 		return false;
 	}
 
 	/**
-	 * Removes the entry for the specified key only if it is currently mapped to the specified value.
+	 * Removes the entry for the specified key only if it is currently mapped to the specified
+	 * value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value the associated value.
 	 * @return true if it was removed, false if it doesn't exist.
 	 */
@@ -424,7 +418,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		if (array.length <= key) {
 			return false;
 		}
-		prev = (E) array[key];
+		prev = (E)array[key];
 		if (prev.equals(value)) {
 			size--;
 			array[key] = null;
@@ -439,7 +433,6 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	}
 
 	public final class EntryIterator implements Iterator<Entry<Integer, E>> {
-
 		private int cursor = -1;
 		private IndexEntry next;
 
@@ -459,11 +452,9 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		public IndexEntry next() {
 			return next;
 		}
-
 	}
 
 	public final class ValueIterator implements Iterator<E> {
-
 		private int cursor = -1;
 		private E next;
 
@@ -472,7 +463,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 			while (cursor < array.length - 1) {
 				Object value = array[++cursor];
 				if (value != null) {
-					next = (E) value;
+					next = (E)value;
 					return true;
 				}
 			}
@@ -483,13 +474,10 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		public E next() {
 			return next;
 		}
-
 	}
 
 	public final class EntrySet extends AbstractSet<Entry<Integer, E>> {
-
-		public EntrySet() {
-		}
+		public EntrySet() {}
 
 		@Override
 		public EntryIterator iterator() {
@@ -504,7 +492,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		@Override
 		public boolean contains(Object o) {
 			if (o instanceof Entry) {
-				Entry<Integer, E> entry = (Entry) o;
+				Entry<Integer, E> entry = (Entry)o;
 				Object value = IndexMap.this.get(entry.getKey());
 				return value != null && entry.getValue().equals(value);
 			}
@@ -520,16 +508,14 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		@Override
 		public boolean remove(Object o) {
 			if (o instanceof Entry) {
-				Entry<Integer, E> entry = (Entry) o;
+				Entry<Integer, E> entry = (Entry)o;
 				return IndexMap.this.remove(entry.getKey(), entry.getValue());
 			}
 			return false;
 		}
-
 	}
 
 	public final class IndexEntry implements Entry<Integer, E> {
-
 		private final int key;
 
 		public IndexEntry(final int key) {
@@ -547,14 +533,12 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 
 		@Override
 		public E getValue() {
-			return (E) array[key];
+			return (E)array[key];
 		}
 
 		@Override
 		public E setValue(E value) {
 			return put(key, value);
 		}
-
 	}
-
 }

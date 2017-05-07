@@ -24,7 +24,6 @@ package org.mcphoton.utils;
  * @author TheElectronWill
  */
 public interface Type {
-
 	/**
 	 * @return the localized name of this type. For example: "Dirt".
 	 */
@@ -39,5 +38,4 @@ public interface Type {
 	 * @return the unique id of this type.
 	 */
 	int getId();
-
 }

@@ -29,7 +29,6 @@ import org.mcphoton.world.BiomeType;
  * @author TheElectronWill
  */
 public interface ReadOnlyBlockAccess {
-
 	/**
 	 * @param x the block's x coordinate
 	 * @param y the block's y coordinate
@@ -60,5 +59,4 @@ public interface ReadOnlyBlockAccess {
 	default BiomeType getBiomeType(Location loc) {
 		return getBiomeType(loc.getBlockX(), loc.getBlockZ());
 	}
-
 }

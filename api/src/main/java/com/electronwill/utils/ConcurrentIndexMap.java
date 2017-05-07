@@ -32,21 +32,21 @@ import java.util.function.Function;
 /**
  * A thread-safe variant of {@link IndexMap}. It is optimized for read operations.
  * <p>
- * The array containing the elements of the map is marked as volatile. Read operations are implemented as a
- * simple "get" on this array, that's why they're fast. Write operations use a volatile "set" of the array, to
- * ensure visibility by the get (and contains) methods. And to achieve complete thread-safety and atomicity,
+ * The array containing the elements of the map is marked as volatile. Read operations are
+ * implemented as a simple "get" on this array, that's why they're fast. Write operations use a
+ * volatile "set" of the array, to ensure visibility by the get (and contains) methods. And to
+ * achieve complete thread-safety and atomicity,
  * the critical parts of the write operations are guarded by synchronized blocks.
  * </p>
  * <p>
- * About null values: the ConcurrentIndexMap does not support null values. A null value is considered as "no
- * value set".
+ * About null values: the ConcurrentIndexMap does not support null values. A null value is
+ * considered as "no value set".
  * </p>
  *
  * @author TheElectronWill
- * @param <E>
  */
-public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> implements ConcurrentMap<Integer, E> {
-
+public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
+		implements ConcurrentMap<Integer, E> {
 	/**
 	 * The array that contains the values. Indexes are the keys.
 	 */
@@ -69,18 +69,14 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 
 	/**
 	 * Creates a new IndexMap with the given initial capacity.
-	 *
-	 * @param initialCapacity
 	 */
 	public ConcurrentIndexMap(int initialCapacity) {
 		this.array = new Object[initialCapacity];
 	}
 
 	/**
-	 * Creates a new IndexMap with the given underlying array. Any change to this array is reflected in the
-	 * map and vice-versa.
-	 *
-	 * @param array
+	 * Creates a new IndexMap with the given underlying array. Any change to this array is reflected
+	 * in the map and vice-versa.
 	 */
 	public ConcurrentIndexMap(Object[] array) {
 		this.array = array;
@@ -88,8 +84,6 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 
 	/**
 	 * Creates a new IntArrayMap that contains the keys-values pairs of the given map.
-	 *
-	 * @param map
 	 */
 	public ConcurrentIndexMap(Map<Integer, E> map) {
 		this.array = new Object[map.size()];
@@ -107,8 +101,8 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	/**
-	 * Returns true if this map contains a mapping for the specified key. There can be at most one mapping per
-	 * key.
+	 * Returns true if this map contains a mapping for the specified key. There can be at most one
+	 * mapping per key.
 	 *
 	 * @param key the key
 	 * @return true if this Map contains a mapping for that key, false if it does not.
@@ -121,7 +115,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	@Override
 	public boolean containsKey(Object key) {
 		if (key instanceof Integer) {
-			return containsKey((int) key);
+			return containsKey((int)key);
 		}
 		return false;
 	}
@@ -138,7 +132,8 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	@Override
-	public E compute(Integer key, BiFunction<? super Integer, ? super E, ? extends E> remappingFunction) {
+	public E compute(Integer key,
+					 BiFunction<? super Integer, ? super E, ? extends E> remappingFunction) {
 		synchronized (this) {
 			E oldValue = get(key.intValue());
 			E newValue = remappingFunction.apply(key, oldValue);
@@ -168,7 +163,8 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	@Override
-	public E computeIfPresent(Integer key, BiFunction<? super Integer, ? super E, ? extends E> remappingFunction) {
+	public E computeIfPresent(Integer key,
+							  BiFunction<? super Integer, ? super E, ? extends E> remappingFunction) {
 		synchronized (this) {
 			E oldValue = get(key.intValue());
 			if (oldValue != null) {
@@ -196,9 +192,9 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	/**
-	 * Returns a Set view of the mappings contained in this map. The set is backed by the map, so changes to
-	 * the map are reflected in the set, and vice-versa. The view's iterators and spliterators are weakly
-	 * consistent.
+	 * Returns a Set view of the mappings contained in this map. The set is backed by the map, so
+	 * changes to the map are reflected in the set, and vice-versa. The view's iterators and
+	 * spliterators are weakly consistent.
 	 *
 	 * @return a set view of the mappings contained in this map.
 	 */
@@ -208,8 +204,8 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	/**
-	 * Returns the value to which the specified key is mapped, or null if this map contains no mapping for the
-	 * key.
+	 * Returns the value to which the specified key is mapped, or null if this map contains no
+	 * mapping for the key.
 	 *
 	 * @param key the key.
 	 * @return the associated value, or null if there is no mapping for that key.
@@ -217,39 +213,39 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	@Override
 	public E get(Object key) {
 		if (key instanceof Integer) {
-			return get((int) key);
+			return get((int)key);
 		}
 		return null;
 	}
 
 	/**
-	 * Returns the value to which the specified key is mapped, or null if this map contains no mapping for the
-	 * key.
+	 * Returns the value to which the specified key is mapped, or null if this map contains no
+	 * mapping for the key.
 	 *
 	 * @param key the key.
 	 * @return the associated value, or null if there is no mapping for that key.
 	 */
 	public E get(int key) {
 		final Object[] arr = array;//volatile read
-		return key < arr.length ? (E) arr[key] : null;
+		return key < arr.length ? (E)arr[key] : null;
 	}
 
 	@Override
 	public E getOrDefault(Object key, E defaultValue) {
 		if (key instanceof Integer) {
-			return getOrDefault((int) key, defaultValue);
+			return getOrDefault((int)key, defaultValue);
 		}
 		return defaultValue;
 	}
 
 	/**
-	 * Returns the value to which the specified key is mapped, or defaultValue if this map contains no mapping
-	 * for the key.
+	 * Returns the value to which the specified key is mapped, or defaultValue if this map contains
+	 * no mapping for the key.
 	 *
-	 * @param key the key.
+	 * @param key          the key.
 	 * @param defaultValue the value to be returned if this map contains no mapping for the key.
-	 * @return the value to which the specified key is mapped, or defaultValue if this map contains no mapping
-	 * for the key.
+	 * @return the value to which the specified key is mapped, or defaultValue if this map contains
+	 * no mapping for the key.
 	 */
 	public E getOrDefault(int key, E defaultValue) {
 		final E value = get(key);
@@ -262,7 +258,8 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	@Override
-	public E merge(Integer key, E value, BiFunction<? super E, ? super E, ? extends E> remappingFunction) {
+	public E merge(Integer key, E value,
+				   BiFunction<? super E, ? super E, ? extends E> remappingFunction) {
 		if (value == null || remappingFunction == null) {
 			throw new NullPointerException();
 		}
@@ -279,10 +276,10 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	/**
-	 * Associates the specified value with the specified key in this map. If the map previously contained a
-	 * mapping for the key, the old value is replaced by the specified value.
+	 * Associates the specified value with the specified key in this map. If the map previously
+	 * contained a mapping for the key, the old value is replaced by the specified value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value the associated value.
 	 * @return the previous value if there is one, or null if there is none.
 	 */
@@ -292,10 +289,10 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	/**
-	 * Associates the specified value with the specified key in this map. If the map previously contained a
-	 * mapping for the key, the old value is replaced by the specified value.
+	 * Associates the specified value with the specified key in this map. If the map previously
+	 * contained a mapping for the key, the old value is replaced by the specified value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value the associated value.
 	 * @return the previous value if there is one, or null if there is none.
 	 */
@@ -307,7 +304,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 			Object[] arr = array;
 			E prev;
 			if (key < arr.length) {
-				prev = (E) arr[key];
+				prev = (E)arr[key];
 			} else {
 				arr = Arrays.copyOf(arr, key * 3 / 2 + 1);
 				prev = null;
@@ -331,7 +328,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 				E value = e.getValue();
 				E prev;
 				if (key < arr.length) {
-					prev = (E) arr[key];
+					prev = (E)arr[key];
 				} else {
 					arr = Arrays.copyOf(arr, key * 3 / 2 + 1);
 					prev = null;
@@ -348,12 +345,13 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	/**
-	 * If the specified key is not already associated with a value associates it with the given value and
-	 * returns null, else returns the current value.
+	 * If the specified key is not already associated with a value associates it with the given
+	 * value and returns null, else returns the current value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value value to be associated with the key.
-	 * @return the previous value associated with the key, or null if there was no mapping for the key.
+	 * @return the previous value associated with the key, or null if there was no mapping for the
+	 * key.
 	 */
 	@Override
 	public E putIfAbsent(Integer key, E value) {
@@ -361,12 +359,13 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	/**
-	 * If the specified key is not already associated with a value associates it with the given value and
-	 * returns null, else returns the current value.
+	 * If the specified key is not already associated with a value associates it with the given
+	 * value and returns null, else returns the current value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value value to be associated with the key.
-	 * @return the previous value associated with the key, or null if there was no mapping for the key.
+	 * @return the previous value associated with the key, or null if there was no mapping for the
+	 * key.
 	 */
 	public E putIfAbsent(int key, E value) {
 		if (value == null) {
@@ -379,7 +378,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 				arr = Arrays.copyOf(arr, key * 3 / 2 + 1);
 				prev = null;
 			} else {
-				prev = (E) arr[key];
+				prev = (E)arr[key];
 			}
 			if (prev == null) {
 				arr[key] = value;
@@ -392,8 +391,9 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 
 	/**
 	 * Removes the mapping for a key from this map if it is present.
-	 * Returns the value to which this map previously associated the key, or null if the map contained no
-	 * mapping for the key.
+	 * <p>
+	 * Returns the value to which this map previously associated the key, or null if the map
+	 * contained no mapping for the key.
 	 *
 	 * @param key the key.
 	 * @return the previous value if there is one or null if there is none.
@@ -401,15 +401,16 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	@Override
 	public E remove(Object key) {
 		if (key instanceof Integer) {
-			return remove((int) key);
+			return remove((int)key);
 		}
 		return null;
 	}
 
 	/**
 	 * Removes the mapping for a key from this map if it is present.
-	 * Returns the value to which this map previously associated the key, or null if the map contained no
-	 * mapping for the key.
+	 * <p>
+	 * Returns the value to which this map previously associated the key, or null if the map
+	 * contained no mapping for the key.
 	 *
 	 * @param key the key.
 	 * @return the previous value if there is one or null if there is none.
@@ -420,7 +421,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 			if (arr.length <= key) {
 				return null;
 			}
-			E prev = (E) arr[key];
+			E prev = (E)arr[key];
 			if (prev != null) {
 				arr[key] = null;
 				array = arr;
@@ -433,15 +434,16 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	@Override
 	public boolean remove(Object key, Object value) {
 		if (key instanceof Integer) {
-			remove((int) key, value);
+			remove((int)key, value);
 		}
 		return false;
 	}
 
 	/**
-	 * Removes the entry for the specified key only if it is currently mapped to the specified value.
+	 * Removes the entry for the specified key only if it is currently mapped to the specified
+	 * value.
 	 *
-	 * @param key the key.
+	 * @param key   the key.
 	 * @param value the associated value.
 	 * @return true if it was removed, false if it doesn't exist.
 	 */
@@ -454,7 +456,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 			if (arr.length <= key) {
 				return false;
 			}
-			E prev = (E) arr[key];
+			E prev = (E)arr[key];
 			if (prev.equals(value)) {
 				arr[key] = null;
 				array = arr;
@@ -473,7 +475,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	/**
 	 * Replaces the entry for the specified key only if currently mapped to the specified value.
 	 *
-	 * @param key key with which the specified value is associated oldValue.
+	 * @param key      key with which the specified value is associated oldValue.
 	 * @param oldValue value expected to be associated with the specified key.
 	 * @param newValue value to be associated with the specified key.
 	 * @return true if the value was replaced.
@@ -506,10 +508,10 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	/**
 	 * Replaces the entry for the specified key only if it is currently mapped to some value.
 	 *
-	 * @param key key with which the specified value is associated value.
+	 * @param key   key with which the specified value is associated value.
 	 * @param value value to be associated with the specified key.
-	 * @return the previous value associated with the specified key, or null if there was no mapping for the
-	 * key.
+	 * @return the previous value associated with the specified key, or null if there was no mapping
+	 * for the key.
 	 */
 	public E replace(int key, E value) {
 		if (value == null) {
@@ -520,7 +522,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 			if (arr.length <= key) {
 				return null;
 			}
-			E prev = (E) arr[key];
+			E prev = (E)arr[key];
 			if (prev != null) {
 				arr[key] = value;
 				array = arr;
@@ -538,7 +540,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 			for (int key = 0; key < arr.length; key++) {
 				Object value = arr[key];
 				if (value != null) {//if there is a value associated to this key
-					arr[key] = function.apply(key, (E) value);
+					arr[key] = function.apply(key, (E)value);
 				}
 			}
 			array = arr;
@@ -551,9 +553,9 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	/**
-	 * Returns a Collection view of the values contained in this map. The collection is backed by the map, so
-	 * changes to the map are reflected in the collection, and vice-versa. The view's iterators and
-	 * spliterators are weakly consistent.
+	 * Returns a Collection view of the values contained in this map. The collection is backed by
+	 * the map, so changes to the map are reflected in the collection, and vice-versa. The view's
+	 * iterators and spliterators are weakly consistent.
 	 */
 	@Override
 	public ValueCollection values() {
@@ -561,10 +563,10 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	/**
-	 * A weakly consistent entry iterator. It is not guaranteed to reflect the latest state of the map.
+	 * A weakly consistent entry iterator. It is not guaranteed to reflect the latest state of the
+	 * map.
 	 */
 	public final class EntryIterator implements Iterator<Entry<Integer, E>> {
-
 		private final Object[] arr = array;
 		private int cursor = -1;
 		private IndexEntry next;
@@ -574,7 +576,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 			while (cursor < arr.length - 1) {
 				Object value = arr[++cursor];
 				if (value != null) {
-					next = new IndexEntry(cursor, (E) value);
+					next = new IndexEntry(cursor, (E)value);
 					return true;
 				}
 			}
@@ -590,14 +592,13 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 		public void remove() {
 			ConcurrentIndexMap.this.remove(cursor, arr[cursor]);
 		}
-
 	}
 
 	/**
-	 * A weakily consistent value iterator. It is not guaranteed to reflect the latest state of the map.
+	 * A weakily consistent value iterator. It is not guaranteed to reflect the latest state of the
+	 * map.
 	 */
 	public final class ValueIterator implements Iterator<E> {
-
 		private final Object[] arr = array;
 		private int cursor = -1;
 		private E next;
@@ -607,7 +608,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 			while (cursor < arr.length - 1) {
 				Object value = arr[++cursor];
 				if (value != null) {
-					next = (E) value;
+					next = (E)value;
 					return true;
 				}
 			}
@@ -623,18 +624,18 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 		public void remove() {
 			ConcurrentIndexMap.this.remove(cursor);
 		}
-
 	}
 
 	/**
-	 * An entry set with a weakly consistent iterator. The set is guaranteed to reflect the latest state of
-	 * the map, but its iterator isn't. The {@link #remove(java.lang.Object)} method is not guaranteed to be
-	 * performed atomically on the latest state of the map, because it internally uses the iterator.
+	 * An entry set with a weakly consistent iterator. The set is guaranteed to reflect the latest
+	 * state of
+	 * the map, but its iterator isn't. The {@link #remove(java.lang.Object)} method is not
+	 * guaranteed to be
+	 * performed atomically on the latest state of the map, because it internally uses the
+	 * iterator.
 	 */
 	public final class ValueCollection extends AbstractCollection<E> {
-
-		private ValueCollection() {
-		}
+		private ValueCollection() {}
 
 		@Override
 		public void clear() {
@@ -677,13 +678,12 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 	}
 
 	/**
-	 * An entry set with a weakly consistent iterator. The set is guaranteed to reflect the latest state of
+	 * An entry set with a weakly consistent iterator. The set is guaranteed to reflect the latest
+	 * state of
 	 * the map, but its iterator isn't.
 	 */
 	public final class EntrySet extends AbstractSet<Entry<Integer, E>> {
-
-		private EntrySet() {
-		}
+		private EntrySet() {}
 
 		@Override
 		public EntryIterator iterator() {
@@ -698,7 +698,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 		@Override
 		public boolean contains(Object o) {
 			if (o instanceof Entry) {
-				Entry<Integer, E> entry = (Entry) o;
+				Entry<Integer, E> entry = (Entry)o;
 				Object value = ConcurrentIndexMap.this.get(entry.getKey());
 				return value != null && entry.getValue().equals(value);
 			}
@@ -719,19 +719,18 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 		@Override
 		public boolean remove(Object o) {
 			if (o instanceof Entry) {
-				Entry<Integer, E> entry = (Entry) o;
+				Entry<Integer, E> entry = (Entry)o;
 				return ConcurrentIndexMap.this.remove(entry.getKey(), entry.getValue());
 			}
 			return false;
 		}
-
 	}
 
 	/**
-	 * Represents a key-value entry of this map. The key is an integer. The key and the value aren't null.
+	 * Represents a key-value entry of this map. The key is an integer. The key and the value aren't
+	 * null.
 	 */
 	public final class IndexEntry implements Entry<Integer, E> {
-
 		private final int key;
 		private E value;
 
@@ -763,9 +762,11 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof Entry) {
-				Entry entry = (Entry) obj;
-				return entry.getKey() != null && getKey().equals(entry.getKey())
-						&& entry.getValue() != null && getValue().equals(entry.getValue());
+				Entry entry = (Entry)obj;
+				return entry.getKey() != null
+					   && getKey().equals(entry.getKey())
+					   && entry.getValue() != null
+					   && getValue().equals(entry.getValue());
 			}
 			return false;
 		}
@@ -777,7 +778,5 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E> impleme
 			hash = 43 * hash + value.hashCode();
 			return hash;
 		}
-
 	}
-
 }

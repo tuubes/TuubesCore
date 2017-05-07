@@ -29,7 +29,6 @@ import org.mcphoton.world.areas.Area;
  * @author TheElectronWill
  */
 public interface UnlockedAreaAccess extends ReadOnlyBlockAccess, QueryableBlockAccess {
-
 	/**
 	 * @return the area.
 	 */
@@ -105,7 +104,7 @@ public interface UnlockedAreaAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	/**
 	 * Replaces every occurence of a block.
 	 *
-	 * @param toReplace the block to replace.
+	 * @param toReplace   the block to replace.
 	 * @param replacement the replacement.
 	 * @return true in case of success.
 	 */
@@ -115,7 +114,7 @@ public interface UnlockedAreaAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	 * Returns true.
 	 */
 	@Override
-	public default boolean mayBreakBlock(int x, int y, int z, Object breaker) {
+	default boolean mayBreakBlock(int x, int y, int z, Object breaker) {
 		return getArea().contains(x, y, z);
 	}
 
@@ -123,8 +122,7 @@ public interface UnlockedAreaAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	 * Returns true.
 	 */
 	@Override
-	public default boolean maySetBlockData(int x, int y, int z, BlockData data, Object setter) {
+	default boolean maySetBlockData(int x, int y, int z, BlockData data, Object setter) {
 		return getArea().contains(x, y, z);
 	}
-
 }

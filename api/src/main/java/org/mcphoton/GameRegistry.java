@@ -29,7 +29,6 @@ import org.mcphoton.world.BiomeType;
  * @author TheElectronWill
  */
 public interface GameRegistry {
-
 	// -------- Blocks --------
 
 	/**

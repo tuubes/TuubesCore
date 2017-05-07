@@ -26,15 +26,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A chat message. In the new chat system it is stored as a JSON object, that's why there's a map in this
- * class. A message consist of a main part plus several optional parts called "extras". These extras can be
- * text, or other ChatMessage.
+ * A chat message. In the new chat system it is stored as a JSON object, that's why there's a map in
+ * this class. A message consist of a main part plus several optional parts called "extras". These
+ * extras can be text, or other ChatMessage.
  *
  * @author TheElectronWill
- *
  */
 public abstract class ChatMessage {
-
 	protected final Map<String, Object> map;
 
 	public ChatMessage() {
@@ -50,7 +48,7 @@ public abstract class ChatMessage {
 	}
 
 	public String getColorName() {
-		return (String) map.get("color");
+		return (String)map.get("color");
 	}
 
 	public Map<String, Object> getMap() {
@@ -58,7 +56,7 @@ public abstract class ChatMessage {
 	}
 
 	public List<Object> getExtras() {
-		return (List<Object>) map.get("extra");
+		return (List<Object>)map.get("extra");
 	}
 
 	public void addExtra(Object extra) {
@@ -71,7 +69,7 @@ public abstract class ChatMessage {
 			setExtras(extras);
 		}
 		if (extra instanceof ChatMessage) {
-			ChatMessage extraMsg = (ChatMessage) extra;
+			ChatMessage extraMsg = (ChatMessage)extra;
 			extras.add(extraMsg.getMap());
 		} else {
 			extras.add(extra);
@@ -79,7 +77,7 @@ public abstract class ChatMessage {
 	}
 
 	public String getInsertion() {
-		return (String) map.get("insertion");
+		return (String)map.get("insertion");
 	}
 
 	/**
@@ -88,7 +86,7 @@ public abstract class ChatMessage {
 	 * @return true if it's bold, false if it's not bold or if the bold property is unset.
 	 */
 	public boolean isBold() {
-		return (boolean) map.getOrDefault("bold", false);
+		return (boolean)map.getOrDefault("bold", false);
 	}
 
 	public boolean isBoldSet() {
@@ -101,7 +99,7 @@ public abstract class ChatMessage {
 	 * @return true if it's italic, false if it's not italic or if the italic property is unset.
 	 */
 	public boolean isItalic() {
-		return (boolean) map.getOrDefault("italic", false);
+		return (boolean)map.getOrDefault("italic", false);
 	}
 
 	public boolean isItalicSet() {
@@ -111,10 +109,11 @@ public abstract class ChatMessage {
 	/**
 	 * Checks if this message is obfuscated.
 	 *
-	 * @return true if it's obfuscated, false if it's not obfuscated or if the obfuscated property is unset.
+	 * @return true if it's obfuscated, false if it's not obfuscated or if the obfuscated property
+	 * is unset.
 	 */
 	public boolean isObfuscated() {
-		return (boolean) map.getOrDefault("obfuscated", false);
+		return (boolean)map.getOrDefault("obfuscated", false);
 	}
 
 	public boolean isObfuscatedSet() {
@@ -124,11 +123,12 @@ public abstract class ChatMessage {
 	/**
 	 * Checks if this message is strikethrough.
 	 *
-	 * @return true if it's strikethrough, false if it's not strikethrough or if the strikethrough property is
+	 * @return true if it's strikethrough, false if it's not strikethrough or if the strikethrough
+	 * property is
 	 * unset.
 	 */
 	public boolean isStrikethrough() {
-		return (boolean) map.getOrDefault("strikethrough", false);
+		return (boolean)map.getOrDefault("strikethrough", false);
 	}
 
 	public boolean isStrikethroughSet() {
@@ -138,10 +138,11 @@ public abstract class ChatMessage {
 	/**
 	 * Checks if this message is underlined.
 	 *
-	 * @return true if it's underlined, false if it's not underlined or if the underlined property is unset.
+	 * @return true if it's underlined, false if it's not underlined or if the underlined property
+	 * is unset.
 	 */
 	public boolean isUnderlined() {
-		return (boolean) map.getOrDefault("underlined", false);
+		return (boolean)map.getOrDefault("underlined", false);
 	}
 
 	public boolean isUnderlinedSet() {
@@ -235,16 +236,16 @@ public abstract class ChatMessage {
 	}
 
 	/**
-	 * Returns a string which represents this TextChatMessage with console codes, to use it in the Terminal
-	 * (console). Each code consists of a special character sequence. When such a sequence is read by the
-	 * Terminal (console), it creates color/style.
+	 * Returns a string which represents this TextChatMessage with console codes, to use it in the
+	 * Terminal (console). Each code consists of a special character sequence. When such a
+	 * sequence is read by the Terminal, it creates color/style.
 	 */
 	public abstract String toConsoleString();
 
 	/**
-	 * Returns the "legacy string" which represents this TextChatMessage with color and style codes. Each code
-	 * consists of 2 characters: the '§' character and another character. The second character definds the
-	 * color/style to apply.
+	 * Returns the "legacy string" which represents this TextChatMessage with color and style codes.
+	 * Each code consists of 2 characters: the '§' character and another character which defines
+	 * the color or style to apply.
 	 */
 	public abstract String toLegacyString();
 

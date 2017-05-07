@@ -30,7 +30,6 @@ import org.mcphoton.server.Server;
  * @author TheElectronWill
  */
 public final class Photon {
-
 	/*
 	 * Every method here returns null and it's completely normal. Actually the photon implementation redefines
 	 * this class and completes its methods.
@@ -44,9 +43,11 @@ public final class Photon {
 	 * <p>
 	 * To achieve better performance, the submitted tasks:
 	 * <ol>
-	 * <li>Musn't be IO-bound, in order to avoid delaying the other tasks. Use an asynchronous IO API
+	 * <li>Musn't be IO-bound, in order to avoid delaying the other tasks. Use an asynchronous IO
+	 * API
 	 * instead of the ExecutorService.</li>
-	 * <li>Musn't be too short, in order to avoid creating too much overhead. It is advised to group many
+	 * <li>Musn't be too short, in order to avoid creating too much overhead. It is advised to group
+	 * many
 	 * small tasks together into one bigger task.</li>
 	 * </ol>
 	 * </p>
@@ -72,7 +73,8 @@ public final class Photon {
 	}
 
 	/**
-	 * Gets the Photon's GameRegistry, which handles the registration of biomes, blocks, items and entities.
+	 * Gets the Photon's GameRegistry, which handles the registration of biomes, blocks, items and
+	 * entities.
 	 *
 	 * @return the GameRegistry
 	 */

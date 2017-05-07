@@ -28,7 +28,6 @@ import java.nio.ByteBuffer;
  * @author TheElectronWill
  */
 public class DataInputBuffer implements DataInput {
-
 	protected final ByteBuffer buff;
 
 	/**
@@ -117,5 +116,4 @@ public class DataInputBuffer implements DataInput {
 	public String readUTF() throws IOException {
 		return java.io.DataInputStream.readUTF(this);
 	}
-
 }

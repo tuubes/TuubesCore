@@ -30,7 +30,6 @@ import org.mcphoton.utils.Location;
  * @author TheElectronWill
  */
 public interface User extends Permissible, InventoryHolder {
-
 	/**
 	 * @return the user's name.
 	 */

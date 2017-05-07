@@ -28,13 +28,12 @@ import org.mcphoton.world.BiomeType;
  * @author TheElectronWill
  */
 public interface CheckedWorldAccess extends ReadOnlyBlockAccess, QueryableBlockAccess {
-
 	/**
 	 * Breaks a block.
 	 *
-	 * @param x the block's x coordinate.
-	 * @param y the block's y coordinate.
-	 * @param z the block's z coordinate.
+	 * @param x       the block's x coordinate.
+	 * @param y       the block's y coordinate.
+	 * @param z       the block's z coordinate.
 	 * @param breaker the block's breaker.
 	 * @return true if it has been broken, false otherwise.
 	 */
@@ -43,7 +42,7 @@ public interface CheckedWorldAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	/**
 	 * Breaks a block.
 	 *
-	 * @param loc the block's location.
+	 * @param loc     the block's location.
 	 * @param breaker the block's breaker.
 	 * @return true if it has been broken, false otherwise.
 	 */
@@ -54,9 +53,9 @@ public interface CheckedWorldAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	/**
 	 * Sets a block.
 	 *
-	 * @param x the block's x coordinate.
-	 * @param y the block's y coordinate.
-	 * @param z the block's z coordinate.
+	 * @param x      the block's x coordinate.
+	 * @param y      the block's y coordinate.
+	 * @param z      the block's z coordinate.
 	 * @param setter the block's setter.
 	 * @return true if it has been set, false otherwise.
 	 */
@@ -65,7 +64,7 @@ public interface CheckedWorldAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	/**
 	 * Sets a block.
 	 *
-	 * @param loc the block's location.
+	 * @param loc    the block's location.
 	 * @param setter the block's setter.
 	 * @return true if it has been set, false otherwise.
 	 */
@@ -76,8 +75,9 @@ public interface CheckedWorldAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	/**
 	 * Sets a biome.
 	 *
-	 * @param x the biome's x coordinate.
-	 * @param z the biome's z coordinate.
+	 * @param x      the biome's x coordinate.
+	 * @param z      the biome's z coordinate.
+	 * @param type   the new biome type
 	 * @param setter the block's setter.
 	 * @return true if it has been broken, false otherwise.
 	 */
@@ -86,13 +86,12 @@ public interface CheckedWorldAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	/**
 	 * Sets a biome.
 	 *
-	 * @param x the biome's x location (the y coordinate and the world are ignored).
-	 * @param z the block's z coordinate.
+	 * @param loc    the biome's x location (the y coordinate and the world are ignored).
+	 * @param type   the new biome type
 	 * @param setter the block's setter.
 	 * @return true if it has been set, false otherwise.
 	 */
 	default boolean setBiomeType(Location loc, BiomeType type, Object setter) {
 		return setBiomeType(loc.getBlockX(), loc.getBlockZ(), type, setter);
 	}
-
 }

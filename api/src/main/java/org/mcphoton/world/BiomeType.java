@@ -25,6 +25,4 @@ import org.mcphoton.utils.AbstractType;
  *
  * @author TheElectronWill
  */
-public abstract class BiomeType extends AbstractType {
-
-}
+public abstract class BiomeType extends AbstractType {}

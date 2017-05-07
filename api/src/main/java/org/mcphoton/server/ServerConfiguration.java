@@ -1,7 +1,6 @@
 package org.mcphoton.server;
 
 import java.awt.image.BufferedImage;
-import java.net.InetSocketAddress;
 import org.mcphoton.utils.Location;
 
 /**
@@ -10,7 +9,6 @@ import org.mcphoton.utils.Location;
  * @author TheElectronWill
  */
 public interface ServerConfiguration {
-
 	/**
 	 * @return the message of the day.
 	 */

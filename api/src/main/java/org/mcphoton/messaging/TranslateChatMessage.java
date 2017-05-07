@@ -20,8 +20,8 @@ package org.mcphoton.messaging;
 
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class TranslateChatMessage extends ChatMessage {
-
 	public TranslateChatMessage(Map<String, Object> map) {
 		super(map);
 	}
@@ -32,11 +32,11 @@ public class TranslateChatMessage extends ChatMessage {
 	}
 
 	public String getTextToTranslate() {
-		return (String) map.get("translate");
+		return (String)map.get("translate");
 	}
 
 	public String[] getWith() {
-		return (String[]) map.get("with");
+		return (String[])map.get("with");
 	}
 
 	public void setTextToTranslate(String text) {
@@ -56,5 +56,4 @@ public class TranslateChatMessage extends ChatMessage {
 	public String toLegacyString() {
 		return toString();
 	}
-
 }

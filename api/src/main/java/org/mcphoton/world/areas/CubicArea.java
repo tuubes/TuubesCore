@@ -28,19 +28,18 @@ import org.mcphoton.world.World;
  * @author TheElectronWill
  */
 public final class CubicArea implements Area {
-
 	private final int x1, y1, z1, x2, y2, z2;
 	private final World world;
 
 	/**
 	 * Creates a new CubicArea.
 	 *
-	 * @param x1 the lower x coordinate
-	 * @param y1 the lower y coordinate
-	 * @param z1 the lower z coordinate
-	 * @param x2 the upper x coordinate
-	 * @param y2 the upper y coordinate
-	 * @param z2 the upper z coordinate
+	 * @param x1    the lower x coordinate
+	 * @param y1    the lower y coordinate
+	 * @param z1    the lower z coordinate
+	 * @param x2    the upper x coordinate
+	 * @param y2    the upper y coordinate
+	 * @param z2    the upper z coordinate
 	 * @param world the area's world
 	 */
 	public CubicArea(int x1, int y1, int z1, int x2, int y2, int z2, World world) {
@@ -54,8 +53,8 @@ public final class CubicArea implements Area {
 	}
 
 	/**
-	 * Creates a new CubicArea. The upper/lower coordinates are determined automatically based on the
-	 * locations' coordinates, so the parameters don't need to be in a particular order.
+	 * Creates a new CubicArea. The upper/lower coordinates are determined automatically based on
+	 * the locations' coordinates, so the parameters don't need to be in a particular order.
 	 *
 	 * @param corner1 the first corner
 	 * @param corner2 the second corner
@@ -112,7 +111,6 @@ public final class CubicArea implements Area {
 	}
 
 	private class CubicAreaIterator implements Iterator<Location> {
-
 		private int x = x1, y = y1, z = z1;
 		private boolean hasNext = true;
 
@@ -140,5 +138,4 @@ public final class CubicArea implements Area {
 		}
 
 	}
-
 }

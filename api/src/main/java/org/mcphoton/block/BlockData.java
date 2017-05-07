@@ -24,18 +24,16 @@ import org.mcphoton.Photon;
 /**
  * Represents the data that defines a block: its type and its metadata.
  *
- * @see https://github.com/mcphoton/Photon-API/wiki/IDs-of-blocks,-items-and-entities
  * @author TheElectronWill
  */
 public final class BlockData implements Cloneable {
-
 	private final BlockType type;
 	private final byte metadata;
 
 	/**
 	 * Creates a new BlockData.
 	 *
-	 * @param type the block's type.
+	 * @param type     the block's type.
 	 * @param metadata the block's meta data, between 0 and 15 (inclusive).
 	 */
 	public BlockData(BlockType type, byte metadata) {
@@ -61,7 +59,7 @@ public final class BlockData implements Cloneable {
 	 */
 	public BlockData(int fullId) {
 		this.type = Photon.getGameRegistry().getRegisteredBlock(fullId >> 4);
-		this.metadata = (byte) (fullId & 15);
+		this.metadata = (byte)(fullId & 15);
 	}
 
 	/**
@@ -86,7 +84,8 @@ public final class BlockData implements Cloneable {
 	}
 
 	/**
-	 * Calculates and returns the "full" block id: its type id + its metadata, constructed like this:
+	 * Calculates and returns the "full" block id: its type id + its metadata, constructed like
+	 * this:
 	 * {@code int fullId = type.getId() << 4 | (meta & 15)}
 	 *
 	 * @return the block's full id.
@@ -109,7 +108,7 @@ public final class BlockData implements Cloneable {
 			return true;
 		}
 		if (obj instanceof BlockData) {
-			BlockData other = (BlockData) obj;
+			BlockData other = (BlockData)obj;
 			return metadata == other.metadata && type.equals(other.type);
 		}
 		return false;
@@ -119,5 +118,4 @@ public final class BlockData implements Cloneable {
 	public BlockData clone() {
 		return new BlockData(type, metadata);
 	}
-
 }

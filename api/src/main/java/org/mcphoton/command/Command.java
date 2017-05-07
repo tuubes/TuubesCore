@@ -28,11 +28,10 @@ import org.mcphoton.messaging.Messageable;
  * @author TheElectronWill
  */
 public interface Command {
-
 	/**
 	 * Executes this command.
 	 *
-	 * @param source the person or thing that executes this command
+	 * @param source    the person or thing that executes this command
 	 * @param argString the string that contains the command's arguments
 	 */
 	default void execute(Messageable source, String argString) {
@@ -45,7 +44,7 @@ public interface Command {
 	 * Executes this command.
 	 *
 	 * @param source the person or thing that executes this command
-	 * @param args the array that contains the command's arguments
+	 * @param args   the array that contains the command's arguments
 	 */
 	void execute(Messageable source, String[] args);
 
@@ -53,12 +52,12 @@ public interface Command {
 	 * @return the name of this command.
 	 */
 	String getName();
-	
+
 	/**
 	 * @return the description of this command.
 	 */
 	String getDescription();
-	
+
 	/**
 	 * @return the usage of this command.
 	 */
@@ -72,5 +71,4 @@ public interface Command {
 	default String[] getAliases() {
 		return new String[0];
 	}
-
 }

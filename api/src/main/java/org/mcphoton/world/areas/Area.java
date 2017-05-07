@@ -27,7 +27,6 @@ import org.mcphoton.world.World;
  * @author TheElectronWill
  */
 public interface Area extends Iterable<Location> {
-
 	/**
 	 * Checks if the given coordinates are inside this area.
 	 */
@@ -37,7 +36,8 @@ public interface Area extends Iterable<Location> {
 	 * Checks if the given location is inside this area.
 	 */
 	default boolean contains(Location loc) {
-		return loc.getWorld() == getWorld() && contains(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+		return loc.getWorld() == getWorld() && contains(loc.getBlockX(), loc.getBlockY(),
+														loc.getBlockZ());
 	}
 
 	/**
@@ -49,5 +49,4 @@ public interface Area extends Iterable<Location> {
 	 * Gets the area's size, in blocks (empty blocks are counted).
 	 */
 	int size();
-
 }

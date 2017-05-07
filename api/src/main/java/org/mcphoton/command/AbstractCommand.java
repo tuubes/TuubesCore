@@ -31,7 +31,6 @@ import org.mcphoton.messaging.Messageable;
  * @author TheElectronWill
  */
 public abstract class AbstractCommand implements Command {
-
 	protected final String name, description, usage;
 	protected final Options options;
 
@@ -46,17 +45,17 @@ public abstract class AbstractCommand implements Command {
 	public String getName() {
 		return name;
 	}
-	
+
 	@Override
 	public String getDescription() {
 		return description;
 	}
-	
+
 	@Override
 	public String getUsage() {
 		return usage;
 	}
-	
+
 	@Override
 	public void execute(Messageable source, String[] args) {
 		CommandLineParser parser = new DefaultParser();
@@ -72,8 +71,7 @@ public abstract class AbstractCommand implements Command {
 	 * Executes this command.
 	 *
 	 * @param source the person or thing that executes this command
-	 * @param cmd the CommandLine objet that contains the parsed arguments of this command
+	 * @param cmd    the CommandLine objet that contains the parsed arguments of this command
 	 */
 	public abstract void execute(Messageable source, CommandLine cmd);
-
 }

@@ -24,34 +24,12 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * A resizeable collection based on an array. The delete operation is in constant time because it just moves
- * the last element to fill the gap.
+ * A resizeable collection based on an array. The delete operation is in constant time because it
+ * just moves the last element to fill the gap.
  *
  * @author TheElectronWill
- * @param <E>
  */
 public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
-
-	private class BagIterator implements Iterator<E> {
-
-		private int pos = 0;
-
-		@Override
-		public boolean hasNext() {
-			return pos < size;
-		}
-
-		@Override
-		public E next() {
-			return (E) array[pos++];
-		}
-
-		@Override
-		public void remove() {
-			SimpleBag.this.remove(pos);
-		}
-
-	}
 	private final int capacityIncrement;
 	private Object[] array;
 	private int size = 0;
@@ -65,8 +43,6 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 
 	/**
 	 * Creates a new SimpleBag with the given initialCapacity and a default increment of 2.
-	 *
-	 * @param initialCapacity
 	 */
 	public SimpleBag(int initialCapacity) {
 		this(initialCapacity, 2);
@@ -74,9 +50,6 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 
 	/**
 	 * Creates a new SimpleBag with the given initialCapacity and increment.
-	 *
-	 * @param initialCapacity
-	 * @param capacityIncrement
 	 */
 	public SimpleBag(int initialCapacity, int capacityIncrement) {
 		array = new Object[initialCapacity];
@@ -139,7 +112,7 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 	@Override
 	public E get(int index) {
 		if (index < size) {
-			return (E) array[index];
+			return (E)array[index];
 		}
 		throw new ArrayIndexOutOfBoundsException(index);
 	}
@@ -208,9 +181,27 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 	@Override
 	public E tryGet(int index) {
 		if (index < size) {
-			return (E) array[index];
+			return (E)array[index];
 		}
 		return null;
 	}
 
+	private class BagIterator implements Iterator<E> {
+		private int pos = 0;
+
+		@Override
+		public boolean hasNext() {
+			return pos < size;
+		}
+
+		@Override
+		public E next() {
+			return (E)array[pos++];
+		}
+
+		@Override
+		public void remove() {
+			SimpleBag.this.remove(pos);
+		}
+	}
 }

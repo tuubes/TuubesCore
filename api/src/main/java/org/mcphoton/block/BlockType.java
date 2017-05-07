@@ -25,6 +25,4 @@ import org.mcphoton.utils.AbstractType;
  *
  * @author TheElectronWill
  */
-public abstract class BlockType extends AbstractType {
-
-}
+public abstract class BlockType extends AbstractType {}

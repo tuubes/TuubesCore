@@ -4,7 +4,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Manages the informations that the Photon server has about its (previously or currently connected) users.
+ * Manages the informations that the Photon server has about its (previously or currently connected)
+ * users.
  *
  * @author TheElectronWill
  */

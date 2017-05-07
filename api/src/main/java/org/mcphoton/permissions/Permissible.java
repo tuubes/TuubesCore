@@ -19,10 +19,9 @@
 package org.mcphoton.permissions;
 
 /**
- * A Permissible is something that can have permissions.
+ * Interface for entities or objects that can have permissions.
  */
 public interface Permissible {
-
 	/**
 	 * Checks if this permissible has the given permission.
 	 *
@@ -39,5 +38,4 @@ public interface Permissible {
 	 * @return {@code true} if it's set, {@code false} if it isn't.
 	 */
 	boolean isPermissionSet(String permission);
-
 }

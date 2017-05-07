@@ -18,9 +18,8 @@
  */
 package org.mcphoton.command;
 
-import org.mcphoton.plugin.Plugin;
-
 import java.util.List;
+import org.mcphoton.plugin.Plugin;
 
 /**
  * Registers commands for one world.
@@ -28,7 +27,6 @@ import java.util.List;
  * @author TheElectronWill
  */
 public interface WorldCommandRegistry {
-
 	/**
 	 * Registers a command.
 	 *
@@ -56,5 +54,4 @@ public interface WorldCommandRegistry {
 	 * Gets a list of all the commands registered by a plugin.
 	 */
 	List<Command> getRegisteredCommands(Plugin plugin);
-
 }

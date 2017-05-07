@@ -28,7 +28,6 @@ import org.mcphoton.world.World;
  * @author TheElectronWill
  */
 public final class Location {
-
 	private final double x, y, z;
 	private final World w;
 

@@ -26,7 +26,6 @@ import org.mcphoton.world.World;
  * Represents a game server.
  */
 public interface Server {
-
 	/**
 	 * @return the server's BansManager.
 	 */
@@ -38,17 +37,16 @@ public interface Server {
 	WhitelistManager getWhitelistManager();
 
 	/**
-	 * Gets a collection containing all the currently connected players. The returned collection isn't
-	 * modifiable.
+	 * Gets all the currently connected players.
 	 *
-	 * @return the online players.
+	 * @return an unmodifiable collection containing the currently online players.
 	 */
 	Collection<Player> getOnlinePlayers();
 
 	/**
-	 * Gets a collection containing all the server's worlds. The returned collection isn't modifiable.
+	 * Gets all the server's worlds.
 	 *
-	 * @return the server's worlds.
+	 * @return an unmodifiable collection containing the server's worlds.
 	 */
 	Collection<World> getWorlds();
 
@@ -69,5 +67,4 @@ public interface Server {
 	 * @return the server's implementation version.
 	 */
 	String getVersion();
-
 }
