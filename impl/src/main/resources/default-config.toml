@@ -1,0 +1,11 @@
+# Configuration of the Photon Server
+# You can set the server's icon by adding a file "icon.png" or "icon.jpg"
+
+motd = "Hello, world!"
+port = 25565
+maxPlayers = 10
+onlineMode = false
+spawnLocation = "0,65,0,world"
+
+logLevel = "TRACE"
+threadNumber = 2

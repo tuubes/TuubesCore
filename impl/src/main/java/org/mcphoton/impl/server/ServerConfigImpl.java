@@ -29,6 +29,8 @@ import com.electronwill.utils.StringUtils;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
@@ -146,6 +148,14 @@ public final class ServerConfigImpl implements ServerConfiguration {
 	}
 
 	static ServerConfigImpl load() {
+		if (!FILE.exists()) {
+			try {
+				Files.copy(ServerConfigImpl.class.getResourceAsStream("/default-config.toml"),
+						   FILE.toPath());
+			} catch (IOException e) {
+				throw new RuntimeException("Unable to copy the default config to " + FILE, e);
+			}
+		}
 		TomlConfig config = new TomlParser().parse(FILE);
 		ServerConfigImpl impl = new ObjectConverter().toObject(config, ServerConfigImpl::new);
 		impl.savedComments = config.getComments();// Remembers the comments
