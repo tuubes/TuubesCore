@@ -64,17 +64,17 @@ public final class ServerImpl implements Server {
 	private final Map<String, World> worlds = new ConcurrentHashMap<>();
 
 	public ServerImpl() {
-		System.out.println("Initializing...");
+		Main.printFramed("Photon Server version " + getVersion(),
+						 "Photon API version " + Photon.getVersion(),
+						 "For minecraft version " + Photon.getMinecraftVersion());
 		loadWorlds();
 		config.load(this);// Intended leak to allow the config to use the worlds map
 		executorService = Executors.newScheduledThreadPool(config.getThreadNumber());
-		bansManager.load();
-		whitelistManager.load();
 	}
 
 	@Override
 	public String getVersion() {
-		return "dev-alpha-08/05/17";
+		return "dev-alpha-09/05/17";
 	}
 
 	@Override
@@ -131,7 +131,14 @@ public final class ServerImpl implements Server {
 		return Collections.unmodifiableCollection(worlds.values());
 	}
 
-	void loadPlugins() {
+	void start() {
+		whitelistManager.load();
+		bansManager.load();
+		loadPlugins();
+		registerCommands();
+	}
+
+	private void loadPlugins() {
 		log.info("Loading plugins...");
 		if (!Photon.PLUGINS_DIR.isDirectory()) {
 			Photon.PLUGINS_DIR.mkdir();
@@ -143,8 +150,7 @@ public final class ServerImpl implements Server {
 		}
 	}
 
-	void loadWorlds() {
-		log.info("Loading worlds infos...");
+	private void loadWorlds() {
 		if (!Photon.WORLDS_DIR.isDirectory()) {
 			Photon.WORLDS_DIR.mkdir();
 		}
@@ -155,8 +161,8 @@ public final class ServerImpl implements Server {
 		log.info("Found {} worlds.", worlds.size());
 	}
 
-	void registerCommands() {
-		log.info("Registering photon commands...");
+	private void registerCommands() {
+		log.info("Registering server commands...");
 		commandRegistry.registerInternalCommand(new StopCommand());
 		commandRegistry.registerInternalCommand(new ListCommand());
 	}

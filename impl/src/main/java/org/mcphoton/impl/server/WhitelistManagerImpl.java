@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 MCPhoton <http://mcphoton.org> and contributors.
+ * Copyright (c) 2017 MCPhoton <http://mcphoton.org> and contributors.
  *
  * This file is part of the Photon Server Implementation <https://github.com/mcphoton/Photon-Server>.
  *

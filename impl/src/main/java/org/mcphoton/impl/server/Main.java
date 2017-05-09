@@ -27,12 +27,12 @@ import org.mcphoton.Photon;
  */
 public final class Main {
 	public static void main(String[] args) {
-		printFramed("Photon Server version " + Photon.getServer().getVersion(),
-					"Photon API version " + Photon.getVersion(),
-					"For minecraft version " + Photon.getMinecraftVersion());
+		ServerImpl server = Photon.getServer();
+		server.start();
+		printFramed("Startup completed. The server is ready!");
 	}
 
-	private static void printFramed(String... strings) {
+	static void printFramed(String... strings) {
 		// Determines the maximum length
 		int max = 0;
 		for (String s : strings) {

@@ -63,6 +63,7 @@ abstract class BWListManager {
 	}
 
 	void load() {
+		logger.info("Loading " + name + "...");
 		try {
 			boolean created = file.createNewFile();
 			if (created) {// The file didn't exist before => Fill it with the basic structure
