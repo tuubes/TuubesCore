@@ -2,6 +2,9 @@
 bin/
 build/
 
+# Directory where the server is launched and tested
+run/
+
 # Gradle cache
 .gradle*
 
@@ -17,4 +20,3 @@ nbproject
 # IntelliJ files
 *.iml
 .idea
-
