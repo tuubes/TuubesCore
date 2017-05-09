@@ -136,6 +136,7 @@ public final class ServerImpl implements Server {
 		bansManager.load();
 		loadPlugins();
 		registerCommands();
+		log.info("Startup completed!");
 	}
 
 	private void loadPlugins() {

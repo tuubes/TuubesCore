@@ -29,7 +29,6 @@ public final class Main {
 	public static void main(String[] args) {
 		ServerImpl server = Photon.getServer();
 		server.start();
-		printFramed("Startup completed. The server is ready!");
 	}
 
 	static void printFramed(String... strings) {
