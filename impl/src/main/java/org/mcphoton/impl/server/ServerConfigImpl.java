@@ -196,13 +196,21 @@ public final class ServerConfigImpl implements ServerConfiguration {
 
 		@Override
 		public Location convertToField(String value) {
+			// Remove leading ( if any
+			if (value.charAt(0) == '(') {
+				value = value.substring(1);
+			}
+			// Remove trailing ) if any
+			if (value.charAt(value.length() - 1) == ')') {
+				value = value.substring(0, value.length() - 1);
+			}
 			List<String> parts = StringUtils.split(value, ',');
-			double x = Double.parseDouble(parts.get(0));
-			double y = Double.parseDouble(parts.get(1));
-			double z = Double.parseDouble(parts.get(2));
-			String worldName = parts.get(3);
-			World world = Photon.getServer().getWorld(worldName);
-			if(world == null) {
+			double x = Double.parseDouble(parts.get(0).trim());
+			double y = Double.parseDouble(parts.get(1).trim());
+			double z = Double.parseDouble(parts.get(2).trim());
+			String worldName = parts.get(3).trim();
+			World world = theServer.getWorld(worldName);
+			if (world == null) {
 				world = new WorldImpl(worldName, WorldType.OVERWORLD);
 			}
 			return new Location(x, y, z, world);
