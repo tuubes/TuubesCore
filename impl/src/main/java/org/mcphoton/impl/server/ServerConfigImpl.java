@@ -48,7 +48,8 @@ import org.mcphoton.world.WorldType;
  * @author TheElectronWill
  */
 public final class ServerConfigImpl implements ServerConfiguration {
-	private static final File FILE = new File(Photon.getMainDirectory(), "server-config.toml");
+	private static final transient File FILE = new File(Photon.getMainDirectory(),
+														"server-config.toml");
 
 	private volatile String motd = "Default MOTD. Change it in the config.";
 	private volatile int maxPlayers = 10;
