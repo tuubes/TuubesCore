@@ -64,9 +64,12 @@ public final class ServerImpl implements Server {
 	private final Map<String, World> worlds = new ConcurrentHashMap<>();
 
 	public ServerImpl() {
-		Main.printFramed("Photon Server version " + getVersion(),
-						 "Photon API version " + Photon.getVersion(),
-						 "For minecraft version " + Photon.getMinecraftVersion());
+		log.info("Photon Server "
+				 + getVersion()
+				 + ", API "
+				 + Photon.getVersion()
+				 + ", for MC "
+				 + Photon.getMinecraftVersion());
 		loadWorlds();
 		config.load(this);// Intended leak to allow the config to use the worlds map
 		executorService = Executors.newScheduledThreadPool(config.getThreadNumber());

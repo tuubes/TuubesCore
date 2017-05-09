@@ -30,33 +30,4 @@ public final class Main {
 		ServerImpl server = Photon.getServer();
 		server.start();
 	}
-
-	static void printFramed(String... strings) {
-		// Determines the maximum length
-		int max = 0;
-		for (String s : strings) {
-			if (s.length() > max) {
-				max = s.length();
-			}
-		}
-		// Prints the top bar
-		for (int i = 0; i < max + 4; i++) {
-			System.out.print('-');
-		}
-		System.out.println();
-		// Prints the strings
-		for (String s : strings) {
-			System.out.print("| ");
-			System.out.print(s);
-			for (int i = 0; i < max - s.length(); i++) {
-				System.out.print(' ');
-			}
-			System.out.println(" |");
-		}
-		// Prints the bottom bar
-		for (int i = 0; i < max + 4; i++) {
-			System.out.print('-');
-		}
-		System.out.println();
-	}
 }
