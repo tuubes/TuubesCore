@@ -37,6 +37,7 @@ import javax.imageio.ImageIO;
 import org.mcphoton.Photon;
 import org.mcphoton.impl.world.WorldImpl;
 import org.mcphoton.server.LogLevel;
+import org.mcphoton.server.Server;
 import org.mcphoton.server.ServerConfiguration;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
@@ -148,7 +149,8 @@ public final class ServerConfigImpl implements ServerConfiguration {
 		this.logLevel = logLevel;
 	}
 
-	static ServerConfigImpl load() {
+	void load(Server theServer) {
+		LocationConverter.theServer = theServer;
 		if (!FILE.exists()) {
 			try {
 				Files.copy(ServerConfigImpl.class.getResourceAsStream("/default-config.toml"),
@@ -158,10 +160,9 @@ public final class ServerConfigImpl implements ServerConfiguration {
 			}
 		}
 		TomlConfig config = new TomlParser().parse(FILE);
-		ServerConfigImpl impl = new ObjectConverter().toObject(config, ServerConfigImpl::new);
-		impl.savedComments = config.getComments();// Remembers the comments
-		impl.icon = readIcon();
-		return impl;
+		new ObjectConverter().toObject(config, this);
+		savedComments = config.getComments();// Remembers the comments
+		icon = readIcon();
 	}
 
 	void save() {
@@ -188,6 +189,11 @@ public final class ServerConfigImpl implements ServerConfiguration {
 	}
 
 	private static class LocationConverter implements Converter<Location, String> {
+		static Server theServer;// Allows to use the Server instance before it's fully constructed
+		// This is needed because the construction of the server needs the config, which needs
+		// the worlds, which are in the server instance. The worlds are retrieved before the
+		// config is read so this works.
+
 		@Override
 		public Location convertToField(String value) {
 			List<String> parts = StringUtils.split(value, ',');

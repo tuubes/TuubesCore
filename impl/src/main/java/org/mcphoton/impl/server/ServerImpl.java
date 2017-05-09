@@ -58,14 +58,15 @@ public final class ServerImpl implements Server {
 	public final ScheduledExecutorService executorService;
 	private final BansManagerImpl bansManager = new BansManagerImpl();
 	private final WhitelistManagerImpl whitelistManager = new WhitelistManagerImpl();
-	private final ServerConfigImpl config;
+	private final ServerConfigImpl config = new ServerConfigImpl();
 
 	private final Collection<Player> onlinePlayers = new SimpleBag<>();
 	private final Map<String, World> worlds = new ConcurrentHashMap<>();
 
 	public ServerImpl() {
 		System.out.println("Initializing...");
-		config = ServerConfigImpl.load();
+		loadWorlds();
+		config.load(this);// Intended leak to allow the config to use the worlds map
 		executorService = Executors.newScheduledThreadPool(config.getThreadNumber());
 		bansManager.load();
 		whitelistManager.load();
