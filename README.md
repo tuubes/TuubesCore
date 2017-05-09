@@ -1,5 +1,5 @@
-![](https://img.shields.io/badge/next%20version-0.5.0-yellow.svg)
-![](https://img.shields.io/badge/progress-5%25-red.svg)
+[![](https://img.shields.io/badge/next%20version-0.5.0-yellow.svg)](https://github.com/mcphoton/Photon-Server/projects/1)
+[![](https://img.shields.io/badge/progress-5%25-red.svg)](https://github.com/mcphoton/Photon-Server/projects/1)
 [![](https://img.shields.io/badge/discord-join%20chat!-7289DA.svg)](https://discord.gg/vWYembz)
 
 From-scratch, extensible and multithreaded minecraft server.
