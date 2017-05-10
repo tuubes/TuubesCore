@@ -18,6 +18,8 @@
  */
 package org.mcphoton.impl.server;
 
+import com.electronwill.utils.StringUtils;
+import java.util.List;
 import java.util.Scanner;
 import org.mcphoton.Photon;
 import org.mcphoton.command.Command;
@@ -26,16 +28,13 @@ import org.mcphoton.messaging.Messageable;
 import org.mcphoton.world.World;
 
 /**
- *
  * @author TheElectronWill
  */
 public class ConsoleThread extends Thread implements Messageable {
-
 	/**
 	 * The world currently used for the command registry.
 	 */
 	public volatile World world;
-
 	private volatile boolean run = true;
 	private final Scanner sc = new Scanner(System.in);
 
@@ -55,16 +54,17 @@ public class ConsoleThread extends Thread implements Messageable {
 		world = Photon.getServer().getConfiguration().getSpawnLocation().getWorld();
 		while (run) {
 			String line = sc.nextLine();
-			String[] parts = line.split(" ", 2);
-			Command cmd = world.getCommandRegistry().getRegisteredCommand(parts[0]);
+			List<String> parts = StringUtils.split(line, ' ');
+			Command cmd = world.getCommandRegistry().getRegisteredCommand(parts.get(0));
 			if (cmd == null) {
 				System.out.println("Unknown command.");
 				continue;
 			}
-			if (parts.length == 1) {
+			String[] array = new String[parts.size() - 1];
+			if (array.length == 0) {
 				cmd.execute(this, new String[0]);
 			} else {
-				cmd.execute(this, parts[1]);
+				cmd.execute(this, parts.subList(1, parts.size() - 1).toArray(array));
 			}
 		}
 	}
@@ -78,5 +78,4 @@ public class ConsoleThread extends Thread implements Messageable {
 	public void sendMessage(ChatMessage msg) {
 		System.out.println(msg.toConsoleString());
 	}
-
 }
