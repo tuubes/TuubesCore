@@ -49,7 +49,7 @@ public final class ProtocolLibAdapter {
 		libServer.setGlobalFlag(MinecraftConstants.VERIFY_USERS_KEY,
 								Photon.getServer().getConfiguration().isOnlineMode());
 		libServer.setGlobalFlag(MinecraftConstants.SERVER_INFO_BUILDER_KEY, new InfoBuilderImpl());
-		libServer.setGlobalFlag(MinecraftConstants.SERVER_INFO_BUILDER_KEY, new LoginHandlerImpl());
+		libServer.setGlobalFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY, new LoginHandlerImpl());
 		libServer.setGlobalFlag(MinecraftConstants.SERVER_COMPRESSION_THRESHOLD, -1);
 		libServer.addListener(new ServerAdapter() {
 			@Override
