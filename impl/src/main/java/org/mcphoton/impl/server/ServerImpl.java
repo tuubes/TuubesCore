@@ -57,11 +57,11 @@ public final class ServerImpl implements Server {
 	private final ConsoleThread consoleThread = new ConsoleThread();
 	private final GlobalPluginsManagerImpl pluginsManager = new GlobalPluginsManagerImpl();
 	private final GlobalCommandRegistryImpl commandRegistry = new GlobalCommandRegistryImpl();
-	public final ScheduledExecutorService executorService;
 	private final BansManagerImpl bansManager = new BansManagerImpl();
 	private final WhitelistManagerImpl whitelistManager = new WhitelistManagerImpl();
 	private final ServerConfigImpl config = new ServerConfigImpl();
 	private final ProtocolLibAdapter libAdapter;
+	public final ScheduledExecutorService executorService;
 
 	private final Collection<Player> onlinePlayers = new SimpleBag<>();
 	private final Map<String, World> worlds = new ConcurrentHashMap<>();
@@ -144,6 +144,7 @@ public final class ServerImpl implements Server {
 		bansManager.load();
 		loadPlugins();
 		registerCommands();
+		consoleThread.start();
 		libAdapter.start();
 		setShutdownHook();
 		log.info("Startup completed!");
@@ -193,12 +194,5 @@ public final class ServerImpl implements Server {
 			libAdapter.stop();
 			log.info("Photon Server stopped.");
 		}));
-	}
-
-	void startThreads() {
-		log.info("Starting threads...");
-		consoleThread.start();
-		// TODO with ProtocolLib: networkThread.start();
-		log.info("Threads started!");
 	}
 }
