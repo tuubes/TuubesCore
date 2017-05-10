@@ -77,7 +77,7 @@ public final class ServerImpl implements Server {
 
 	@Override
 	public String getVersion() {
-		return "dev-alpha-09/05/17";
+		return "dev-alpha-10/05/17";
 	}
 
 	@Override
