@@ -43,6 +43,7 @@ import org.mcphoton.world.World;
 import org.mcphoton.world.WorldType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.PhotonLogger;
 
 /**
  * The game server.
@@ -72,6 +73,7 @@ public final class ServerImpl implements Server {
 				 + Photon.getMinecraftVersion());
 		loadWorlds();
 		config.load(this);// Intended leak to allow the config to use the worlds map
+		PhotonLogger.setLevel(config.getLogLevel());
 		executorService = Executors.newScheduledThreadPool(config.getThreadNumber());
 	}
 
