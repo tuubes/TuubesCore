@@ -33,6 +33,7 @@ import org.mcphoton.entity.living.Player;
 import org.mcphoton.impl.command.GlobalCommandRegistryImpl;
 import org.mcphoton.impl.command.ListCommand;
 import org.mcphoton.impl.command.StopCommand;
+import org.mcphoton.impl.network.ProtocolLibAdapter;
 import org.mcphoton.impl.plugin.GlobalPluginsManagerImpl;
 import org.mcphoton.impl.world.WorldImpl;
 import org.mcphoton.server.BansManager;
@@ -60,6 +61,7 @@ public final class ServerImpl implements Server {
 	private final BansManagerImpl bansManager = new BansManagerImpl();
 	private final WhitelistManagerImpl whitelistManager = new WhitelistManagerImpl();
 	private final ServerConfigImpl config = new ServerConfigImpl();
+	private final ProtocolLibAdapter libAdapter;
 
 	private final Collection<Player> onlinePlayers = new SimpleBag<>();
 	private final Map<String, World> worlds = new ConcurrentHashMap<>();
@@ -74,6 +76,7 @@ public final class ServerImpl implements Server {
 		loadWorlds();
 		config.load(this);// Intended leak to allow the config to use the worlds map
 		PhotonLogger.setLevel(config.getLogLevel());
+		libAdapter = new ProtocolLibAdapter(config.getPort());
 		executorService = Executors.newScheduledThreadPool(config.getThreadNumber());
 	}
 
@@ -141,6 +144,8 @@ public final class ServerImpl implements Server {
 		bansManager.load();
 		loadPlugins();
 		registerCommands();
+		libAdapter.start();
+		setShutdownHook();
 		log.info("Startup completed!");
 	}
 
@@ -173,7 +178,7 @@ public final class ServerImpl implements Server {
 		commandRegistry.registerInternalCommand(new ListCommand());
 	}
 
-	void setShutdownHook() {
+	private void setShutdownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			log.info("Unloading plugins...");
 			pluginsManager.unloadAllPlugins();
@@ -185,18 +190,8 @@ public final class ServerImpl implements Server {
 
 			log.info("Stopping threads...");
 			consoleThread.stopNicely();
-			//TODO networkThread.stopNicely();
-			/*
-			try {
-				networkThread.join(500);
-			} catch (InterruptedException ex) {
-				log.error("Interrupted while waiting for the network thread to terminate.", ex);
-				networkThread.stop();
-			} finally {
-				LoggingService.close();
-			}
-			*/
-			log.info("Stopped.");
+			libAdapter.stop();
+			log.info("Photon Server stopped.");
 		}));
 	}
 
