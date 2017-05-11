@@ -18,12 +18,12 @@
  */
 package org.mcphoton.impl.world;
 
+import com.github.steveice10.mc.protocol.data.game.chunk.Chunk;
+import com.github.steveice10.mc.protocol.data.game.chunk.FlexibleStorage;
+import com.github.steveice10.mc.protocol.data.game.world.block.BlockState;
 import java.io.IOException;
 import java.io.OutputStream;
-import net.magik6k.bitbuffer.BitBuffer;
 import org.mcphoton.world.ChunkSection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Basic implementation of ChunkSection. It is thread-safe.
@@ -31,30 +31,10 @@ import org.slf4j.LoggerFactory;
  * @author TheElectronWill
  */
 public final class ChunkSectionImpl implements ChunkSection {
+	final Chunk libChunk;
 
-	private static final Logger log = LoggerFactory.getLogger(ChunkSectionImpl.class);
-	private final byte[] dataBytes;
-	private final BitBuffer data;
-	private final int bitsPerBlock;
-	private static final byte[] EMPTY_LIGHT_DATA = new byte[4096];//1 byte per block
-	//TODO blocklight and skylight
-	//TODO block entities
-
-	public ChunkSectionImpl() {
-		this(13);
-	}
-
-	public ChunkSectionImpl(int bitsPerBlock) {
-		int bits = bitsPerBlock * 4096;
-		this.dataBytes = new byte[(int)Math.ceil(bits / 8)];
-		this.data = BitBuffer.wrap(dataBytes);
-		this.bitsPerBlock = bitsPerBlock;
-	}
-
-	public ChunkSectionImpl(int bitsPerBlock, byte[] dataBytes) {
-		this.dataBytes = dataBytes;
-		this.data = BitBuffer.wrap(dataBytes);
-		this.bitsPerBlock = bitsPerBlock;
+	public ChunkSectionImpl(boolean skylight) {
+		this.libChunk = new Chunk(skylight);
 	}
 
 	@Override
@@ -83,8 +63,8 @@ public final class ChunkSectionImpl implements ChunkSection {
 
 	@Override
 	public synchronized int getBlockFullId(int x, int y, int z) {
-		data.setPosition((y << 8 | z << 4 | x) * bitsPerBlock);
-		return data.getInt(bitsPerBlock);
+		BlockState libBlockState = libChunk.getBlocks().get(x, y, z);
+		return libBlockState.getId() << 4 | libBlockState.getData();
 	}
 
 	@Override
@@ -127,17 +107,13 @@ public final class ChunkSectionImpl implements ChunkSection {
 
 	@Override
 	public synchronized void setBlockFullId(int x, int y, int z, int blockFullId) {
-		data.setPosition((y << 8 | z << 4 | x) * bitsPerBlock);
-		data.putInt(blockFullId, bitsPerBlock);
+		BlockState libBlockState = new BlockState(blockFullId >> 4, blockFullId & 0xf);
+		libChunk.getBlocks().set(x, y, z, libBlockState);
 	}
 
 	@Override
 	public void setBlockId(int x, int y, int z, int blockId) {
 		setBlockFullId(x, y, z, blockId << 4);
-	}
-
-	public int getBitsPerBlockNumber() {
-		return bitsPerBlock;
 	}
 
 	@Override
@@ -150,7 +126,12 @@ public final class ChunkSectionImpl implements ChunkSection {
 
 	@Override
 	public void writeTo(OutputStream out) throws IOException {
-		out.write(bitsPerBlock);
-		out.write(dataBytes);
+		FlexibleStorage storage = libChunk.getBlocks().getStorage();
+		out.write(storage.getBitsPerEntry());
+		out.write(storage.getData().length);
+		for (long l : storage.getData()) {
+			out.write((int)(l >>> 8));
+			out.write((int)l);
+		}
 	}
 }
