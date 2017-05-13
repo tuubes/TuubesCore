@@ -29,7 +29,6 @@ import org.mcphoton.Photon;
  * @author TheElectronWill
  */
 public class ItemStack {
-
 	protected ItemType type;
 	protected int maxSize, size, damage;
 
@@ -126,13 +125,23 @@ public class ItemStack {
 			int size = buff.get();
 			int damage = buff.getShort();
 			//TODO read NBT data like enchantments
-			return new ItemStack(Photon.getGameRegistry().getRegisteredItem(typeId), 64, size, damage);
+			return new ItemStack(Photon.getGameRegistry().getRegisteredItem(typeId), 64, size,
+								 damage);
 		}
 	}
 
 	@Override
 	public String toString() {
-		return "ItemStack{" + "type=" + type + ", maxSize=" + maxSize + ", size=" + size + ", damage=" + damage + '}';
+		return "ItemStack{"
+			   + "type="
+			   + type
+			   + ", maxSize="
+			   + maxSize
+			   + ", size="
+			   + size
+			   + ", damage="
+			   + damage
+			   + '}';
 	}
 
 	@Override
@@ -151,10 +160,9 @@ public class ItemStack {
 			return true;
 		}
 		if (obj instanceof ItemStack) {
-			ItemStack other = (ItemStack) obj;
+			ItemStack other = (ItemStack)obj;
 			return size == other.size && type.equals(other.type) && maxSize == other.maxSize;
 		}
 		return false;
 	}
-
 }
