@@ -18,6 +18,8 @@
  */
 package org.mcphoton.utils;
 
+import java.util.Locale;
+
 /**
  * Interface for types (EntityType, ItemType, etc.)
  *
@@ -25,17 +27,12 @@ package org.mcphoton.utils;
  */
 public interface Type {
 	/**
-	 * @return the localized name of this type. For example: "Dirt".
+	 * @return the localized name of this type. For example: "Dirt" in english.
 	 */
-	String getLocalizedName();
+	String getLocalizedName(Locale locale);
 
 	/**
 	 * @return the unique and unlocalized name of this type. For example: "minecraft.dirt".
 	 */
 	String getUniqueName();
-
-	/**
-	 * @return the unique id of this type.
-	 */
-	int getId();
 }

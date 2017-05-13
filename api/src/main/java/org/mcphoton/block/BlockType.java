@@ -1,28 +1,23 @@
-/*
- * Copyright (c) 2016 MCPhoton <http://mcphoton.org> and contributors.
- *
- * This file is part of the Photon API <https://github.com/mcphoton/Photon-API>.
- *
- * The Photon API is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * The Photon API is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package org.mcphoton.block;
 
-import org.mcphoton.utils.AbstractType;
+import org.mcphoton.utils.Type;
 
 /**
- * Defines a type of block.
- *
  * @author TheElectronWill
  */
-public abstract class BlockType extends AbstractType {}
+public interface BlockType extends Type {
+	/**
+	 * Checks if this type is a variant of another type.
+	 * <p>
+	 * This method defines an equivalence relation, similar to {@link Object#equals(Object)}. It has
+	 * the following properties:
+	 * <li>Symmetry: t.isVariant(t) return true</li>
+	 * <li>Transitivity: a.isVariant(b) and b.isVariant(a) return the same value</li>
+	 * <li>Transitivity: Iff a.isVariant(b) and b.isVariant(c) are true, then a.isVariant(c) is
+	 * also true.</li>
+	 *
+	 * @param other the type to compare to
+	 * @return true if this type is a variant of the specified type
+	 */
+	boolean isVariant(BlockType other);
+}

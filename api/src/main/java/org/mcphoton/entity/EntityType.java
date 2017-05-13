@@ -18,13 +18,11 @@
  */
 package org.mcphoton.entity;
 
-import org.mcphoton.utils.AbstractType;
+import org.mcphoton.utils.Type;
 
 /**
  * Defines a type of entity.
  *
  * @author TheElectronWill
  */
-public abstract class EntityType extends AbstractType {
-
-}
+public interface EntityType extends Type {}
