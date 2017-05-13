@@ -1,24 +1,6 @@
-/*
- * Copyright (c) 2016 MCPhoton <http://mcphoton.org> and contributors.
- *
- * This file is part of the Photon API <https://github.com/mcphoton/Photon-API>.
- *
- * The Photon API is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * The Photon API is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package org.mcphoton;
 
-import org.mcphoton.block.BlockType;
+import org.mcphoton.block.AbstractBlockType;
 import org.mcphoton.entity.EntityType;
 import org.mcphoton.item.ItemType;
 import org.mcphoton.world.BiomeType;
@@ -37,7 +19,7 @@ public interface GameRegistry {
 	 * @param type the type to register.
 	 * @return the registered id.
 	 */
-	int registerBlock(BlockType type);
+	int registerBlock(AbstractBlockType type);
 
 	/**
 	 * Registers a BlockType with the specified id.
@@ -45,7 +27,7 @@ public interface GameRegistry {
 	 * @param type the type to register.
 	 * @param id   the type's id.
 	 */
-	void registerBlock(BlockType type, int id);
+	void registerBlock(AbstractBlockType type, int id);
 
 	/**
 	 * Gets the BlockType registered with the specified id.
@@ -53,7 +35,7 @@ public interface GameRegistry {
 	 * @param id the type's id (without metadata).
 	 * @return the corresponding BlockType, or null if not found.
 	 */
-	BlockType getRegisteredBlock(int id);
+	AbstractBlockType getRegisteredBlock(int id);
 
 	/**
 	 * Gets the BlockType registered with the specified name.
@@ -61,7 +43,7 @@ public interface GameRegistry {
 	 * @param name the type's name.
 	 * @return the corresponding BlockType, or null if not found.
 	 */
-	BlockType getRegisteredBlock(String name);
+	AbstractBlockType getRegisteredBlock(String name);
 
 	/**
 	 * Checks if there is a BlockType registered with the specified id.

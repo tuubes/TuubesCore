@@ -1,28 +1,10 @@
-/*
- * Copyright (c) 2016 MCPhoton <http://mcphoton.org> and contributors.
- *
- * This file is part of the Photon Server Implementation <https://github.com/mcphoton/Photon-Server>.
- *
- * The Photon Server Implementation is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * The Photon Server Implementation is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package org.mcphoton.impl;
 
 import com.electronwill.utils.IndexMap;
 import java.util.HashMap;
 import java.util.Map;
 import org.mcphoton.GameRegistry;
-import org.mcphoton.block.BlockType;
+import org.mcphoton.block.AbstractBlockType;
 import org.mcphoton.entity.EntityType;
 import org.mcphoton.item.ItemType;
 import org.mcphoton.world.BiomeType;
@@ -36,8 +18,8 @@ public final class GameRegistryImpl implements GameRegistry {
 	private final IndexMap<BiomeType> biomesIds = new IndexMap<>();
 	private final Map<String, BiomeType> biomesNames = new HashMap<>();
 
-	private final IndexMap<BlockType> blocksIds = new IndexMap<>();
-	private final Map<String, BlockType> blocksNames = new HashMap<>();
+	private final IndexMap<AbstractBlockType> blocksIds = new IndexMap<>();
+	private final Map<String, AbstractBlockType> blocksNames = new HashMap<>();
 
 	private final IndexMap<EntityType> entitiesIds = new IndexMap<>();
 	private final Map<String, EntityType> entitiesNames = new HashMap<>();
@@ -60,14 +42,14 @@ public final class GameRegistryImpl implements GameRegistry {
 	}
 
 	@Override
-	public BlockType getRegisteredBlock(int id) {
+	public AbstractBlockType getRegisteredBlock(int id) {
 		synchronized (blocksIds) {
 			return blocksIds.get(id);
 		}
 	}
 
 	@Override
-	public BlockType getRegisteredBlock(String name) {
+	public AbstractBlockType getRegisteredBlock(String name) {
 		synchronized (blocksIds) {
 			return blocksNames.get(name);
 		}
@@ -178,7 +160,7 @@ public final class GameRegistryImpl implements GameRegistry {
 	}
 
 	@Override
-	public int registerBlock(BlockType type) {
+	public int registerBlock(AbstractBlockType type) {
 		synchronized (blocksIds) {
 			int id = blocksIds.size();
 			type.initializeId(id);
@@ -189,7 +171,7 @@ public final class GameRegistryImpl implements GameRegistry {
 	}
 
 	@Override
-	public void registerBlock(BlockType type, int id) {
+	public void registerBlock(AbstractBlockType type, int id) {
 		synchronized (blocksIds) {
 			type.initializeId(id);
 			blocksIds.put(id, type);
