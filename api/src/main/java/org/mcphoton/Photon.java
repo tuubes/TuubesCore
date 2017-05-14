@@ -106,6 +106,13 @@ public final class Photon {
 	}
 
 	/**
+	 * @return the worlds' directory.
+	 */
+	public static File getWorldsDirectory() {
+		return null;
+	}
+
+	/**
 	 * @return the Server instance (if server-side).
 	 */
 	public static Server getServer() {

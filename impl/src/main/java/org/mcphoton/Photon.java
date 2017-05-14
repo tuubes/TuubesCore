@@ -22,7 +22,7 @@ public final class Photon {
 
 	private static final boolean CONSOLE_ADVANCED = !System.getProperty("os.name").toLowerCase()
 														   .contains("windows");
-	public static final File MAIN_DIR = new File(System.getProperty("user.dir")),
+	private static final File MAIN_DIR = new File(System.getProperty("user.dir")),
 			PLUGINS_DIR = new File(MAIN_DIR, "plugins"),
 			WORLDS_DIR = new File(MAIN_DIR, "worlds");
 	private static final GameRegistry GAME_REGISTRY = new GameRegistry();
@@ -98,6 +98,10 @@ public final class Photon {
 
 	public static File getPluginsDirectory() {
 		return PLUGINS_DIR;
+	}
+
+	public static File getWorldsDirectory() {
+		return WORLDS_DIR;
 	}
 
 	public static ServerImpl getServer() {

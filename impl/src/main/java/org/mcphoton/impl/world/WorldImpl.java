@@ -50,7 +50,7 @@ public class WorldImpl implements World {
 	public WorldImpl(String name, WorldType type) {
 		this.name = name;
 		this.type = type;
-		this.directory = new File(Photon.WORLDS_DIR, name);
+		this.directory = new File(Photon.getWorldsDirectory(), name);
 		this.directory.mkdir();
 	}
 
@@ -103,7 +103,7 @@ public class WorldImpl implements World {
 
 	@Override
 	public synchronized void renameTo(String name) {
-		boolean renameSuccess = directory.renameTo(new File(Photon.WORLDS_DIR, name));
+		boolean renameSuccess = directory.renameTo(new File(Photon.getWorldsDirectory(), name));
 		if (renameSuccess) {
 			this.name = name;
 		}
