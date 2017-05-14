@@ -3,6 +3,7 @@ package org.mcphoton.impl.network;
 import com.github.steveice10.mc.protocol.MinecraftConstants;
 import com.github.steveice10.mc.protocol.MinecraftProtocol;
 import com.github.steveice10.packetlib.Server;
+import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.event.server.ServerAdapter;
 import com.github.steveice10.packetlib.event.server.SessionAddedEvent;
 import com.github.steveice10.packetlib.event.server.SessionRemovedEvent;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import org.mcphoton.Photon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public final class ProtocolLibAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(ProtocolLibAdapter.class);
 
 	private final Server libServer;
-	private final Map<Class<? extends Packet>, List<Consumer<? extends Packet>>> handlersMap = new HashMap<>();
+	private final Map<Class<? extends Packet>, List<PacketHandler>> handlersMap = new HashMap<>();
 
 	public ProtocolLibAdapter(int port) {
 		this.libServer = new Server("localhost", port, MinecraftProtocol.class,
@@ -59,13 +59,14 @@ public final class ProtocolLibAdapter {
 					@Override
 					public void packetReceived(PacketReceivedEvent event) {
 						Packet packet = event.getPacket();
-						logger.trace("Packet received {} from {}", packet, event.getSession().getHost());
-						List<Consumer<? extends Packet>> consumerList = handlersMap.get(packet.getClass());
+						Session session = event.getSession();
+						logger.trace("Packet received {} from {}", packet, session.getHost());
+						List<PacketHandler> consumerList = handlersMap.get(packet.getClass());
 						if (consumerList != null) {
-							logger.trace("Consume event {}", event);
-							for (Consumer consumer : consumerList) {
-								logger.trace("*Consumer " + consumer);
-								consumer.accept(packet);
+							logger.trace("Handle event {}", event);
+							for (PacketHandler handler : consumerList) {
+								logger.trace("*Handler " + handler);
+								handler.handle(packet, session);
 							}
 						}
 					}
@@ -107,20 +108,18 @@ public final class ProtocolLibAdapter {
 		libServer.close();
 	}
 
-	public void addHandler(Class<? extends Packet> packetClass,
-						   Consumer<? extends Packet> handler) {
-		List<Consumer<? extends Packet>> consumerList = handlersMap.get(packetClass);
-		if (consumerList == null) {
-			consumerList = new ArrayList<>();
+	public void addHandler(Class<? extends Packet> packetClass, PacketHandler handler) {
+		List<PacketHandler> handlerList = handlersMap.get(packetClass);
+		if (handlerList == null) {
+			handlerList = new ArrayList<>();
 		}
-		consumerList.add(handler);
+		handlerList.add(handler);
 	}
 
-	public void removeHandler(Class<? extends Packet> packetClass,
-							  Consumer<? extends Packet> handler) {
-		List<Consumer<? extends Packet>> consumerList = handlersMap.get(packetClass);
-		if (consumerList != null) {
-			consumerList.remove(handler);
+	public void removeHandler(Class<? extends Packet> packetClass, PacketHandler handler) {
+		List<PacketHandler> handlerList = handlersMap.get(packetClass);
+		if (handlerList != null) {
+			handlerList.remove(handler);
 		}
 	}
 }
