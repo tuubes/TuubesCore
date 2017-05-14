@@ -1,6 +1,6 @@
 package org.mcphoton.world.protection;
 
-import org.mcphoton.block.BlockData;
+import org.mcphoton.block.BlockType;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.BiomeType;
 import org.mcphoton.world.World;
@@ -44,7 +44,7 @@ public interface UnlockedWorldAccess extends ReadOnlyBlockAccess, QueryableBlock
 	 * @param z the block's z coordinate.
 	 * @return true in case of success.
 	 */
-	boolean setBlockData(int x, int y, int z, BlockData type);
+	boolean setBlockType(int x, int y, int z, BlockType type);
 
 	/**
 	 * Sets a block.
@@ -52,8 +52,8 @@ public interface UnlockedWorldAccess extends ReadOnlyBlockAccess, QueryableBlock
 	 * @param loc the block's x location.
 	 * @return true in case of success.
 	 */
-	default boolean setBlockData(Location loc, BlockData type) {
-		return setBlockData(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), type);
+	default boolean setBlockType(Location loc, BlockType type) {
+		return setBlockType(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), type);
 	}
 
 	/**
@@ -87,7 +87,7 @@ public interface UnlockedWorldAccess extends ReadOnlyBlockAccess, QueryableBlock
 	 * Returns true.
 	 */
 	@Override
-	default boolean maySetBlockData(int x, int y, int z, BlockData data, Object setter) {
+	default boolean maySetBlockType(int x, int y, int z, BlockType type, Object setter) {
 		return true;
 	}
 

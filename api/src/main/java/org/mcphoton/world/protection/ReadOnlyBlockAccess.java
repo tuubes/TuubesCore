@@ -1,6 +1,6 @@
 package org.mcphoton.world.protection;
 
-import org.mcphoton.block.BlockData;
+import org.mcphoton.block.BlockType;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.BiomeType;
 
@@ -17,14 +17,14 @@ public interface ReadOnlyBlockAccess {
 	 * @param z the block's z coordinate
 	 * @return the block's data at the given location.
 	 */
-	BlockData getBlockData(int x, int y, int z);
+	BlockType getBlockType(int x, int y, int z);
 
 	/**
 	 * @param loc the block's location (world is ignored).
 	 * @return the block's data at the given location.
 	 */
-	default BlockData getBlockData(Location loc) {
-		return getBlockData(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+	default BlockType getBlockType(Location loc) {
+		return getBlockType(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
 	}
 
 	/**

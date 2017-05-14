@@ -1,6 +1,6 @@
 package org.mcphoton.world.protection;
 
-import org.mcphoton.block.BlockData;
+import org.mcphoton.block.BlockType;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.BiomeType;
 import org.mcphoton.world.areas.Area;
@@ -44,7 +44,7 @@ public interface UnlockedAreaAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	 * @param z the block's z coordinate.
 	 * @return true in case of success.
 	 */
-	boolean setBlockData(int x, int y, int z, BlockData type);
+	boolean setBlockType(int x, int y, int z, BlockType type);
 
 	/**
 	 * Sets a block.
@@ -52,8 +52,8 @@ public interface UnlockedAreaAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	 * @param loc the block's x location.
 	 * @return true in case of success.
 	 */
-	default boolean setBlockData(Location loc, BlockData type) {
-		return setBlockData(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), type);
+	default boolean setBlockType(Location loc, BlockType type) {
+		return setBlockType(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), type);
 	}
 
 	/**
@@ -78,10 +78,10 @@ public interface UnlockedAreaAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	/**
 	 * Fills the entire area with a block.
 	 *
-	 * @param blockData the block to fill the area with.
+	 * @param BlockType the block to fill the area with.
 	 * @return true in case of success.
 	 */
-	boolean fill(BlockData blockData);
+	boolean fill(BlockType BlockType);
 
 	/**
 	 * Replaces every occurence of a block.
@@ -90,7 +90,7 @@ public interface UnlockedAreaAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	 * @param replacement the replacement.
 	 * @return true in case of success.
 	 */
-	boolean replaceAll(BlockData toReplace, BlockData replacement);
+	boolean replaceAll(BlockType toReplace, BlockType replacement);
 
 	/**
 	 * Returns true.
@@ -104,7 +104,7 @@ public interface UnlockedAreaAccess extends ReadOnlyBlockAccess, QueryableBlockA
 	 * Returns true.
 	 */
 	@Override
-	default boolean maySetBlockData(int x, int y, int z, BlockData data, Object setter) {
+	default boolean maySetBlockType(int x, int y, int z, BlockType type, Object setter) {
 		return getArea().contains(x, y, z);
 	}
 }

@@ -1,6 +1,6 @@
 package org.mcphoton.world.protection;
 
-import org.mcphoton.block.BlockData;
+import org.mcphoton.block.BlockType;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.BiomeType;
 
@@ -39,22 +39,22 @@ public interface QueryableBlockAccess {
 	 * @param x      the block's x coordinate.
 	 * @param y      the block's y coordinate.
 	 * @param z      the block's z coordinate.
-	 * @param data   the data to set.
+	 * @param type   the type to set.
 	 * @param setter the block's setter.
 	 * @return {@code true} if it may be set, false otherwise.
 	 */
-	boolean maySetBlockData(int x, int y, int z, BlockData data, Object setter);
+	boolean maySetBlockType(int x, int y, int z, BlockType type, Object setter);
 
 	/**
 	 * Checks if a block may be set.
 	 *
 	 * @param loc    the block's x location.
-	 * @param data   the data to set.
+	 * @param type   the type to set.
 	 * @param setter the block's setter.
 	 * @return {@code true} if it may be set, false otherwise.
 	 */
-	default boolean maySetBlockData(Location loc, BlockData data, Object setter) {
-		return maySetBlockData(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), data, setter);
+	default boolean maySetBlockType(Location loc, BlockType type, Object setter) {
+		return maySetBlockType(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), type, setter);
 	}
 
 	/**
