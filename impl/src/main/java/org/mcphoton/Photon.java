@@ -4,12 +4,11 @@ import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
 import org.mcphoton.command.GlobalCommandRegistry;
 import org.mcphoton.event.GlobalEventsManager;
-import org.mcphoton.impl.GameRegistryImpl;
+import org.mcphoton.impl.GameRegistry;
 import org.mcphoton.impl.command.GlobalCommandRegistryImpl;
 import org.mcphoton.impl.event.GlobalEventsManagerImpl;
 import org.mcphoton.impl.permissions.GlobalPermissionsManagerImpl;
 import org.mcphoton.impl.plugin.GlobalPluginsManagerImpl;
-import org.mcphoton.impl.server.Main;
 import org.mcphoton.impl.server.ServerImpl;
 import org.mcphoton.permissions.GlobalPermissionsManager;
 import org.mcphoton.plugin.GlobalPluginsManager;
@@ -26,7 +25,7 @@ public final class Photon {
 	public static final File MAIN_DIR = new File(System.getProperty("user.dir")),
 			PLUGINS_DIR = new File(MAIN_DIR, "plugins"),
 			WORLDS_DIR = new File(MAIN_DIR, "worlds");
-	private static final GameRegistry GAME_REGISTRY = new GameRegistryImpl();
+	private static final GameRegistry GAME_REGISTRY = new GameRegistry();
 	private static final GlobalCommandRegistry COMMAND_REGISTRY = new GlobalCommandRegistryImpl();
 	private static final GlobalPluginsManager PLUGINS_MANAGER = new GlobalPluginsManagerImpl();
 	private static final GlobalEventsManager EVENTS_MANAGER = new GlobalEventsManagerImpl();
