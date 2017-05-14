@@ -1,4 +1,4 @@
-package org.mcphoton.utils;
+package org.mcphoton;
 
 import java.util.Locale;
 
