@@ -1,6 +1,6 @@
 package org.mcphoton.item;
 
-import org.mcphoton.utils.Type;
+import org.mcphoton.Type;
 
 /**
  * @author TheElectronWill
