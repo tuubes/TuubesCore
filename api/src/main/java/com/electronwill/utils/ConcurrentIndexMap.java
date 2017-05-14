@@ -83,6 +83,17 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	/**
+	 * Compacts this ConcurrentIndexMap to minimize its use of memory.
+	 */
+	public void compact() {
+		synchronized (this) {
+			if (array.length != size) {
+				array = Arrays.copyOf(array, size);
+			}
+		}
+	}
+
+	/**
 	 * Returns true if this map contains a mapping for the specified key. There can be at most one
 	 * mapping per key.
 	 *

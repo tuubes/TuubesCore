@@ -82,6 +82,15 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	}
 
 	/**
+	 * Compacts this IndexMap to minimize its use of memory.
+	 */
+	public void compact() {
+		if (array.length != size) {
+			array = Arrays.copyOf(array, size);
+		}
+	}
+
+	/**
 	 * Returns true if this map contains a mapping for the specified key. There can be at most one
 	 * mapping per key.
 	 *
