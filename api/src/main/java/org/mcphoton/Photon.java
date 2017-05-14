@@ -71,16 +71,6 @@ public final class Photon {
 	}
 
 	/**
-	 * Gets the Photon's GameRegistry, which handles the registration of biomes, blocks, items and
-	 * entities.
-	 *
-	 * @return the GameRegistry
-	 */
-	public static GameRegistry getGameRegistry() {
-		return null;
-	}
-
-	/**
 	 * @return true if the console is advanced, ie if it can display colors and text effects.
 	 */
 	public static boolean isConsoleAdvanced() {
