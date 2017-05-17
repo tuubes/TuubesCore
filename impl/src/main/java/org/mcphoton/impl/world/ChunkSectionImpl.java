@@ -2,7 +2,6 @@ package org.mcphoton.impl.world;
 
 import com.github.steveice10.mc.protocol.data.game.chunk.Chunk;
 import com.github.steveice10.mc.protocol.data.game.chunk.FlexibleStorage;
-import com.github.steveice10.mc.protocol.data.game.world.block.BlockState;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.mcphoton.world.ChunkSection;
@@ -45,8 +44,7 @@ public final class ChunkSectionImpl implements ChunkSection {
 
 	@Override
 	public synchronized int getBlockFullId(int x, int y, int z) {
-		BlockState libBlockState = libChunk.getBlocks().get(x, y, z);
-		return libBlockState.getId() << 4 | libBlockState.getData();
+		return libChunk.getBlocks().get(x, y, z);
 	}
 
 	@Override
@@ -89,8 +87,7 @@ public final class ChunkSectionImpl implements ChunkSection {
 
 	@Override
 	public synchronized void setBlockFullId(int x, int y, int z, int blockFullId) {
-		BlockState libBlockState = new BlockState(blockFullId >> 4, blockFullId & 0xf);
-		libChunk.getBlocks().set(x, y, z, libBlockState);
+		libChunk.getBlocks().set(x, y, z, blockFullId);
 	}
 
 	@Override
