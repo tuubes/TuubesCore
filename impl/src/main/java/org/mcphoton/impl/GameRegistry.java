@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.OptionalInt;
 import org.mcphoton.Photon;
 import org.mcphoton.impl.block.AbstractBlockType;
-import org.mcphoton.impl.entity.AbstractEntityType;
+import org.mcphoton.impl.entity.mobs.AbstractMobType;
+import org.mcphoton.impl.entity.objects.AbstractObjectType;
 import org.mcphoton.impl.item.AbstractItemType;
-import org.mcphoton.world.BiomeType;
 
 /**
  * @author TheElectronWill
@@ -30,11 +30,11 @@ public final class GameRegistry {
 	private final IndexMap<AbstractBlockType> blocksIndex = new IndexMap<>();
 	private final Map<String, AbstractBlockType> blocksMap = new HashMap<>();
 
-	private final IndexMap<AbstractEntityType> objectsIndex = new IndexMap<>();
-	private final Map<String, AbstractEntityType> objectsMap = new HashMap<>();
+	private final IndexMap<AbstractObjectType> objectsIndex = new IndexMap<>();
+	private final Map<String, AbstractObjectType> objectsMap = new HashMap<>();
 
-	private final IndexMap<AbstractEntityType> mobsIndex = new IndexMap<>();
-	private final Map<String, AbstractEntityType> mobsMap = new HashMap<>();
+	private final IndexMap<AbstractMobType> mobsIndex = new IndexMap<>();
+	private final Map<String, AbstractMobType> mobsMap = new HashMap<>();
 
 	private final IndexMap<ItemRegistration> itemsIndex = new IndexMap<>();
 	private final Map<String, AbstractItemType> itemsMap = new HashMap<>();
@@ -119,7 +119,7 @@ public final class GameRegistry {
 		return (registration == null) ? null : registration.getVariant(damageValue);
 	}
 
-	public int registerMob(AbstractEntityType type) {
+	public int registerMob(AbstractMobType type) {
 		String uniqueName = type.getUniqueName();
 		int id = mobsIdsConfig.getValue(Collections.singletonList(uniqueName));
 		mobsIndex.put(id, type);
@@ -127,15 +127,15 @@ public final class GameRegistry {
 		return id;
 	}
 
-	public AbstractEntityType getMob(String name) {
+	public AbstractMobType getMob(String name) {
 		return mobsMap.get(name);
 	}
 
-	public AbstractEntityType getMob(int id) {
+	public AbstractMobType getMob(int id) {
 		return mobsIndex.get(id);
 	}
 
-	public int registerObject(AbstractEntityType type) {
+	public int registerObject(AbstractObjectType type) {
 		String uniqueName = type.getUniqueName();
 		int id = objectsIdsConfig.getValue(Collections.singletonList(uniqueName));
 		objectsIndex.put(id, type);
@@ -143,11 +143,11 @@ public final class GameRegistry {
 		return id;
 	}
 
-	public AbstractEntityType getObject(String name) {
+	public AbstractObjectType getObject(String name) {
 		return objectsMap.get(name);
 	}
 
-	public AbstractEntityType getObject(int id) {
+	public AbstractObjectType getObject(int id) {
 		return objectsIndex.get(id);
 	}
 

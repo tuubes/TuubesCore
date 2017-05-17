@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
 import org.mcphoton.command.WorldCommandRegistry;
-import org.mcphoton.entity.Entity;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.event.WorldEventsManager;
 import org.mcphoton.permissions.WorldPermissionsManager;
@@ -80,48 +79,6 @@ public interface World {
 	}
 
 	//---- Entities ---
-
-	/**
-	 * Spawns an entity at the given coordinates.
-	 *
-	 * @param entity the entity to spawn.
-	 * @param x      the x coordinate.
-	 * @param y      the y coordinate.
-	 * @param z      the z coordinate.
-	 */
-	void spawnEntity(Entity entity, double x, double y, double z);
-
-	/**
-	 * Spawns an entity at the given location.
-	 *
-	 * @param entity the entity to spawn.
-	 * @param loc    the location.
-	 */
-	default void spawnEntity(Entity entity, Location loc) {
-		spawnEntity(entity, loc.getX(), loc.getY(), loc.getZ());
-	}
-
-	/**
-	 * Removes (deletes) an entity from this world.
-	 *
-	 * @param entity the entity to remove.
-	 */
-	void removeEntity(Entity entity);
-
-	/**
-	 * Removes (deletes) an entity from this world.
-	 *
-	 * @param entityId the id of the eneity to remove.
-	 */
-	void removeEntity(int entityId);
-
-	/**
-	 * Gets an entity by id.
-	 *
-	 * @param entityId the entity's id.
-	 * @return the entity of this world that has the specified id.
-	 */
-	Entity getEntity(int entityId);
 
 	/**
 	 * @return the players currently in this world.

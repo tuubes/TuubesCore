@@ -11,6 +11,7 @@ import org.mcphoton.entity.Entity;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.event.WorldEventsManager;
 import org.mcphoton.impl.command.WorldCommandRegistryImpl;
+import org.mcphoton.impl.entity.AbstractEntity;
 import org.mcphoton.impl.event.WorldEventsManagerImpl;
 import org.mcphoton.impl.permissions.WorldPermissionsManagerImpl;
 import org.mcphoton.impl.plugin.WorldPluginsManagerImpl;
@@ -24,7 +25,7 @@ import org.mcphoton.world.WorldType;
 import org.mcphoton.world.protection.WorldAccessManager;
 
 /**
- * Basic implementation of World. It is thread-safe.
+ * Implementation of World. It is thread-safe.
  *
  * @author TheElectronWill
  */
@@ -35,7 +36,7 @@ public class WorldImpl implements World {
 
 	protected final WorldType type;
 	protected final Collection<Player> players = new SimpleBag<>();
-	protected final IndexMap<Entity> entities = new IndexMap<>();// ids of the world's entities.
+	protected final IndexMap<AbstractEntity> entities = new IndexMap<>();// ids of the world's entities.
 	protected final Bag<Integer> removedIds = new SimpleBag<>(100, 50);// ids of the removed
 	// entities. Reusing them avoids fragmentation.
 
@@ -60,15 +61,17 @@ public class WorldImpl implements World {
 		this.directory = directory;
 	}
 
-	@Override
-	public Entity getEntity(int entityId) {
+	public AbstractEntity getEntity(int entityId) {
 		synchronized (entities) {
 			return entities.get(entityId);
 		}
 	}
 
-	@Override
-	public void spawnEntity(Entity entity, double x, double y, double z) {
+	public void addEntity(AbstractEntity entity) {
+		if (entity.getLocation().getWorld() != this) {
+			throw new IllegalArgumentException(
+					"An entity can only be added to the world it is " + "in");
+		}
 		synchronized (entities) {
 			int nextId;
 			if (removedIds.isEmpty()) {
@@ -77,18 +80,11 @@ public class WorldImpl implements World {
 				nextId = removedIds.get(0);// reuse this id
 				removedIds.remove(0);
 			}
-			entity.init(nextId, x, y, z, this);
+			entity.init(nextId);
 			entities.put(nextId, entity);
 		}
-		//TODO send the spawn packet
 	}
 
-	@Override
-	public void removeEntity(Entity entity) {
-		removeEntity(entity.getId());
-	}
-
-	@Override
 	public void removeEntity(int entityId) {
 		synchronized (entities) {
 			entities.remove(entityId);
@@ -103,8 +99,8 @@ public class WorldImpl implements World {
 
 	@Override
 	public synchronized void renameTo(String name) {
-		boolean renameSuccess = directory.renameTo(new File(Photon.getWorldsDirectory(), name));
-		if (renameSuccess) {
+		boolean success = directory.renameTo(new File(Photon.getWorldsDirectory(), name));
+		if (success) {
 			this.name = name;
 		}
 	}

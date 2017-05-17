@@ -1,4 +1,4 @@
-package org.mcphoton.impl.entity;
+package org.mcphoton.impl.entity.mobs;
 
 import org.mcphoton.Photon;
 import org.mcphoton.entity.EntityType;
@@ -7,12 +7,12 @@ import org.mcphoton.impl.AbstractType;
 /**
  * @author TheElectronWill
  */
-public abstract class AbstractEntityType extends AbstractType implements EntityType {
+public abstract class AbstractMobType extends AbstractType implements EntityType {
 	private final int id;
 
-	protected AbstractEntityType(String uniqueName) {
+	protected AbstractMobType(String uniqueName) {
 		super(uniqueName);
-		this.id = Photon.getGameRegistry().registerEntity(this);
+		this.id = Photon.getGameRegistry().registerMob(this);
 	}
 
 	public final int getId() {
