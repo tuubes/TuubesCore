@@ -29,7 +29,7 @@ public final class GlobalPluginsManagerImpl implements GlobalPluginsManager {
 
 	private static final Logger log = LoggerFactory.getLogger(GlobalPluginsManagerImpl.class);
 	static final ClassSharer GLOBAL_CLASS_SHARER = new ClassSharerImpl();
-	static final File PLUGINS_CONFIG = new File(Photon.PLUGINS_DIR, "plugins_config.toml");
+	static final File PLUGINS_CONFIG = new File(Photon.getPluginsDirectory(), "plugins_config.toml");
 	private final Map<String, GlobalPlugin> serverPlugins = new HashMap<>();
 
 	@Override
@@ -51,7 +51,7 @@ public final class GlobalPluginsManagerImpl implements GlobalPluginsManager {
 	 * Loads all the plugins from the photon's plugins directory.
 	 */
 	public void loadAllPlugins() throws IOException {
-		File[] pluginsFiles = Photon.PLUGINS_DIR.listFiles((file, name) -> name.endsWith(".jar"));
+		File[] pluginsFiles = Photon.getPluginsDirectory().listFiles((file, name) -> name.endsWith(".jar"));
 		if (!PLUGINS_CONFIG.exists()) {
 			PLUGINS_CONFIG.createNewFile();
 		}

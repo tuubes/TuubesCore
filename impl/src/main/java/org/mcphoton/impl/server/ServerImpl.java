@@ -134,8 +134,8 @@ public final class ServerImpl implements Server {
 
 	private void loadPlugins() {
 		log.info("Loading plugins...");
-		if (!Photon.PLUGINS_DIR.isDirectory()) {
-			Photon.PLUGINS_DIR.mkdir();
+		if (!Photon.getPluginsDirectory().isDirectory()) {
+			Photon.getPluginsDirectory().mkdir();
 		}
 		try {
 			pluginsManager.loadAllPlugins();
@@ -145,10 +145,10 @@ public final class ServerImpl implements Server {
 	}
 
 	private void loadWorlds() {
-		if (!Photon.WORLDS_DIR.isDirectory()) {
-			Photon.WORLDS_DIR.mkdir();
+		if (!Photon.getWorldsDirectory().isDirectory()) {
+			Photon.getWorldsDirectory().mkdir();
 		}
-		for (File worldDir : Photon.WORLDS_DIR.listFiles(File::isDirectory)) {
+		for (File worldDir : Photon.getWorldsDirectory().listFiles(File::isDirectory)) {
 			World world = new WorldImpl(worldDir, WorldType.OVERWORLD);
 			worlds.put(world.getName(), world);
 		}
