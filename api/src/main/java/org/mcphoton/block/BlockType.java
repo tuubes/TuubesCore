@@ -1,6 +1,6 @@
 package org.mcphoton.block;
 
-import org.mcphoton.Type;
+import org.mcphoton.utils.Type;
 
 /**
  * @author TheElectronWill

@@ -1,6 +1,6 @@
 package org.mcphoton.world;
 
-import org.mcphoton.Type;
+import org.mcphoton.utils.Type;
 
 /**
  * Defines a type of biome.

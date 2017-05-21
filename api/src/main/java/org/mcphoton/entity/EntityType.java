@@ -1,6 +1,6 @@
 package org.mcphoton.entity;
 
-import org.mcphoton.Type;
+import org.mcphoton.utils.Type;
 
 /**
  * Defines a type of entity.
