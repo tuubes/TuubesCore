@@ -98,7 +98,11 @@ public final class ExecutionGroup implements ExecutionContext, Runnable {
 		int executed = 1;
 		Runnable task;
 		for (; executed <= MAX_TASK_EXECUTION && (task = taskQueue.poll()) != null; executed++) {
-			task.run();
+			try {
+				task.run();
+			} catch (Exception e) {
+				logger.error("An exception occured while executing task {}.", task, e);
+			}
 		}
 		if (executed == MAX_TASK_EXECUTION) {
 			logger.warn("Task execution limit ({}) reached!", MAX_TASK_EXECUTION);
