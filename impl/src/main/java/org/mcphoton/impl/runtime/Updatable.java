@@ -1,4 +1,4 @@
-package org.mcphoton.runtime;
+package org.mcphoton.impl.runtime;
 
 /**
  * @author TheElectronWill
@@ -10,4 +10,9 @@ public interface Updatable {
 	 * @param dt the elapsed time, in seconds, since the last execution of the update loop
 	 */
 	void update(double dt);
+
+	/**
+	 * Destroys this updatable and release all associated resources.
+	 */
+	void destroy();
 }
