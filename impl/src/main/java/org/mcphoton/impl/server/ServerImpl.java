@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import org.mcphoton.Photon;
 import org.mcphoton.entity.living.Player;
@@ -17,6 +16,7 @@ import org.mcphoton.impl.command.ListCommand;
 import org.mcphoton.impl.command.StopCommand;
 import org.mcphoton.impl.network.ProtocolLibAdapter;
 import org.mcphoton.impl.plugin.GlobalPluginsManagerImpl;
+import org.mcphoton.impl.runtime.ErrorAwareScheduledExecutor;
 import org.mcphoton.impl.world.WorldImpl;
 import org.mcphoton.server.BansManager;
 import org.mcphoton.server.Server;
@@ -59,9 +59,7 @@ public final class ServerImpl implements Server {
 		config.load(this);// Intended leak to allow the config to use the worlds map
 		PhotonLogger.setLevel(config.getLogLevel());
 		libAdapter = new ProtocolLibAdapter(config.getPort());
-		executorService = Executors.newScheduledThreadPool(config.getThreadNumber());
-	}
-
+		executorService = new ErrorAwareScheduledExecutor(config.getThreadNumber());
 	}
 
 	@Override
