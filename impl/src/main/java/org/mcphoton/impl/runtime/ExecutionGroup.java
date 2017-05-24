@@ -8,9 +8,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import org.mcphoton.Photon;
-import org.mcphoton.runtime.ExecutionContext;
 import org.mcphoton.runtime.ContextBound;
-import org.mcphoton.runtime.Updatable;
+import org.mcphoton.runtime.ExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
