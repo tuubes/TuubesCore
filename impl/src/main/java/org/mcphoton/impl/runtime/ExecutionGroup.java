@@ -57,7 +57,7 @@ public final class ExecutionGroup implements ExecutionContext, Runnable {
 
 	private final Queue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
 	private final Bag<Updatable> updatableBag = new SimpleBag<>();
-	private ScheduledFuture<?> scheduledFuture;
+	private volatile ScheduledFuture<?> scheduledFuture;
 	private long previousTime;
 
 	/**
@@ -89,6 +89,13 @@ public final class ExecutionGroup implements ExecutionContext, Runnable {
 		scheduledFuture = Photon.getExecutorService()
 								.scheduleAtFixedRate(this, UPDATE_PERIOD, UPDATE_PERIOD,
 													 TimeUnit.MILLISECONDS);
+	}
+
+	public void stop() {
+		if (scheduledFuture == null) {
+			return;// Task not scheduled yet
+		}
+		scheduledFuture.cancel(false);
 	}
 
 	@Override
