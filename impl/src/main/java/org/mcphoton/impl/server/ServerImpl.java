@@ -50,9 +50,9 @@ public final class ServerImpl implements Server {
 
 	public ServerImpl() {
 		log.info("Photon Server "
-				 + getVersion()
+				 + Photon.getImplVersion()
 				 + ", API "
-				 + Photon.getVersion()
+				 + Photon.getAPIVersion()
 				 + ", for MC "
 				 + Photon.getMinecraftVersion());
 		loadWorlds();
@@ -62,9 +62,6 @@ public final class ServerImpl implements Server {
 		executorService = Executors.newScheduledThreadPool(config.getThreadNumber());
 	}
 
-	@Override
-	public String getVersion() {
-		return "dev-alpha-10/05/17";
 	}
 
 	@Override

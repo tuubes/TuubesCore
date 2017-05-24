@@ -61,9 +61,4 @@ public interface Server {
 	 * @return the server's configuration.
 	 */
 	ServerConfiguration getConfiguration();
-
-	/**
-	 * @return the server's implementation version.
-	 */
-	String getVersion();
 }

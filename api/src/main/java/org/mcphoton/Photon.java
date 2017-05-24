@@ -80,7 +80,14 @@ public final class Photon {
 	/**
 	 * @return the API version.
 	 */
-	public static String getVersion() {
+	public static String getAPIVersion() {
+		return "dev-alpha";
+	}
+
+	/**
+	 * @return the Implementation version.
+	 */
+	public static String getImplVersion() {
 		return "dev-alpha";
 	}
 

@@ -84,7 +84,11 @@ public final class Photon {
 		return CONSOLE_ADVANCED;
 	}
 
-	public static String getVersion() {
+	public static String getAPIVersion() {
+		return "dev-alpha";
+	}
+
+	public static String getImplVersion() {
 		return "dev-alpha";
 	}
 
