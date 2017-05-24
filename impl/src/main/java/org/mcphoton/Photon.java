@@ -72,14 +72,6 @@ public final class Photon {
 		return GAME_REGISTRY;
 	}
 
-	public static boolean isClient() {
-		return false;
-	}
-
-	public static boolean isServer() {
-		return true;
-	}
-
 	public static boolean isConsoleAdvanced() {
 		return CONSOLE_ADVANCED;
 	}
