@@ -11,12 +11,14 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentSkipListSet;
 import org.mcphoton.Photon;
+import org.mcphoton.server.AccessList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,21 +27,21 @@ import org.slf4j.LoggerFactory;
  *
  * @author TheElectronWill
  */
-abstract class BWListManager {
-	protected static final ConfigSpec CONFIG_SPEC = new ConfigSpec();
+final class AccessListImpl implements AccessList {
+	private static final ConfigSpec CONFIG_SPEC = new ConfigSpec();
 
 	static {
 		CONFIG_SPEC.define("accounts", Collections.emptyList());
 		CONFIG_SPEC.define("ips", Collections.emptyList());
 	}
 
-	protected final String name;
-	protected final File file;
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
-	protected final Set<UUID> accountSet = new ConcurrentSkipListSet<>();
-	protected final Set<InetAddress> addressSet = new ConcurrentSkipListSet<>();
+	private final String name;
+	private final File file;
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final Set<UUID> accountSet = new ConcurrentSkipListSet<>();
+	private final Set<InetAddress> addressSet = new ConcurrentSkipListSet<>();
 
-	BWListManager(String name) {
+	AccessListImpl(String name) {
 		this.name = name;
 		this.file = new File(Photon.getMainDirectory(), name + ".toml");
 	}
@@ -99,5 +101,45 @@ abstract class BWListManager {
 		} catch (WritingException e) {
 			logger.error("Cannot save the " + name, e);
 		}
+	}
+
+	@Override
+	public boolean contains(UUID accountId) {
+		return accountSet.contains(accountId);
+	}
+
+	@Override
+	public boolean contains(InetAddress ip) {
+		return addressSet.contains(ip);
+	}
+
+	@Override
+	public void add(UUID accountId) {
+		accountSet.add(accountId);
+	}
+
+	@Override
+	public void add(InetAddress ip) {
+		addressSet.add(ip);
+	}
+
+	@Override
+	public void remove(UUID accountId) {
+		accountSet.remove(accountId);
+	}
+
+	@Override
+	public void remove(InetAddress ip) {
+		addressSet.remove(ip);
+	}
+
+	@Override
+	public Collection<UUID> getAccounts() {
+		return Collections.unmodifiableSet(accountSet);
+	}
+
+	@Override
+	public Collection<InetAddress> getIPs() {
+		return Collections.unmodifiableSet(addressSet);
 	}
 }

@@ -18,10 +18,9 @@ import org.mcphoton.impl.network.ProtocolLibAdapter;
 import org.mcphoton.impl.plugin.GlobalPluginsManagerImpl;
 import org.mcphoton.impl.runtime.ErrorAwareScheduledExecutor;
 import org.mcphoton.impl.world.WorldImpl;
-import org.mcphoton.server.BansManager;
+import org.mcphoton.server.AccessList;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.ServerConfiguration;
-import org.mcphoton.server.WhitelistManager;
 import org.mcphoton.world.World;
 import org.mcphoton.world.WorldType;
 import org.slf4j.Logger;
@@ -39,8 +38,8 @@ public final class ServerImpl implements Server {
 	private final ConsoleThread consoleThread = new ConsoleThread();
 	private final GlobalPluginsManagerImpl pluginsManager = new GlobalPluginsManagerImpl();
 	private final GlobalCommandRegistryImpl commandRegistry = new GlobalCommandRegistryImpl();
-	private final BansManagerImpl bansManager = new BansManagerImpl();
-	private final WhitelistManagerImpl whitelistManager = new WhitelistManagerImpl();
+	private final AccessListImpl whitelist = new AccessListImpl("whitelist");
+	private final AccessListImpl blackList = new AccessListImpl("blacklist");
 	private final ServerConfigImpl config = new ServerConfigImpl();
 	private final ProtocolLibAdapter libAdapter;
 	public final ScheduledExecutorService executorService;
@@ -68,13 +67,13 @@ public final class ServerImpl implements Server {
 	}
 
 	@Override
-	public BansManager getBansManager() {
-		return bansManager;
+	public AccessList getWhitelist() {
+		return whitelist;
 	}
 
 	@Override
-	public WhitelistManager getWhitelistManager() {
-		return whitelistManager;
+	public AccessList getBlacklist() {
+		return blackList;
 	}
 
 	public ConsoleThread getConsoleThread() {
@@ -117,8 +116,8 @@ public final class ServerImpl implements Server {
 	}
 
 	void start() {
-		whitelistManager.load();
-		bansManager.load();
+		whitelist.load();
+		blackList.load();
 		loadPlugins();
 		registerCommands();
 		consoleThread.start();
@@ -163,8 +162,8 @@ public final class ServerImpl implements Server {
 
 			log.info("Saving configurations...");
 			config.save();
-			bansManager.save();
-			whitelistManager.save();
+			whitelist.save();
+			blackList.save();
 
 			log.info("Stopping threads...");
 			consoleThread.stopNicely();

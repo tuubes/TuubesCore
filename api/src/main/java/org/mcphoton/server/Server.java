@@ -10,14 +10,14 @@ import org.mcphoton.world.World;
  */
 public interface Server {
 	/**
-	 * @return the server's BansManager.
+	 * @return the whitelist.
 	 */
-	BansManager getBansManager();
+	AccessList getWhitelist();
 
 	/**
-	 * @return the server's WhitelistManager.
+	 * @return the blacklist.
 	 */
-	WhitelistManager getWhitelistManager();
+	AccessList getBlacklist();
 
 	/**
 	 * Gets all the currently connected players.
