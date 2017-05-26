@@ -87,10 +87,24 @@ public final class Vector implements Coordinates, Cloneable {
 		return this;
 	}
 
+	public Vector add(Coordinates c) {
+		x += c.getX();
+		y += c.getY();
+		z += c.getZ();
+		return this;
+	}
+
 	public Vector sub(Vector v) {
 		x -= v.x;
 		y -= v.y;
 		z -= v.z;
+		return this;
+	}
+
+	public Vector sub(Coordinates v) {
+		x -= v.getX();
+		y -= v.getY();
+		z -= v.getZ();
 		return this;
 	}
 
@@ -275,6 +289,20 @@ public final class Vector implements Coordinates, Cloneable {
 	}
 
 	/**
+	 * Checks if all the coordinates of this vector are bigger than the ones of the vector v.
+	 */
+	public boolean isBiggerThan(Vector v) {
+		return x > v.x && y > v.y && z > v.z;
+	}
+
+	/**
+	 * Checks if all the coordinates of this vector are smaller than the ones of the vector v.
+	 */
+	public boolean isSmallerThan(Vector v) {
+		return x < v.x && y < v.y && z < v.z;
+	}
+
+	/**
 	 * Gets the middle of two vectors.
 	 */
 	public static Vector middle(Vector v1, Vector v2) {
@@ -291,5 +319,37 @@ public final class Vector implements Coordinates, Cloneable {
 			result.add(v);
 		}
 		return result;
+	}
+
+	/**
+	 * Gets a vector such that each coordinate is the maximum of the coordinates of the specified
+	 * vectors.
+	 */
+	public static Vector max(Vector... vectors) {
+		Vector first = vectors[0];
+		double maxX = first.x, maxY = first.y, maxZ = first.z;
+		for (int i = 1; i < vectors.length; i++) {
+			Vector v = vectors[i];
+			if (v.x > maxX) { maxX = v.x; }
+			if (v.y > maxY) { maxY = v.y; }
+			if (v.z > maxZ) { maxZ = v.z; }
+		}
+		return new Vector(maxX, maxY, maxZ);
+	}
+
+	/**
+	 * Gets a vector such that each coordinate is the minimum of the coordinates of the specified
+	 * vectors.
+	 */
+	public static Vector min(Vector... vectors) {
+		Vector first = vectors[0];
+		double minX = first.x, minY = first.y, minZ = first.z;
+		for (int i = 1; i < vectors.length; i++) {
+			Vector v = vectors[i];
+			if (v.x < minX) { minX = v.x; }
+			if (v.y < minY) { minY = v.y; }
+			if (v.z < minZ) { minZ = v.z; }
+		}
+		return new Vector(minX, minY, minZ);
 	}
 }
