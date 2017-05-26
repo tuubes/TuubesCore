@@ -9,9 +9,9 @@ import org.mcphoton.utils.Vector;
  * @author TheElectronWill
  */
 public abstract class AbstractEntity implements Entity {
-	protected WorldImpl world;
-	protected Vector position, velocity;
-	protected int id = -1;
+	protected volatile WorldImpl world;
+	protected volatile Vector position, velocity;
+	protected volatile int id = -1;
 
 	protected AbstractEntity(Location location) {
 		position = location.toVector();
