@@ -92,8 +92,15 @@ public final class BoundingBox implements Cloneable {
 	public RayBoxIntersection sweptIntersectionWithBox(BoundingBox box, Vector velocity) {
 		Coordinates center = box.getCenter();
 		BoundingBox augmentedBox = this.inflated(box.getWidth(), box.getHeight(), box.getDepth());
-		return augmentedBox.intersectionWithRay(center, velocity, Double.NEGATIVE_INFINITY,
-												Double.POSITIVE_INFINITY);
+		return augmentedBox.intersectionWithRay(center, velocity, 0, Double.POSITIVE_INFINITY);
+		// The intersection points represent the center of the colliding box at the collision
+		// instant. The face is the one of this box, the face of the colliding box is the
+		// opposite one.
+	}
+
+	public RayBoxIntersection sweptIntersectionWithBox(BoundingBox box, Vector posA, Vector posB) {
+		BoundingBox augmentedBox = this.inflated(box.getWidth(), box.getHeight(), box.getDepth());
+		return augmentedBox.intersectionWithSegment(posA, posB);
 		// The intersection points represent the center of the colliding box at the collision
 		// instant. The face is the one of this box, the face of the colliding box is the
 		// opposite one.
