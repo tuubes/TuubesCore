@@ -1,5 +1,6 @@
 package org.mcphoton.entity;
 
+import org.mcphoton.runtime.ContextBound;
 import org.mcphoton.utils.Location;
 import org.mcphoton.utils.Vector;
 
@@ -9,7 +10,7 @@ import org.mcphoton.utils.Vector;
  * @author TheElectronWill
  * @author DJmaxZPLAY
  */
-public interface Entity {
+public interface Entity extends ContextBound {
 	/**
 	 * @return the entity's type.
 	 */
