@@ -1,9 +1,6 @@
 package org.mcphoton.item;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Objects;
-import org.mcphoton.Photon;
 
 /**
  * A stack of items.
