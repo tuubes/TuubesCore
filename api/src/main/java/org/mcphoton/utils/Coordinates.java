@@ -5,7 +5,7 @@ package org.mcphoton.utils;
  *
  * @author TheElectronWill
  */
-public interface Coordinates {
+public interface Coordinates extends Cloneable {
 	/**
 	 * @return the x coordinate
 	 */
@@ -20,6 +20,11 @@ public interface Coordinates {
 	 * @return the z coordinate
 	 */
 	double getZ();
+
+	/**
+	 * @return a clone of this object
+	 */
+	Coordinates clone();
 
 	/**
 	 * Calculates the squared distance between two points.
