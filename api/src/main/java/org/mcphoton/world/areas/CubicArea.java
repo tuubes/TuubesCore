@@ -1,6 +1,7 @@
 package org.mcphoton.world.areas;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
 
@@ -89,7 +90,7 @@ public final class CubicArea implements Area {
 
 	@Override
 	public int size() {
-		return (x2 - x1) * (y2 - y1);
+		return (x2 - x1) * (y2 - y1) * (z2 - z1);
 	}
 
 	private class CubicAreaIterator implements Iterator<Location> {
@@ -103,6 +104,9 @@ public final class CubicArea implements Area {
 
 		@Override
 		public Location next() {
+			if (!hasNext) {
+				throw new NoSuchElementException();
+			}
 			Location l = new Location(x, y, z, world);
 			x++;
 			if (x > x2) {
