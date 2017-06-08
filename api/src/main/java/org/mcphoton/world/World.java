@@ -3,11 +3,13 @@ package org.mcphoton.world;
 import java.io.File;
 import java.util.Collection;
 import java.util.Optional;
+import org.mcphoton.block.BlockType;
 import org.mcphoton.command.WorldCommandRegistry;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.event.WorldEventsManager;
 import org.mcphoton.permissions.WorldPermissionsManager;
 import org.mcphoton.plugin.WorldPluginsManager;
+import org.mcphoton.utils.Coordinates;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.areas.Area;
 import org.mcphoton.world.protection.CheckedWorldAccess;
@@ -123,57 +125,7 @@ public interface World {
 
 	//---- Block Access ----
 
-	/**
-	 * @return the world's access manager.
-	 */
-	WorldAccessManager getAccessManager();
+	BlockType getBlockType(int x, int y, int z);
 
-	/**
-	 * Sets the world's access manager.
-	 *
-	 * @param manager the access manager to set.
-	 */
-	void setAccessManager(WorldAccessManager manager);
-
-	/**
-	 * Accesses the world's blocks.
-	 *
-	 * @return a CheckedWorldAccess.
-	 */
-	default CheckedWorldAccess access() {
-		return getAccessManager().getAccess();
-	}
-
-	/**
-	 * Accesses a world area.
-	 *
-	 * @param area     the area to access.
-	 * @param accessor the Object that wants to access this area.
-	 * @return an UnlockedAreaAccess, optional.
-	 */
-	default Optional<UnlockedAreaAccess> accessArea(Area area, Object accessor) {
-		return getAccessManager().unlockArea(area, accessor);
-	}
-
-	/**
-	 * Accesses a world chunk.
-	 *
-	 * @param x        the chunk's x coordinate.
-	 * @param z        the chunk's z coordinate.
-	 * @param accessor the Object that wants to access this chunk.
-	 * @return a ChunkColumn, optional.
-	 */
-	default Optional<ChunkColumn> accessChunk(int x, int z, Object accessor) {
-		return getAccessManager().unlockChunk(x, z, accessor);
-	}
-
-	/**
-	 * Unlocks the entire world for an unlimited block access.
-	 *
-	 * @param accessor the Object that wants to access this chunk.
-	 * @return an UnlockedWorldAccess, optional.
-	 */
-	default Optional<UnlockedWorldAccess> accessAll(Object accessor) {
-		return getAccessManager().unlockWorld(accessor);
-	}
+	BlockType getBlockType(Coordinates coords);
 }
