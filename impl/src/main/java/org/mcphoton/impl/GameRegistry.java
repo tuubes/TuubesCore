@@ -15,12 +15,14 @@ import org.mcphoton.impl.entity.objects.AbstractObjectType;
 import org.mcphoton.impl.item.AbstractItemType;
 
 /**
+ * Regitry for game types: blocks, "object" entities, "mob" entities, items. The IDs are defined
+ * in the config file "game_ids.toml".
+ *
  * @author TheElectronWill
  */
 @SuppressWarnings("Duplicates")
 public final class GameRegistry {
-	private static final File IDS_CONFIG_FILE = new File(Photon.getMainDirectory(),
-														 "game_ids.toml");
+	private static final File IDS_CONFIG_FILE = new File(Photon.getMainDirectory(), "game_ids.toml");
 	private Config idsConfig = new TomlParser().parse(IDS_CONFIG_FILE);
 	private Config blocksIdsConfig = idsConfig.getValue("blocks");
 	private Config objectsIdsConfig = idsConfig.getValue("objects");
@@ -44,7 +46,7 @@ public final class GameRegistry {
 	 * registered data.
 	 */
 	public void freeze() {
-		// Deletes the configuration, they're useless now
+		// Deletes the configurations, they're useless now
 		idsConfig = null;
 		blocksIdsConfig = null;
 		objectsIdsConfig = null;
@@ -151,6 +153,10 @@ public final class GameRegistry {
 		return objectsIndex.get(id);
 	}
 
+	/**
+	 * Result of {@link #registerItem(AbstractItemType)}. Contains the informations about the
+	 * registered item type: its ID and its damageData if the type has variants.
+	 */
 	public static final class ItemTypeInfos {
 		public final int id;
 		public final OptionalInt damageData;
@@ -161,10 +167,16 @@ public final class GameRegistry {
 		}
 	}
 
+	/**
+	 * Registration infos of a type of item.
+	 */
 	private static interface ItemRegistration {
 		AbstractItemType getVariant(int damageData);
 	}
 
+	/**
+	 * Registration infos of an item type that has mutliple variants (like Stone).
+	 */
 	private static final class ItemVariants implements ItemRegistration {
 		final IndexMap<AbstractItemType> variants = new IndexMap<>();
 
@@ -174,6 +186,9 @@ public final class GameRegistry {
 		}
 	}
 
+	/**
+	 * Registration info of a simple item type that has no variants.
+	 */
 	private static final class BasicItem implements ItemRegistration {
 		final AbstractItemType type;
 
