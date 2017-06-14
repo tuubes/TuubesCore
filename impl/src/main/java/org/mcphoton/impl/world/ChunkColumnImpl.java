@@ -12,7 +12,7 @@ import org.mcphoton.world.ChunkSection;
  * Basic implementation of ChunkColumn. It is thread-safe.
  *
  * @author TheElectronWill
- * @see http://wiki.vg/SMP_Map_Format
+ * @see <a href="http://wiki.vg/SMP_Map_Format">wiki.vg - Protocol map format</a>
  */
 public final class ChunkColumnImpl implements ChunkColumn {
 	private final Column libColumn;
