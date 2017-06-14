@@ -7,7 +7,6 @@ import java.io.File;
 import java.util.Collection;
 import org.mcphoton.Photon;
 import org.mcphoton.command.WorldCommandRegistry;
-import org.mcphoton.entity.Entity;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.event.WorldEventsManager;
 import org.mcphoton.impl.command.WorldCommandRegistryImpl;
@@ -45,7 +44,6 @@ public class WorldImpl implements World {
 	protected final WorldCommandRegistry commandRegistry = new WorldCommandRegistryImpl();
 	protected volatile ChunkGenerator chunkGenerator = new SimpleHeightmapBasedGenerator(this);
 	protected volatile WorldAccessManager accessManager = new OpenWorldAccessManager(this);
-	protected final WorldChunksManager chunksManager = new WorldChunksManager(this);
 	protected final WorldPermissionsManager permissionsManager = new WorldPermissionsManagerImpl();
 
 	public WorldImpl(String name, WorldType type) {
@@ -156,8 +154,6 @@ public class WorldImpl implements World {
 	public void setAccessManager(WorldAccessManager manager) {
 		this.accessManager = manager;
 	}
-
-	@Override
 	public WorldCommandRegistry getCommandRegistry() {
 		return commandRegistry;
 	}
@@ -182,7 +178,4 @@ public class WorldImpl implements World {
 		this.chunkGenerator = generator;
 	}
 
-	public WorldChunksManager getChunksManager() {
-		return chunksManager;
-	}
 }
