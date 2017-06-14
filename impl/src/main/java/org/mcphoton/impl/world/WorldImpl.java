@@ -43,7 +43,6 @@ public class WorldImpl implements World {
 	protected final WorldEventsManager eventsManager = new WorldEventsManagerImpl();
 	protected final WorldCommandRegistry commandRegistry = new WorldCommandRegistryImpl();
 	protected volatile ChunkGenerator chunkGenerator = new SimpleHeightmapBasedGenerator(this);
-	protected volatile WorldAccessManager accessManager = new OpenWorldAccessManager(this);
 	protected final WorldPermissionsManager permissionsManager = new WorldPermissionsManagerImpl();
 
 	public WorldImpl(String name, WorldType type) {
@@ -146,14 +145,6 @@ public class WorldImpl implements World {
 	}
 
 	@Override
-	public WorldAccessManager getAccessManager() {
-		return accessManager;
-	}
-
-	@Override
-	public void setAccessManager(WorldAccessManager manager) {
-		this.accessManager = manager;
-	}
 	public WorldCommandRegistry getCommandRegistry() {
 		return commandRegistry;
 	}
