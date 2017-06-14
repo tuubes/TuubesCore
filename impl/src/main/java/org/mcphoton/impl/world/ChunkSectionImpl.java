@@ -14,6 +14,10 @@ import org.mcphoton.world.ChunkSection;
 public final class ChunkSectionImpl implements ChunkSection {
 	final Chunk libChunk;
 
+	public ChunkSectionImpl(Chunk libChunk) {
+		this.libChunk = libChunk;
+	}
+
 	public ChunkSectionImpl(boolean skylight) {
 		this.libChunk = new Chunk(skylight);
 	}

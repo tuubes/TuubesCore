@@ -29,6 +29,26 @@ public final class ChunkColumnImpl implements ChunkColumn {
 		this.libColumn = new Column(x, z, chunks, biomes, tileEntities);
 	}
 
+	public ChunkColumnImpl(Column libColumn) {
+		this.libColumn = libColumn;
+		this.sections = new ChunkSectionImpl[libColumn.getChunks().length];
+		for (int i = 0; i < libColumn.getChunks().length; i++) {
+			Chunk libChunk = libColumn.getChunks()[i];
+			sections[i] = new ChunkSectionImpl(libChunk);
+		}
+	}
+
+	public Column getLibColumn() {
+		return libColumn;
+	}
+	public int getX() {
+		return libColumn.getX();
+	}
+
+	public int getZ() {
+		return libColumn.getZ();
+	}
+
 	@Override
 	public int getBiomeId(int x, int z) {
 		byte[] biomes = libColumn.getBiomeData();
