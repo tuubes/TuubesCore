@@ -3,7 +3,9 @@ package org.mcphoton.impl.world;
 import com.electronwill.utils.SimpleBag;
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import org.mcphoton.Photon;
+import org.mcphoton.block.BlockType;
 import org.mcphoton.command.WorldCommandRegistry;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.event.WorldEventsManager;
@@ -14,6 +16,7 @@ import org.mcphoton.impl.plugin.WorldPluginsManagerImpl;
 import org.mcphoton.impl.world.generation.SimpleHeightmapBasedGenerator;
 import org.mcphoton.permissions.WorldPermissionsManager;
 import org.mcphoton.plugin.WorldPluginsManager;
+import org.mcphoton.utils.Coordinates;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.ChunkGenerator;
 import org.mcphoton.world.World;
@@ -39,6 +42,7 @@ public class WorldImpl implements World {
 
 	// World chunks
 	protected final ChunkGenerator chunkGenerator = new SimpleHeightmapBasedGenerator(this);
+	protected final ChunkCache chunkCache = new ChunkCache(this);
 	protected final ChunkIO chunkIO = new ChunkIO(this);
 
 	// World entities
@@ -101,7 +105,7 @@ public class WorldImpl implements World {
 
 	@Override
 	public void save() {
-		chunksManager.writeAll();
+		//TODO write all the ChunkColumns of the cache to the disk
 	}
 
 	@Override
@@ -129,13 +133,23 @@ public class WorldImpl implements World {
 		return pluginsManager;
 	}
 
+	public ChunkCache getChunkCache() {
+		return chunkCache;
+	}
+
 	public EntitiesManager getEntitiesManager() {
 		return entitiesManager;
 	}
 
 	@Override
-	public void setChunkGenerator(ChunkGenerator generator) {
-		this.chunkGenerator = generator;
+	public BlockType getBlockType(int x, int y, int z) {
+		// The chunk isn't cached? Too bad => NullPointerException :'(
+		int blockId = chunkCache.getCached(x / 16, z / 16).getBlockFullId(x % 16, y, z % 16);
+		return Photon.getGameRegistry().getBlock(blockId);
 	}
 
+	@Override
+	public BlockType getBlockType(Coordinates coords) {
+		return getBlockType((int)coords.getX(), (int)coords.getY(), (int)coords.getZ());
+	}
 }
