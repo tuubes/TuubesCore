@@ -78,13 +78,9 @@ public final class ChunkIO {
 	 * @param attachment        an object that will be given to the completionHandler
 	 * @param completionHandler handles the completion or failure of the operations
 	 * @param <A>               the attachment's type
-	 * @throws IOException if an I/O error occurs in the foreground (for instance if the chunk
-	 *                     file cannot be opened). If an error occurs in background, the
-	 *                     method completionHandler.failed is called.
 	 */
 	<A> void writeChunk(ChunkColumnImpl chunk, A attachment,
-						CompletionHandler<ChunkColumnImpl, A> completionHandler)
-			throws IOException {
+						CompletionHandler<ChunkColumnImpl, A> completionHandler) {
 		Path chunkPath = getChunkPath(chunk.getX(), chunk.getZ());
 		try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(chunkPath,
 																			StandardOpenOption.WRITE)) {
@@ -110,6 +106,8 @@ public final class ChunkIO {
 			};
 			// Asynchronously writes the ByteBuffer to the channel
 			channel.write(buffer, 0, attachment, lowLevelhandler);
+		} catch (IOException e) {
+			completionHandler.failed(e, attachment);
 		}
 	}
 
@@ -123,12 +121,9 @@ public final class ChunkIO {
 	 * @param attachment        an object that will be given to the completionHandler
 	 * @param completionHandler handles the completion or failure of the operations
 	 * @param <A>               the attachment's type
-	 * @throws IOException if an I/O error occurs in the foreground (for instance if the chunk
-	 *                     file cannot be opened). If an error occurs in background, the
-	 *                     method completionHandler.failed is called.
 	 */
 	<A> void readChunk(int x, int z, A attachment,
-					   CompletionHandler<ChunkColumnImpl, A> completionHandler) throws IOException {
+					   CompletionHandler<ChunkColumnImpl, A> completionHandler) {
 		Path chunkPath = getChunkPath(x, z);
 		if (!Files.exists(chunkPath)) {
 			completionHandler.failed(new NoSuchFileException("The chunk file doesn't exist."),
@@ -161,6 +156,8 @@ public final class ChunkIO {
 			};
 			// Asynchronously reads the file into the ByteBuffer and parses it with the handler
 			channel.read(buffer, 0, attachment, lowLevelHandler);
+		} catch (IOException e) {
+			completionHandler.failed(e, attachment);
 		}
 	}
 }
