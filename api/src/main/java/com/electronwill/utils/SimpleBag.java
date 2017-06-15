@@ -115,9 +115,11 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 	}
 
 	@Override
-	public void remove(int index) {
+	public E remove(int index) {
+		E element = (E)array[index];
 		array[index] = array[--size];
 		array[size] = null;
+		return element;
 	}
 
 	@Override

@@ -30,8 +30,9 @@ public interface Bag<E> extends Collection<E> {
 	 * the gap".
 	 *
 	 * @param index the element's index.
+	 * @return the element that was at the specified index before its removal.
 	 */
-	void remove(int index);
+	E remove(int index);
 
 	/**
 	 * Trims the capacity of this Bag instance to be the bag's current size. Use this operation to
