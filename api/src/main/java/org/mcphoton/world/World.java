@@ -2,7 +2,6 @@ package org.mcphoton.world;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Optional;
 import org.mcphoton.block.BlockType;
 import org.mcphoton.command.WorldCommandRegistry;
 import org.mcphoton.entity.living.Player;
@@ -11,11 +10,6 @@ import org.mcphoton.permissions.WorldPermissionsManager;
 import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.utils.Coordinates;
 import org.mcphoton.utils.Location;
-import org.mcphoton.world.areas.Area;
-import org.mcphoton.world.protection.CheckedWorldAccess;
-import org.mcphoton.world.protection.UnlockedAreaAccess;
-import org.mcphoton.world.protection.UnlockedWorldAccess;
-import org.mcphoton.world.protection.WorldAccessManager;
 
 /**
  * A game world.
@@ -108,20 +102,6 @@ public interface World {
 	 * @return the world's permissions manager.
 	 */
 	WorldPermissionsManager getPermissionsManager();
-
-	//---- World generation ----
-
-	/**
-	 * @return the world's chunk generator.
-	 */
-	ChunkGenerator getChunkGenerator();
-
-	/**
-	 * Sets the world's chunk generator.
-	 *
-	 * @param generator the generator to set.
-	 */
-	void setChunkGenerator(ChunkGenerator generator);
 
 	//---- Block Access ----
 
