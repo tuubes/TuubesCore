@@ -21,6 +21,6 @@ public class LoginHandlerImpl implements ServerLoginHandler {
 				new ServerJoinGamePacket(0, false, GameMode.SURVIVAL, 0, Difficulty.PEACEFUL, 10,
 										 WorldType.DEFAULT, false));
 		session.send(new ServerChatPacket(
-				"Welcome to the Photon server! Version " + Photon.getServer().getVersion()));
+				"Welcome to the Photon server! Version " + Photon.getImplVersion()));
 	}
 }
