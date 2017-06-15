@@ -23,8 +23,7 @@ public final class ChunkCache {
 		this.world = world;
 	}
 
-	private final ConcurrentMap<ChunkCoordinates, CacheValue> chunksMap = new ConcurrentHashMap<>(
-			512);
+	private final ConcurrentMap<ChunkCoordinates, CacheValue> chunksMap = new ConcurrentHashMap<>(512);
 	private final ReferenceQueue<ChunkColumnImpl> collectedChunks = new ReferenceQueue<>();
 
 	private static final class CacheValue extends SoftReference<ChunkColumnImpl> {
