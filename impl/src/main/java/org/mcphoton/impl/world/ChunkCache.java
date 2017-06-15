@@ -69,7 +69,7 @@ public final class ChunkCache {
 					@Override
 					public void failed(Throwable exc, Object attachment) {
 						log.error("Failed to save chunk in world {}, x={}, z={}", world.getName(),
-								  coords.x, coords.z);
+								  coords.x, coords.z, exc);
 					}
 				};
 				world.chunkIO.writeChunk(chunkColumn, null, completionHandler);
