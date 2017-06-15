@@ -1,7 +1,5 @@
 package org.mcphoton.impl.world;
 
-import com.electronwill.utils.Bag;
-import com.electronwill.utils.IndexMap;
 import com.electronwill.utils.SimpleBag;
 import java.io.File;
 import java.util.Collection;
@@ -10,7 +8,6 @@ import org.mcphoton.command.WorldCommandRegistry;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.event.WorldEventsManager;
 import org.mcphoton.impl.command.WorldCommandRegistryImpl;
-import org.mcphoton.impl.entity.AbstractEntity;
 import org.mcphoton.impl.event.WorldEventsManagerImpl;
 import org.mcphoton.impl.permissions.WorldPermissionsManagerImpl;
 import org.mcphoton.impl.plugin.WorldPluginsManagerImpl;
@@ -21,7 +18,6 @@ import org.mcphoton.utils.Location;
 import org.mcphoton.world.ChunkGenerator;
 import org.mcphoton.world.World;
 import org.mcphoton.world.WorldType;
-import org.mcphoton.world.protection.WorldAccessManager;
 
 /**
  * Implementation of World. It is thread-safe.
@@ -29,21 +25,26 @@ import org.mcphoton.world.protection.WorldAccessManager;
  * @author TheElectronWill
  */
 public class WorldImpl implements World {
+	// World properties
 	protected volatile String name;
 	protected volatile File directory;
 	protected volatile double spawnX = 0, spawnY = 0, spawnZ = 0;
-
 	protected final WorldType type;
-	protected final Collection<Player> players = new SimpleBag<>();
-	protected final IndexMap<AbstractEntity> entities = new IndexMap<>();// ids of the world's entities.
-	protected final Bag<Integer> removedIds = new SimpleBag<>(100, 50);// ids of the removed
-	// entities. Reusing them avoids fragmentation.
 
+	// World managers and registries
 	protected final WorldPluginsManager pluginsManager = new WorldPluginsManagerImpl(this);
 	protected final WorldEventsManager eventsManager = new WorldEventsManagerImpl();
 	protected final WorldCommandRegistry commandRegistry = new WorldCommandRegistryImpl();
-	protected volatile ChunkGenerator chunkGenerator = new SimpleHeightmapBasedGenerator(this);
 	protected final WorldPermissionsManager permissionsManager = new WorldPermissionsManagerImpl();
+
+	// World chunks
+	protected final ChunkGenerator chunkGenerator = new SimpleHeightmapBasedGenerator(this);
+	protected final ChunkIO chunkIO = new ChunkIO(this);
+
+	// World entities
+	protected final Collection<Player> players = new SimpleBag<>();
+	protected final Collection<Player> playersUnmodifiable = Collections.unmodifiableCollection(players);
+	protected final EntitiesManager entitiesManager = new EntitiesManager();
 
 	public WorldImpl(String name, WorldType type) {
 		this.name = name;
@@ -56,37 +57,6 @@ public class WorldImpl implements World {
 		this.name = directory.getName();
 		this.type = type;
 		this.directory = directory;
-	}
-
-	public AbstractEntity getEntity(int entityId) {
-		synchronized (entities) {
-			return entities.get(entityId);
-		}
-	}
-
-	public void addEntity(AbstractEntity entity) {
-		if (entity.getLocation().getWorld() != this) {
-			throw new IllegalArgumentException(
-					"An entity can only be added to the world it is " + "in");
-		}
-		synchronized (entities) {
-			int nextId;
-			if (removedIds.isEmpty()) {
-				nextId = entities.size();// need a new id
-			} else {
-				nextId = removedIds.get(0);// reuse this id
-				removedIds.remove(0);
-			}
-			entity.init(nextId);
-			entities.put(nextId, entity);
-		}
-	}
-
-	public void removeEntity(int entityId) {
-		synchronized (entities) {
-			entities.remove(entityId);
-			removedIds.add(entityId);
-		}
 	}
 
 	@Override
@@ -126,7 +96,7 @@ public class WorldImpl implements World {
 
 	@Override
 	public Collection<Player> getPlayers() {
-		return players;
+		return playersUnmodifiable;
 	}
 
 	@Override
@@ -159,9 +129,8 @@ public class WorldImpl implements World {
 		return pluginsManager;
 	}
 
-	@Override
-	public ChunkGenerator getChunkGenerator() {
-		return chunkGenerator;
+	public EntitiesManager getEntitiesManager() {
+		return entitiesManager;
 	}
 
 	@Override

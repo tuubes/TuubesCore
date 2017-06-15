@@ -79,6 +79,15 @@ public final class ExecutionGroup implements ExecutionContext, Runnable {
 	}
 
 	/**
+	 * Removes an Updatable from this group. This method must be called in this ExecutionGroup.
+	 *
+	 * @param updatable the Updatable to remove
+	 */
+	public void removeUpdatable(Updatable updatable) {
+		updatableBag.remove(updatable);
+	}
+
+	/**
 	 * Starts this ExecutionGroup with the ScheduledExecutorService.
 	 */
 	public void schedule() {
