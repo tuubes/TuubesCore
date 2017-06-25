@@ -17,8 +17,8 @@ import java.util.function.Function;
  * The array containing the elements of the map is marked as volatile. Read operations are
  * implemented as a simple "get" on this array, that's why they're fast. Write operations use a
  * volatile "set" of the array, to ensure visibility by the get (and contains) methods. And to
- * achieve complete thread-safety and atomicity,
- * the critical parts of the write operations are guarded by synchronized blocks.
+ * achieve complete thread-safety and atomicity, the critical parts of the write operations are
+ * guarded by synchronized blocks.
  * </p>
  * <p>
  * About null values: the ConcurrentIndexMap does not support null values. A null value is
@@ -629,11 +629,9 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 
 	/**
 	 * An entry set with a weakly consistent iterator. The set is guaranteed to reflect the latest
-	 * state of
-	 * the map, but its iterator isn't. The {@link #remove(java.lang.Object)} method is not
-	 * guaranteed to be
-	 * performed atomically on the latest state of the map, because it internally uses the
-	 * iterator.
+	 * state of the map, but its iterator isn't. The {@link #remove(java.lang.Object)} method is not
+	 * guaranteed to be performed atomically on the latest state of the map, because it
+	 * internally uses the iterator.
 	 */
 	public final class ValueCollection extends AbstractCollection<E> {
 		private ValueCollection() {}
@@ -680,8 +678,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 
 	/**
 	 * An entry set with a weakly consistent iterator. The set is guaranteed to reflect the latest
-	 * state of
-	 * the map, but its iterator isn't.
+	 * state of the map, but its iterator isn't.
 	 */
 	public final class EntrySet extends AbstractSet<Entry<Integer, E>> {
 		private EntrySet() {}
