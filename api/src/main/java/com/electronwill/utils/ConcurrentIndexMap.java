@@ -142,8 +142,12 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 
 	@Override
 	public E computeIfAbsent(Integer key, Function<? super Integer, ? extends E> mappingFunction) {
+		E oldValue = get(key.intValue());
+		if (oldValue != null) {
+			return oldValue;
+		}
 		synchronized (this) {
-			E oldValue = get(key.intValue());
+			oldValue = get(key.intValue());
 			if (oldValue == null) {
 				E newValue = mappingFunction.apply(key);
 				if (newValue != null) {
@@ -158,8 +162,12 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	@Override
 	public E computeIfPresent(Integer key,
 							  BiFunction<? super Integer, ? super E, ? extends E> remappingFunction) {
+		E oldValue = get(key.intValue());
+		if (oldValue == null) {
+			return null;
+		}
 		synchronized (this) {
-			E oldValue = get(key.intValue());
+			oldValue = get(key.intValue());
 			if (oldValue != null) {
 				E newValue = remappingFunction.apply(key, oldValue);
 				if (newValue != null) {
