@@ -700,7 +700,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 		public boolean contains(Object o) {
 			if (o instanceof Entry) {
 				Entry<Integer, E> entry = (Entry)o;
-				Object value = ConcurrentIndexMap.this.get(entry.getKey());
+				Object value = ConcurrentIndexMap.this.get(entry.getKey().intValue());
 				return value != null && entry.getValue().equals(value);
 			}
 			return false;
@@ -721,7 +721,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 		public boolean remove(Object o) {
 			if (o instanceof Entry) {
 				Entry<Integer, E> entry = (Entry)o;
-				return ConcurrentIndexMap.this.remove(entry.getKey(), entry.getValue());
+				return ConcurrentIndexMap.this.remove(entry.getKey().intValue(), entry.getValue());
 			}
 			return false;
 		}
