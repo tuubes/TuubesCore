@@ -2,12 +2,12 @@ package org.mcphoton.impl;
 
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.toml.TomlParser;
-import com.electronwill.utils.IndexMap;
+import com.electronwill.utils.ConcurrentIndexMap;
 import java.io.File;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.concurrent.ConcurrentHashMap;
 import org.mcphoton.Photon;
 import org.mcphoton.impl.block.AbstractBlockType;
 import org.mcphoton.impl.entity.mobs.AbstractMobType;
@@ -18,6 +18,9 @@ import org.mcphoton.impl.world.AbstractBiomeType;
 /**
  * Regitry for game types: blocks, "object" entities, "mob" entities, items, biomes. The IDs are
  * defined in the config file "game_ids.toml".
+ * <p>
+ * The get and freeze operations are safe to use from multiple thread. The register
+ * operations should be safe if the same type is never registered twice concurrently.
  *
  * @author TheElectronWill
  */
@@ -30,21 +33,23 @@ public final class GameRegistry {
 	private Config mobsIdsConfig = idsConfig.getValue("mobs");
 	private Config itemsIdsConfig = idsConfig.getValue("items");
 	private Config biomesIdsConfig = idsConfig.getValue("items");
+	/* Note: we don't need to synchronize on the configs because we only perform reading
+	operations, and they are initialized at the beginning and never modified after. */
 
-	private final IndexMap<AbstractBlockType> blocksIndex = new IndexMap<>();
-	private final Map<String, AbstractBlockType> blocksMap = new HashMap<>();
+	private final ConcurrentIndexMap<AbstractBlockType> blocksIndex = new ConcurrentIndexMap<>();
+	private final Map<String, AbstractBlockType> blocksMap = new ConcurrentHashMap<>();
 
-	private final IndexMap<AbstractObjectType> objectsIndex = new IndexMap<>();
-	private final Map<String, AbstractObjectType> objectsMap = new HashMap<>();
+	private final ConcurrentIndexMap<AbstractObjectType> objectsIndex = new ConcurrentIndexMap<>();
+	private final Map<String, AbstractObjectType> objectsMap = new ConcurrentHashMap<>();
 
-	private final IndexMap<AbstractMobType> mobsIndex = new IndexMap<>();
-	private final Map<String, AbstractMobType> mobsMap = new HashMap<>();
+	private final ConcurrentIndexMap<AbstractMobType> mobsIndex = new ConcurrentIndexMap<>();
+	private final Map<String, AbstractMobType> mobsMap = new ConcurrentHashMap<>();
 
-	private final IndexMap<ItemRegistration> itemsIndex = new IndexMap<>();
-	private final Map<String, AbstractItemType> itemsMap = new HashMap<>();
+	private final ConcurrentIndexMap<ItemRegistration> itemsIndex = new ConcurrentIndexMap<>();
+	private final Map<String, AbstractItemType> itemsMap = new ConcurrentHashMap<>();
 
-	private final IndexMap<AbstractBiomeType> biomesIndex = new IndexMap<>();
-	private final Map<String, AbstractBiomeType> biomesMap = new HashMap<>();
+	private final ConcurrentIndexMap<AbstractBiomeType> biomesIndex = new ConcurrentIndexMap<>();
+	private final Map<String, AbstractBiomeType> biomesMap = new ConcurrentHashMap<>();
 
 	/**
 	 * Freezes the GameRegistry: prevent any new registration and optimizes the storage of the
@@ -201,7 +206,7 @@ public final class GameRegistry {
 	 * Registration infos of an item type that has mutliple variants (like Stone).
 	 */
 	private static final class ItemVariants implements ItemRegistration {
-		final IndexMap<AbstractItemType> variants = new IndexMap<>();
+		final ConcurrentIndexMap<AbstractItemType> variants = new ConcurrentIndexMap<>();
 
 		@Override
 		public AbstractItemType getVariant(int damageData) {
