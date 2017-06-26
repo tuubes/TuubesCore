@@ -13,10 +13,11 @@ import org.mcphoton.impl.block.AbstractBlockType;
 import org.mcphoton.impl.entity.mobs.AbstractMobType;
 import org.mcphoton.impl.entity.objects.AbstractObjectType;
 import org.mcphoton.impl.item.AbstractItemType;
+import org.mcphoton.impl.world.AbstractBiomeType;
 
 /**
- * Regitry for game types: blocks, "object" entities, "mob" entities, items. The IDs are defined
- * in the config file "game_ids.toml".
+ * Regitry for game types: blocks, "object" entities, "mob" entities, items, biomes. The IDs are
+ * defined in the config file "game_ids.toml".
  *
  * @author TheElectronWill
  */
@@ -28,6 +29,7 @@ public final class GameRegistry {
 	private Config objectsIdsConfig = idsConfig.getValue("objects");
 	private Config mobsIdsConfig = idsConfig.getValue("mobs");
 	private Config itemsIdsConfig = idsConfig.getValue("items");
+	private Config biomesIdsConfig = idsConfig.getValue("items");
 
 	private final IndexMap<AbstractBlockType> blocksIndex = new IndexMap<>();
 	private final Map<String, AbstractBlockType> blocksMap = new HashMap<>();
@@ -41,6 +43,9 @@ public final class GameRegistry {
 	private final IndexMap<ItemRegistration> itemsIndex = new IndexMap<>();
 	private final Map<String, AbstractItemType> itemsMap = new HashMap<>();
 
+	private final IndexMap<AbstractBiomeType> biomesIndex = new IndexMap<>();
+	private final Map<String, AbstractBiomeType> biomesMap = new HashMap<>();
+
 	/**
 	 * Freezes the GameRegistry: prevent any new registration and optimizes the storage of the
 	 * registered data.
@@ -52,12 +57,14 @@ public final class GameRegistry {
 		objectsIdsConfig = null;
 		mobsIdsConfig = null;
 		itemsIdsConfig = null;
+		biomesIdsConfig = null;
 
 		// Compacts the indexes
 		blocksIndex.compact();
 		objectsIndex.compact();
 		mobsIndex.compact();
 		itemsIndex.compact();
+		biomesIndex.compact();
 	}
 
 	public int registerBlock(AbstractBlockType type) {
@@ -151,6 +158,22 @@ public final class GameRegistry {
 
 	public AbstractObjectType getObject(int id) {
 		return objectsIndex.get(id);
+	}
+
+	public int registerBiome(AbstractBiomeType type) {
+		String uniqueName = type.getUniqueName();
+		int id = biomesIdsConfig.getValue(Collections.singletonList(uniqueName));
+		biomesIndex.put(id, type);
+		biomesMap.put(uniqueName, type);
+		return id;
+	}
+
+	public AbstractBiomeType getBiome(String name) {
+		return biomesMap.get(name);
+	}
+
+	public AbstractBiomeType getBiome(int id) {
+		return biomesIndex.get(id);
 	}
 
 	/**
