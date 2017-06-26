@@ -163,7 +163,7 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 	}
 
 	@Override
-	public void trimToSize() {
+	public void compact() {
 		array = Arrays.copyOf(array, size);
 	}
 

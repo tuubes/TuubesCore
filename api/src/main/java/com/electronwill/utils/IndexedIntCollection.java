@@ -11,7 +11,7 @@ import java.util.Iterator;
  *
  * @author TheElectronWill
  */
-public abstract class IndexedIntCollection implements Cloneable, Iterable<Integer> {
+public abstract class IndexedIntCollection implements Cloneable, Iterable<Integer>, Compactable {
 	/**
 	 * Contains the collection's values.
 	 */
@@ -164,9 +164,7 @@ public abstract class IndexedIntCollection implements Cloneable, Iterable<Intege
 		size = 0;
 	}
 
-	/**
-	 * Compacts this collection to minimize its size in memory.
-	 */
+	@Override
 	public void compact() {
 		if (values.length > size) {
 			values = Arrays.copyOf(values, size);

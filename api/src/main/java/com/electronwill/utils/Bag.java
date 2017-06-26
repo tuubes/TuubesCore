@@ -8,7 +8,7 @@ import java.util.Collection;
  *
  * @author TheElectronWill
  */
-public interface Bag<E> extends Collection<E> {
+public interface Bag<E> extends Collection<E>, Compactable {
 	/**
 	 * @param index the element's index.
 	 * @return the element at the specified index.
@@ -33,10 +33,4 @@ public interface Bag<E> extends Collection<E> {
 	 * @return the element that was at the specified index before its removal.
 	 */
 	E remove(int index);
-
-	/**
-	 * Trims the capacity of this Bag instance to be the bag's current size. Use this operation to
-	 * minimize the storage of an Bag instance.
-	 */
-	void trimToSize();
 }

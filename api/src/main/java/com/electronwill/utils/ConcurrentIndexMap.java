@@ -28,7 +28,7 @@ import java.util.function.Function;
  * @author TheElectronWill
  */
 public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
-		implements ConcurrentMap<Integer, E> {
+		implements ConcurrentMap<Integer, E>, Compactable {
 	/**
 	 * The array that contains the values. Indexes are the keys.
 	 */
@@ -82,9 +82,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 		}
 	}
 
-	/**
-	 * Compacts this ConcurrentIndexMap to minimize its use of memory.
-	 */
+	@Override
 	public void compact() {
 		synchronized (this) {
 			if (array.length != size) {
