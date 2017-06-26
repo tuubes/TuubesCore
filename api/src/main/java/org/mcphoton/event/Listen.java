@@ -10,9 +10,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Listen {
-
 	ListenOrder order() default ListenOrder.NORMAL;
 
 	boolean ignoreCancelled() default true;
-
 }

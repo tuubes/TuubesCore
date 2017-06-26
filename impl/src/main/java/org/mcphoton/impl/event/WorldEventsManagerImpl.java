@@ -27,8 +27,8 @@ import org.slf4j.LoggerFactory;
  * @author TheElectronWill
  */
 public final class WorldEventsManagerImpl implements WorldEventsManager {
-
 	private static final Logger log = LoggerFactory.getLogger(WorldEventsManagerImpl.class);
+
 	private final Comparator<RegisteredHandler> handlersComparator = new RegisteredHandler.OrderComparator();
 	private final Function<Class, Collection<RegisteredHandler>> collectionBuilder = key -> new ConcurrentSortedCollection<>(
 			handlersComparator);

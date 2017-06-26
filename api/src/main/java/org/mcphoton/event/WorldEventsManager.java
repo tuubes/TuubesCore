@@ -29,7 +29,8 @@ public interface WorldEventsManager {
 	 * @param eventHandler the handler to register
 	 * @param listenOrder  the handler's order
 	 */
-	<E extends Event> void registerHandler(Class<E> eventClass, EventHandler<? super E> eventHandler,
+	<E extends Event> void registerHandler(Class<E> eventClass,
+										   EventHandler<? super E> eventHandler,
 										   ListenOrder listenOrder);
 
 	/**
@@ -40,12 +41,12 @@ public interface WorldEventsManager {
 	 * @param eventHandler the handler to register
 	 * @param listenOrder  the handler's order
 	 */
-	<E extends Event> void unregisterHandler(Class<E> eventClass, EventHandler<? super E> eventHandler,
+	<E extends Event> void unregisterHandler(Class<E> eventClass,
+											 EventHandler<? super E> eventHandler,
 											 ListenOrder listenOrder);
 
 	/**
 	 * Posts an event, that is, notifies all the corresponding event handlers.
 	 */
 	void post(Event event);
-
 }

@@ -9,11 +9,12 @@ import org.mcphoton.plugin.GlobalPlugin;
 import org.mcphoton.world.World;
 
 /**
- * Implementation of the {@link GlobalEventsManager}. It internally uses the {@link WorldEventsManager}.
+ * Implementation of the {@link GlobalEventsManager}. It internally uses the {@link
+ * WorldEventsManager}.
  *
  * @author TheElectronWill
  */
-public class GlobalEventsManagerImpl implements GlobalEventsManager {
+public final class GlobalEventsManagerImpl implements GlobalEventsManager {
 
 	@Override
 	public void registerHandlers(Object listener, GlobalPlugin plugin) {
@@ -32,19 +33,20 @@ public class GlobalEventsManagerImpl implements GlobalEventsManager {
 	}
 
 	@Override
-	public <E extends Event> void registerHandler(Class<E> eventClass, EventHandler<? super E>
-			eventHandler, ListenOrder listenOrder, GlobalPlugin plugin) {
+	public <E extends Event> void registerHandler(Class<E> eventClass,
+												  EventHandler<? super E> eventHandler,
+												  ListenOrder listenOrder, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
 			world.getEventsManager().registerHandler(eventClass, eventHandler, listenOrder);
 		}
 	}
 
 	@Override
-	public <E extends Event> void unregisterHandler(Class<E> eventClass, EventHandler<? super E>
-			eventHandler, ListenOrder listenOrder, GlobalPlugin plugin) {
+	public <E extends Event> void unregisterHandler(Class<E> eventClass,
+													EventHandler<? super E> eventHandler,
+													ListenOrder listenOrder, GlobalPlugin plugin) {
 		for (World world : plugin.getActiveWorlds()) {
 			world.getEventsManager().unregisterHandler(eventClass, eventHandler, listenOrder);
 		}
 	}
-
 }
