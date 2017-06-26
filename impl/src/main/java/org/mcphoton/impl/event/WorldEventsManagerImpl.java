@@ -1,13 +1,14 @@
 package org.mcphoton.impl.event;
 
-import com.electronwill.utils.Bag;
-import com.electronwill.utils.SimpleBag;
+import com.electronwill.utils.ConcurrentSortedCollection;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import org.mcphoton.event.CancellableEvent;
 import org.mcphoton.event.Event;
 import org.mcphoton.event.EventHandler;
@@ -18,49 +19,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of the {@link WorldEventsManager}. This class is thread-safe because all the operations are
- * guarded by synchronized blocks. In particular, only one event can be posted at a time, therefore the event
- * handlers don't need to be thread-safe.
+ * Implementation of the {@link WorldEventsManager}. This class is thread-safe.
+ * <p>
+ * Note that multiple events may be posted at the same time, and the same EventHandler may be
+ * called from different threads. Therefore the EventHandlers must be thread-safe.
  *
  * @author TheElectronWill
  */
-public class WorldEventsManagerImpl implements WorldEventsManager {
+public final class WorldEventsManagerImpl implements WorldEventsManager {
 
 	private static final Logger log = LoggerFactory.getLogger(WorldEventsManagerImpl.class);
-	private final Map<Class<? extends Event>, EnumMap<ListenOrder, Bag<EventHandler>>> handlersMap = new HashMap<>();
+	private final Comparator<RegisteredHandler> handlersComparator = new RegisteredHandler.OrderComparator();
+	private final Function<Class, Collection<RegisteredHandler>> collectionBuilder = key -> new ConcurrentSortedCollection<>(
+			handlersComparator);
+	private final ConcurrentMap<Class<? extends Event>, Collection<RegisteredHandler>> handlersMap = new ConcurrentHashMap<>();
 
 	@Override
-	public <E extends Event> void registerHandler(Class<E> eventClass, EventHandler<? super E>
-			eventHandler, ListenOrder listenOrder) {
-		synchronized (handlersMap) {
-			EnumMap<ListenOrder, Bag<EventHandler>> orderMap = handlersMap.get(eventClass);
-			if (orderMap == null) {
-				orderMap = new EnumMap(ListenOrder.class);
-				handlersMap.put(eventClass, orderMap);
-			}
-			Bag<EventHandler> handlers = orderMap.get(listenOrder);
-			if (handlers == null) {
-				handlers = new SimpleBag();
-				orderMap.put(listenOrder, handlers);
-			}
-			handlers.add(eventHandler);
-		}
+	public <E extends Event> void registerHandler(Class<E> eventClass,
+												  EventHandler<? super E> eventHandler,
+												  ListenOrder listenOrder) {
+		RegisteredHandler<? super E> handler = new RegisteredHandler<>(eventHandler, listenOrder.ordinal());
+		Collection<RegisteredHandler> handlers = handlersMap.computeIfAbsent(eventClass, collectionBuilder);
+		handlers.add(handler);
 	}
 
 	@Override
-	public <E extends Event> void unregisterHandler(Class<E> eventClass, EventHandler<? super E>
-			eventHandler, ListenOrder listenOrder) {
-		synchronized (handlersMap) {
-			EnumMap<ListenOrder, Bag<EventHandler>> orderMap = handlersMap.get(eventClass);
-			if (orderMap == null) {
-				return;
-			}
-			Bag<EventHandler> handlers = orderMap.get(listenOrder);
-			if (handlers == null) {
-				return;
-			}
-			handlers.remove(eventHandler);
-		}
+	public <E extends Event> void unregisterHandler(Class<E> eventClass,
+													EventHandler<? super E> eventHandler,
+													ListenOrder listenOrder) {
+		RegisteredHandler<? super E> handler = new RegisteredHandler<>(eventHandler, listenOrder.ordinal());
+		Collection<RegisteredHandler> handlers = handlersMap.computeIfAbsent(eventClass, collectionBuilder);
+		handlers.remove(handler);
 	}
 
 	@Override
@@ -76,25 +65,30 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 			//--- Checks the parameter count ---
 			int pCount = method.getParameterCount();
 			if (pCount != 1) {
-				throw new IllegalArgumentException("Method " + method.toGenericString() + " must have 1 parameter, but it has " + pCount + ".");
+				throw new IllegalArgumentException("Method "
+												   + method.toGenericString()
+												   + " must have 1 parameter, but it has "
+												   + pCount
+												   + ".");
 			}
 
 			//--- Checks the parameter type ---
 			Class<?> pClass = method.getParameterTypes()[0];
 			if (!Event.class.isAssignableFrom(pClass)) {
-				throw new IllegalArgumentException("Method " + method.toGenericString() + " must take an Event as parameter.");
+				throw new IllegalArgumentException(
+						"Method " + method.toGenericString() + " must take an Event as parameter.");
 			}
 
 			// --- Constructs and registers the event handler ---
 			ListenOrder order = listenAnnotation.order();
 			boolean ignoreCancelled = listenAnnotation.ignoreCancelled();
-
-			if (ignoreCancelled && CancellableEvent.class.isAssignableFrom(pClass)) {//ignore any cancelled event
-				Class<? extends CancellableEvent> eventClass = (Class<? extends CancellableEvent>) pClass;
+			if (ignoreCancelled && CancellableEvent.class.isAssignableFrom(
+					pClass)) {//ignore any cancelled event
+				Class<? extends CancellableEvent> eventClass = (Class<? extends CancellableEvent>)pClass;
 				EventHandler<CancellableEvent> handler = new IgnoreCancelledReflectionEventHandler<>(method);
 				registerHandler(eventClass, handler, order);
 			} else {//don't care about the cancelled state of the event
-				Class<? extends Event> eventClass = (Class<? extends Event>) pClass;
+				Class<? extends Event> eventClass = (Class<? extends Event>)pClass;
 				EventHandler<Event> handler = new ReflectionEventHandler<>(method);
 				registerHandler(eventClass, handler, order);
 			}
@@ -114,31 +108,37 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 			//--- Checks the parameter count ---
 			int pCount = method.getParameterCount();
 			if (pCount != 1) {
-				throw new IllegalArgumentException("Method " + method.toGenericString() + " must have 1 parameter, but it has " + pCount + ".");
+				throw new IllegalArgumentException("Method "
+												   + method.toGenericString()
+												   + " must have 1 parameter, but it has "
+												   + pCount
+												   + ".");
 			}
 
 			//--- Checks the parameter type ---
 			Class<?> pClass = method.getParameterTypes()[0];
 			if (!Event.class.isAssignableFrom(pClass)) {
-				throw new IllegalArgumentException("Method " + method.toGenericString() + " must take an Event as parameter.");
+				throw new IllegalArgumentException(
+						"Method " + method.toGenericString() + " must take an Event as parameter.");
 			}
 
 			//--- Unregisters the event handler ---
 			ListenOrder order = listenAnnotation.order();
-			synchronized (handlersMap) {
-				EnumMap<ListenOrder, Bag<EventHandler>> orderMap = handlersMap.get(pClass);
-				if (orderMap == null) {//nothing to unregister for this event type
+			Collection<RegisteredHandler> handlers = handlersMap.get(pClass);
+			if (handlers == null) {//nothing to unregister for this event type
+				return;
+			}
+			//ConcurrentSortedCollection's iterator is thread-safe
+			Iterator<RegisteredHandler> it = handlers.iterator();
+			while (it.hasNext()) {
+				RegisteredHandler rHandler = it.next();
+				EventHandler eHandler = rHandler.handler;
+				if (rHandler.order == order.ordinal()
+					&& eHandler instanceof ReflectionEventHandler
+					&& ((ReflectionEventHandler)eHandler).handlerMethod.equals(method)) {
+					//If the handler executes the same method as the one in the listener, remove the handler and return.
+					it.remove();
 					return;
-				}
-				Bag<EventHandler> handlers = orderMap.get(order);//the handlers of this event type
-				Iterator<EventHandler> it = handlers.iterator();
-				while (it.hasNext()) {
-					EventHandler handler = it.next();
-					if (handler instanceof ReflectionEventHandler && ((ReflectionEventHandler) handler).handlerMethod.equals(method)) {
-						//If the handler executes the same method as the one in the listener, remove the handler and return.
-						it.remove();
-						return;
-					}
 				}
 			}
 		}
@@ -146,18 +146,13 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 
 	@Override
 	public void post(Event event) {
-		synchronized (handlersMap) {
-			EnumMap<ListenOrder, Bag<EventHandler>> orderMap = handlersMap.get(event.getClass());
-			if (orderMap == null) {
-				return;
-			}
-			for (Bag<EventHandler> handlers : orderMap.values()) {
-				if (handlers != null) {
-					for (EventHandler handler : handlers) {
-						handler.handle(event);
-					}
-				}
-			}
+		Collection<RegisteredHandler> handlers = handlersMap.get(event.getClass());
+		if (handlers == null) {
+			return;
+		}
+		//ConcurrentSortedCollection's iterator is thread-safe
+		for (RegisteredHandler handler : handlers) {
+			handler.handle(event);
 		}
 	}
 
@@ -165,7 +160,6 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 	 * An event handler that invokes a {@link Method}.
 	 */
 	private static class ReflectionEventHandler<E extends Event> implements EventHandler<E> {
-
 		protected final Method handlerMethod;
 
 		public ReflectionEventHandler(Method handlerMethod) {
@@ -183,10 +177,12 @@ public class WorldEventsManagerImpl implements WorldEventsManager {
 	}
 
 	/**
-	 * An event handler that invokes a {@link Method} if the event isn't cancelled (ie cancelled events are
+	 * An event handler that invokes a {@link Method} if the event isn't cancelled (ie cancelled
+	 * events are
 	 * ignored).
 	 */
-	private static class IgnoreCancelledReflectionEventHandler<E extends CancellableEvent> extends ReflectionEventHandler<E> {
+	private static class IgnoreCancelledReflectionEventHandler<E extends CancellableEvent>
+			extends ReflectionEventHandler<E> {
 
 		public IgnoreCancelledReflectionEventHandler(Method handlerMethod) {
 			super(handlerMethod);
