@@ -104,11 +104,6 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 		return size == 0;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * The returned iterator is weakly consistent.
-	 */
 	@Override
 	public Iterator<E> iterator() {
 		return new BagIterator();
@@ -176,12 +171,7 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 	}
 
 	private class BagIterator implements Iterator<E> {
-		private final Object[] array;
 		private int pos = 0;
-
-		private BagIterator() {
-			this.array = SimpleBag.this.array;
-		}
 
 		@Override
 		public boolean hasNext() {
@@ -195,11 +185,7 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 
 		@Override
 		public void remove() {
-			if (array != SimpleBag.this.array) {// The array has changed
-				SimpleBag.this.remove(array[pos]);// Removes by object
-			} else {
-				SimpleBag.this.remove(pos);// Removes by index
-			}
+			SimpleBag.this.remove(pos);
 		}
 	}
 }
