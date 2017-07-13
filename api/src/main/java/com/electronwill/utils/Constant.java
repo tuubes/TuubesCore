@@ -20,15 +20,21 @@ public final class Constant<T> {
 	 * Creates an initialized constant.
 	 */
 	public Constant(T value) {
+		if (value == null) {
+			throw new NullPointerException("The constant's value may not be null");
+		}
 		this.value = value;// initialized
 	}
 
 	/**
 	 * Initializes this constant. This method can only be called once.
 	 *
-	 * @param value the value to set.
+	 * @param value the value to set, not null.
 	 */
 	public synchronized void init(T value) {
+		if (value == null) {
+			throw new NullPointerException("The constant's value may not be null");
+		}
 		if (this.value != null) {
 			throw new IllegalStateException("Constant already initialized!");
 		}
