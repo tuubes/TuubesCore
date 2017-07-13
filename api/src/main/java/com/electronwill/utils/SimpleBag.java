@@ -38,12 +38,12 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 		this.capacityIncrement = capacityIncrement;
 	}
 
-	public SimpleBag(Object firstElement) {
+	public SimpleBag(E firstElement) {
 		this(10, 2);
 		array[size++] = firstElement;
 	}
 
-	public SimpleBag(Object firstElement, int initialCapacity, int capacityIncrement) {
+	public SimpleBag(E firstElement, int initialCapacity, int capacityIncrement) {
 		this(initialCapacity, capacityIncrement);
 		array[size++] = firstElement;
 	}
