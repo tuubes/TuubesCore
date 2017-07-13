@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * A map implementation that maps integers to values. Values are stored in an array that grows when
@@ -33,7 +35,9 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	 * The number of values in the map.
 	 */
 	private int size;
-	private Collection<E> collection;
+	private Collection<E> values;
+	private Set<Integer> keys;
+	private Set<Entry<Integer, E>> entries;
 
 	/**
 	 * Creates a new IndexMap with an initial capacity of 10.
@@ -127,11 +131,6 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public EntrySet entrySet() {
-		return new EntrySet();
 	}
 
 	/**
@@ -290,39 +289,6 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		return prev;
 	}
 
-	@Override
-	public Collection<E> values() {
-		if (collection == null) {
-			collection = new AbstractCollection<E>() {
-				@Override
-				public void clear() {
-					IndexMap.this.clear();
-				}
-
-				@Override
-				public boolean contains(Object v) {
-					return IndexMap.this.containsValue(v);
-				}
-
-				@Override
-				public boolean isEmpty() {
-					return IndexMap.this.isEmpty();
-				}
-
-				@Override
-				public Iterator<E> iterator() {
-					return new ValueIterator();
-				}
-
-				@Override
-				public int size() {
-					return IndexMap.this.size();
-				}
-			};
-		}
-		return collection;
-	}
-
 	/**
 	 * Associates the specified value with the specified key in this map. If the map previously
 	 * contained a mapping for the key, the old value is replaced by the specified value.
@@ -433,53 +399,89 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		return size;
 	}
 
-	public final class EntryIterator implements Iterator<Entry<Integer, E>> {
-		private int cursor = -1;
-		private IndexEntry next;
+	@Override
+	public Set<Entry<Integer, E>> entrySet() {
+		if (entries == null) {
+			entries = new EntrySet();
+		}
+		return entries;
+	}
 
+	@Override
+	public Set<Integer> keySet() {
+		if (keys == null) {
+			keys = new KeySet();
+		}
+		return keys;
+	}
+
+	@Override
+	public Collection<E> values() {
+		if (values == null) {
+			values = new ValueCollection();
+		}
+		return values;
+	}
+
+	private final class KeySet extends AbstractSet<Integer> {
 		@Override
-		public boolean hasNext() {
-			while (cursor < array.length - 1) {
-				Object value = array[++cursor];
-				if (value != null) {
-					next = new IndexEntry(cursor);
-					return true;
+		public Iterator<Integer> iterator() {
+			return new Iterator<Integer>() {
+				final EntryIterator entryIterator = new EntryIterator();
+
+				@Override
+				public boolean hasNext() {
+					return entryIterator.hasNext();
 				}
-			}
-			return false;
+
+				@Override
+				public Integer next() {
+					return entryIterator.next().key;
+				}
+
+				@Override
+				public void remove() {
+					entryIterator.remove();
+				}
+			};
 		}
 
 		@Override
-		public IndexEntry next() {
-			return next;
+		public int size() {
+			return IndexMap.this.size();
 		}
 	}
 
-	public final class ValueIterator implements Iterator<E> {
-		private int cursor = -1;
-		private E next;
-
+	private final class ValueCollection extends AbstractCollection<E> {
 		@Override
-		public boolean hasNext() {
-			while (cursor < array.length - 1) {
-				Object value = array[++cursor];
-				if (value != null) {
-					next = (E)value;
-					return true;
+		public Iterator<E> iterator() {
+			return new Iterator<E>() {
+				final EntryIterator entryIterator = new EntryIterator();
+
+				@Override
+				public boolean hasNext() {
+					return entryIterator.hasNext();
 				}
-			}
-			return false;
+
+				@Override
+				public E next() {
+					return entryIterator.next().value;
+				}
+
+				@Override
+				public void remove() {
+					entryIterator.remove();
+				}
+			};
 		}
 
 		@Override
-		public E next() {
-			return next;
+		public int size() {
+			return IndexMap.this.size();
 		}
 	}
 
-	public final class EntrySet extends AbstractSet<Entry<Integer, E>> {
-		public EntrySet() {}
-
+	private final class EntrySet extends AbstractSet<Entry<Integer, E>> {
 		@Override
 		public EntryIterator iterator() {
 			return new EntryIterator();
@@ -516,15 +518,55 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 		}
 	}
 
-	public final class IndexEntry implements Entry<Integer, E> {
-		private final int key;
+	public final class EntryIterator implements Iterator<Entry<Integer, E>> {
+		private int cursor = -1, lastCursor = -1;
+		private IndexEntry next;
 
-		public IndexEntry(final int key) {
-			this.key = key;
+		@Override
+		public boolean hasNext() {
+			if (next == null && cursor < array.length - 1) {
+				searchNextElement();
+			}
+			return next != null;
 		}
 
-		public int key() {
-			return key;
+		@Override
+		public IndexEntry next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
+			IndexEntry result = next;
+			next = null;
+			lastCursor = cursor;
+			return result;
+		}
+
+		private void searchNextElement() {
+			while (cursor < array.length - 1) {
+				E value = (E)array[++cursor];
+				if (value != null) {
+					next = new IndexEntry(cursor, value);
+				}
+			}
+		}
+
+		@Override
+		public void remove() {
+			if (lastCursor == -1) {
+				throw new IllegalStateException();
+			}
+			IndexMap.this.remove(lastCursor);
+			lastCursor = -1;//discards lastCursor
+		}
+	}
+
+	private final class IndexEntry implements Entry<Integer, E> {
+		private final int key;
+		private final E value;
+
+		public IndexEntry(int key, E value) {
+			this.key = key;
+			this.value = value;
 		}
 
 		@Override
@@ -534,7 +576,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 
 		@Override
 		public E getValue() {
-			return (E)array[key];
+			return value;
 		}
 
 		@Override
