@@ -568,9 +568,12 @@ public final class IndexMap<V> implements Map<Integer, V>, Compactable, Cloneabl
 
 	private final class IndexEntry implements Entry<Integer, V> {
 		private final int key;
-		private final V value;
+		private V value;
 
-		public IndexEntry(int key, V value) {
+		IndexEntry(int key, V value) {
+			if (value == null) {
+				throw new NullPointerException("Null values aren't supported");
+			}
 			this.key = key;
 			this.value = value;
 		}
@@ -587,7 +590,28 @@ public final class IndexMap<V> implements Map<Integer, V>, Compactable, Cloneabl
 
 		@Override
 		public V setValue(V value) {
+			this.value = value;
 			return put(key, value);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (!(o instanceof Map.Entry)) {
+				return false;
+			}
+			Map.Entry<?, ?> e = (Map.Entry)o;
+			return e.getKey() instanceof Integer && (key == (Integer)e.getKey()) && value.equals(
+					e.getValue());
+		}
+
+		@Override
+		public int hashCode() {
+			return 31 * key + value.hashCode();
+		}
+
+		@Override
+		public String toString() {
+			return key + "=" + value;
 		}
 	}
 }
