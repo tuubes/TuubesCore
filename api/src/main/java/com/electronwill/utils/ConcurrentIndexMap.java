@@ -1,14 +1,6 @@
 package com.electronwill.utils;
 
-import java.util.AbstractCollection;
-import java.util.AbstractSet;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -559,6 +551,9 @@ public final class ConcurrentIndexMap<V>
 	 * Returns a Set view of the mappings contained in this map. The set is backed by the map, so
 	 * changes to the map are reflected in the set, and vice-versa. The view's iterators and
 	 * spliterators are weakly consistent.
+	 * <p>
+	 * The returned set's spliterator has the following characteristics:
+	 * {@link Spliterator#CONCURRENT}, {@link Spliterator#NONNULL}, {@link Spliterator#DISTINCT}
 	 */
 	@Override
 	public Set<Entry<Integer, V>> entrySet() {
@@ -576,6 +571,9 @@ public final class ConcurrentIndexMap<V>
 	 * Returns a Set view of the keys contained in this map. The set is backed by the map, so
 	 * changes to the map are reflected in the set, and vice-versa. The view's iterators and
 	 * spliterators are weakly consistent.
+	 * <p>
+	 * The returned set's spliterator has the following characteristics:
+	 * {@link Spliterator#CONCURRENT}, {@link Spliterator#NONNULL}, {@link Spliterator#DISTINCT}
 	 */
 	@Override
 	public Set<Integer> keySet() {
@@ -589,6 +587,9 @@ public final class ConcurrentIndexMap<V>
 	 * Returns a Collection view of the values contained in this map. The collection is backed by
 	 * the map, so changes to the map are reflected in the collection, and vice-versa. The view's
 	 * iterators and spliterators are weakly consistent.
+	 * <p>
+	 * The returned collection's spliterator has the following characteristics:
+	 * {@link Spliterator#CONCURRENT}, {@link Spliterator#NONNULL}
 	 */
 	@Override
 	public Collection<V> values() {
@@ -622,12 +623,19 @@ public final class ConcurrentIndexMap<V>
 		}
 
 		@Override
+		public Spliterator<Integer> spliterator() {
+			return Spliterators.spliterator(iterator(), size(), EntrySet.SPLITERATOR_CHARACS);
+		}
+
+		@Override
 		public int size() {
 			return ConcurrentIndexMap.this.size();
 		}
 	}
 
 	private final class ValueCollection extends AbstractCollection<V> {
+		private static final int SPLITERATOR_CHARACS = Spliterator.CONCURRENT | Spliterator.NONNULL;
+
 		@Override
 		public Iterator<V> iterator() {
 			return new Iterator<V>() {
@@ -651,12 +659,21 @@ public final class ConcurrentIndexMap<V>
 		}
 
 		@Override
+		public Spliterator<V> spliterator() {
+			return Spliterators.spliterator(iterator(), size(), SPLITERATOR_CHARACS);
+		}
+
+		@Override
 		public int size() {
 			return ConcurrentIndexMap.this.size();
 		}
 	}
 
 	private final class EntrySet extends AbstractSet<Entry<Integer, V>> {
+		private static final int SPLITERATOR_CHARACS = Spliterator.CONCURRENT
+													   | Spliterator.NONNULL
+													   | Spliterator.DISTINCT;
+
 		@Override
 		public EntryIterator iterator() {
 			return new EntryIterator();
@@ -664,7 +681,7 @@ public final class ConcurrentIndexMap<V>
 
 		@Override
 		public Spliterator<Entry<Integer, V>> spliterator() {
-			return null;
+			return Spliterators.spliterator(iterator(), size(), SPLITERATOR_CHARACS);
 		}
 
 		@Override
