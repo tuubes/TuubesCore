@@ -1,11 +1,14 @@
 package com.electronwill.utils;
 
 import java.util.AbstractCollection;
-import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.Spliterator;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -27,8 +30,8 @@ import java.util.function.Function;
  *
  * @author TheElectronWill
  */
-public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
-		implements ConcurrentMap<Integer, E>, Compactable {
+public final class ConcurrentIndexMap<V>
+		implements Map<Integer, V>, ConcurrentMap<Integer, V>, Compactable {
 	/**
 	 * The array that contains the values. Indexes are the keys.
 	 */
@@ -39,8 +42,10 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 */
 	private volatile int size;
 
-	private final ValueCollection values = new ValueCollection();
-	private final EntrySet entrySet = new EntrySet();
+	// These collections are lazy initialized:
+	private volatile Collection<V> values;
+	private volatile Set<Integer> keys;
+	private volatile Set<Entry<Integer, V>> entries;
 
 	/**
 	 * Creates a new IndexMap with an initial capacity of 10.
@@ -67,7 +72,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	/**
 	 * Creates a new IntArrayMap that contains the keys-values pairs of the given map.
 	 */
-	public ConcurrentIndexMap(Map<Integer, E> map) {
+	public ConcurrentIndexMap(Map<Integer, V> map) {
 		this.array = new Object[map.size()];
 		putAll(map);
 	}
@@ -134,11 +139,11 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	@Override
-	public E compute(Integer key,
-					 BiFunction<? super Integer, ? super E, ? extends E> remappingFunction) {
+	public V compute(Integer key,
+					 BiFunction<? super Integer, ? super V, ? extends V> remappingFunction) {
 		synchronized (this) {
-			E oldValue = get(key.intValue());
-			E newValue = remappingFunction.apply(key, oldValue);
+			V oldValue = get(key.intValue());
+			V newValue = remappingFunction.apply(key, oldValue);
 			if (newValue == null) {
 				remove(key.intValue());
 				return null;
@@ -150,15 +155,15 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	@Override
-	public E computeIfAbsent(Integer key, Function<? super Integer, ? extends E> mappingFunction) {
-		E oldValue = get(key.intValue());
+	public V computeIfAbsent(Integer key, Function<? super Integer, ? extends V> mappingFunction) {
+		V oldValue = get(key.intValue());
 		if (oldValue != null) {
 			return oldValue;
 		}
 		synchronized (this) {
 			oldValue = get(key.intValue());
 			if (oldValue == null) {
-				E newValue = mappingFunction.apply(key);
+				V newValue = mappingFunction.apply(key);
 				if (newValue != null) {
 					put(key.intValue(), newValue);
 					return newValue;
@@ -169,16 +174,16 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	@Override
-	public E computeIfPresent(Integer key,
-							  BiFunction<? super Integer, ? super E, ? extends E> remappingFunction) {
-		E oldValue = get(key.intValue());
+	public V computeIfPresent(Integer key,
+							  BiFunction<? super Integer, ? super V, ? extends V> remappingFunction) {
+		V oldValue = get(key.intValue());
 		if (oldValue == null) {
 			return null;
 		}
 		synchronized (this) {
 			oldValue = get(key.intValue());
 			if (oldValue != null) {
-				E newValue = remappingFunction.apply(key, oldValue);
+				V newValue = remappingFunction.apply(key, oldValue);
 				if (newValue != null) {
 					put(key.intValue(), newValue);
 					return newValue;
@@ -193,24 +198,12 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	@Override
-	public void forEach(BiConsumer<? super Integer, ? super E> action) {
+	public void forEach(BiConsumer<? super Integer, ? super V> action) {
 		EntryIterator it = new EntryIterator();
 		while (it.hasNext()) {
 			IndexEntry entry = it.next();
 			action.accept(entry.getKey(), entry.getValue());
 		}
-	}
-
-	/**
-	 * Returns a Set view of the mappings contained in this map. The set is backed by the map, so
-	 * changes to the map are reflected in the set, and vice-versa. The view's iterators and
-	 * spliterators are weakly consistent.
-	 *
-	 * @return a set view of the mappings contained in this map.
-	 */
-	@Override
-	public EntrySet entrySet() {
-		return entrySet;
 	}
 
 	/**
@@ -221,7 +214,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * @return the associated value, or null if there is no mapping for that key.
 	 */
 	@Override
-	public E get(Object key) {
+	public V get(Object key) {
 		if (key instanceof Integer) {
 			return get((int)key);
 		}
@@ -235,13 +228,13 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * @param key the key.
 	 * @return the associated value, or null if there is no mapping for that key.
 	 */
-	public E get(int key) {
+	public V get(int key) {
 		final Object[] arr = array;//volatile read
-		return key < arr.length ? (E)arr[key] : null;
+		return key < arr.length ? (V)arr[key] : null;
 	}
 
 	@Override
-	public E getOrDefault(Object key, E defaultValue) {
+	public V getOrDefault(Object key, V defaultValue) {
 		if (key instanceof Integer) {
 			return getOrDefault((int)key, defaultValue);
 		}
@@ -257,8 +250,8 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * @return the value to which the specified key is mapped, or defaultValue if this map contains
 	 * no mapping for the key.
 	 */
-	public E getOrDefault(int key, E defaultValue) {
-		final E value = get(key);
+	public V getOrDefault(int key, V defaultValue) {
+		final V value = get(key);
 		return value == null ? defaultValue : value;
 	}
 
@@ -268,14 +261,14 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	@Override
-	public E merge(Integer key, E value,
-				   BiFunction<? super E, ? super E, ? extends E> remappingFunction) {
+	public V merge(Integer key, V value,
+				   BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
 		if (value == null || remappingFunction == null) {
 			throw new NullPointerException();
 		}
 		synchronized (this) {
-			E oldValue = get(key.intValue());
-			E newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
+			V oldValue = get(key.intValue());
+			V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
 			if (newValue == null) {
 				remove(key.intValue());
 			} else {
@@ -294,7 +287,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * @return the previous value if there is one, or null if there is none.
 	 */
 	@Override
-	public E put(Integer key, E value) {
+	public V put(Integer key, V value) {
 		return put(key.intValue(), value);
 	}
 
@@ -306,15 +299,15 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * @param value the associated value.
 	 * @return the previous value if there is one, or null if there is none.
 	 */
-	public E put(int key, E value) {
+	public V put(int key, V value) {
 		if (value == null) {
 			throw new NullPointerException();
 		}
 		synchronized (this) {
 			Object[] arr = array;
-			E prev;
+			V prev;
 			if (key < arr.length) {
-				prev = (E)arr[key];
+				prev = (V)arr[key];
 			} else {
 				arr = Arrays.copyOf(arr, key * 3 / 2 + 1);
 				prev = null;
@@ -329,16 +322,16 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	@Override
-	public void putAll(Map<? extends Integer, ? extends E> m) {
+	public void putAll(Map<? extends Integer, ? extends V> m) {
 		synchronized (this) {
 			Object[] arr = array;
 			int newSize = size;
-			for (Entry<? extends Integer, ? extends E> e : m.entrySet()) {
+			for (Entry<? extends Integer, ? extends V> e : m.entrySet()) {
 				int key = e.getKey();
-				E value = e.getValue();
-				E prev;
+				V value = e.getValue();
+				V prev;
 				if (key < arr.length) {
-					prev = (E)arr[key];
+					prev = (V)arr[key];
 				} else {
 					arr = Arrays.copyOf(arr, key * 3 / 2 + 1);
 					prev = null;
@@ -364,7 +357,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * key.
 	 */
 	@Override
-	public E putIfAbsent(Integer key, E value) {
+	public V putIfAbsent(Integer key, V value) {
 		return put(key.intValue(), value);
 	}
 
@@ -377,18 +370,18 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * @return the previous value associated with the key, or null if there was no mapping for the
 	 * key.
 	 */
-	public E putIfAbsent(int key, E value) {
+	public V putIfAbsent(int key, V value) {
 		if (value == null) {
 			throw new NullPointerException();
 		}
 		synchronized (this) {
 			Object[] arr = array;
-			E prev;
+			V prev;
 			if (arr.length <= key) {
 				arr = Arrays.copyOf(arr, key * 3 / 2 + 1);
 				prev = null;
 			} else {
-				prev = (E)arr[key];
+				prev = (V)arr[key];
 			}
 			if (prev == null) {
 				arr[key] = value;
@@ -409,7 +402,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * @return the previous value if there is one or null if there is none.
 	 */
 	@Override
-	public E remove(Object key) {
+	public V remove(Object key) {
 		if (key instanceof Integer) {
 			return remove((int)key);
 		}
@@ -425,13 +418,13 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * @param key the key.
 	 * @return the previous value if there is one or null if there is none.
 	 */
-	public E remove(int key) {
+	public V remove(int key) {
 		synchronized (this) {
 			Object[] arr = array;
 			if (arr.length <= key) {
 				return null;
 			}
-			E prev = (E)arr[key];
+			V prev = (V)arr[key];
 			if (prev != null) {
 				arr[key] = null;
 				array = arr;
@@ -466,7 +459,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 			if (arr.length <= key) {
 				return false;
 			}
-			E prev = (E)arr[key];
+			V prev = (V)arr[key];
 			if (prev.equals(value)) {
 				arr[key] = null;
 				array = arr;
@@ -478,7 +471,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	@Override
-	public boolean replace(Integer key, E oldValue, E newValue) {
+	public boolean replace(Integer key, V oldValue, V newValue) {
 		return replace(key.intValue(), oldValue, newValue);
 	}
 
@@ -490,7 +483,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * @param newValue value to be associated with the specified key.
 	 * @return true if the value was replaced.
 	 */
-	public boolean replace(int key, E oldValue, E newValue) {
+	public boolean replace(int key, V oldValue, V newValue) {
 		if (oldValue == null || newValue == null) {
 			return false;
 		}
@@ -511,7 +504,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	@Override
-	public E replace(Integer key, E value) {
+	public V replace(Integer key, V value) {
 		return replace(key.intValue(), value);
 	}
 
@@ -523,7 +516,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	 * @return the previous value associated with the specified key, or null if there was no mapping
 	 * for the key.
 	 */
-	public E replace(int key, E value) {
+	public V replace(int key, V value) {
 		if (value == null) {
 			return get(key);
 		}
@@ -532,7 +525,7 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 			if (arr.length <= key) {
 				return null;
 			}
-			E prev = (E)arr[key];
+			V prev = (V)arr[key];
 			if (prev != null) {
 				arr[key] = value;
 				array = arr;
@@ -544,13 +537,13 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	@Override
-	public void replaceAll(BiFunction<? super Integer, ? super E, ? extends E> function) {
+	public void replaceAll(BiFunction<? super Integer, ? super V, ? extends V> function) {
 		synchronized (this) {
 			Object[] arr = array;
 			for (int key = 0; key < arr.length; key++) {
 				Object value = arr[key];
 				if (value != null) {//if there is a value associated to this key
-					arr[key] = function.apply(key, (E)value);
+					arr[key] = function.apply(key, (V)value);
 				}
 			}
 			array = arr;
@@ -563,120 +556,69 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	}
 
 	/**
+	 * Returns a Set view of the mappings contained in this map. The set is backed by the map, so
+	 * changes to the map are reflected in the set, and vice-versa. The view's iterators and
+	 * spliterators are weakly consistent.
+	 */
+	@Override
+	public Set<Entry<Integer, V>> entrySet() {
+		if (entries == null) {
+			entries = new EntrySet();
+			/* The initialization may be done multiple times under high contention, but this isn't
+			 a problem because multiple EntrySets can coexist. The same reasoning applies to
+			 keySet() and values().
+			*/
+		}
+		return entries;
+	}
+
+	/**
+	 * Returns a Set view of the keys contained in this map. The set is backed by the map, so
+	 * changes to the map are reflected in the set, and vice-versa. The view's iterators and
+	 * spliterators are weakly consistent.
+	 */
+	@Override
+	public Set<Integer> keySet() {
+		if (keys == null) {
+			keys = new KeySet();
+		}
+		return keys;
+	}
+
+	/**
 	 * Returns a Collection view of the values contained in this map. The collection is backed by
 	 * the map, so changes to the map are reflected in the collection, and vice-versa. The view's
 	 * iterators and spliterators are weakly consistent.
 	 */
 	@Override
-	public ValueCollection values() {
+	public Collection<V> values() {
+		if (values == null) {
+			values = new ValueCollection();
+		}
 		return values;
 	}
 
-	/**
-	 * A weakly consistent entry iterator. It is not guaranteed to reflect the latest state of the
-	 * map.
-	 */
-	public final class EntryIterator implements Iterator<Entry<Integer, E>> {
-		private final Object[] arr = array;
-		private int cursor = -1;
-		private IndexEntry next;
-
+	private final class KeySet extends AbstractSet<Integer> {
 		@Override
-		public boolean hasNext() {
-			while (cursor < arr.length - 1) {
-				Object value = arr[++cursor];
-				if (value != null) {
-					next = new IndexEntry(cursor, (E)value);
-					return true;
+		public Iterator<Integer> iterator() {
+			return new Iterator<Integer>() {
+				final EntryIterator entryIterator = new EntryIterator();
+
+				@Override
+				public boolean hasNext() {
+					return entryIterator.hasNext();
 				}
-			}
-			return false;
-		}
 
-		@Override
-		public IndexEntry next() {
-			return next;
-		}
-
-		@Override
-		public void remove() {
-			ConcurrentIndexMap.this.remove(cursor, arr[cursor]);
-		}
-	}
-
-	/**
-	 * A weakily consistent value iterator. It is not guaranteed to reflect the latest state of the
-	 * map.
-	 */
-	public final class ValueIterator implements Iterator<E> {
-		private final Object[] arr = array;
-		private int cursor = -1;
-		private E next;
-
-		@Override
-		public boolean hasNext() {
-			while (cursor < arr.length - 1) {
-				Object value = arr[++cursor];
-				if (value != null) {
-					next = (E)value;
-					return true;
+				@Override
+				public Integer next() {
+					return entryIterator.next().key;
 				}
-			}
-			return false;
-		}
 
-		@Override
-		public E next() {
-			return next;
-		}
-
-		@Override
-		public void remove() {
-			ConcurrentIndexMap.this.remove(cursor);
-		}
-	}
-
-	/**
-	 * An entry set with a weakly consistent iterator. The set is guaranteed to reflect the latest
-	 * state of the map, but its iterator isn't. The {@link #remove(java.lang.Object)} method is not
-	 * guaranteed to be performed atomically on the latest state of the map, because it
-	 * internally uses the iterator.
-	 */
-	public final class ValueCollection extends AbstractCollection<E> {
-		private ValueCollection() {}
-
-		@Override
-		public void clear() {
-			ConcurrentIndexMap.this.clear();
-		}
-
-		@Override
-		public boolean remove(Object o) {
-			boolean removed = false;
-			ValueIterator it = new ValueIterator();
-			while (it.hasNext()) {
-				E next = it.next();
-				if (o.equals(next)) {
-					it.remove();
-					removed = true;
+				@Override
+				public void remove() {
+					entryIterator.remove();
 				}
-			}
-			return removed;
-		}
-
-		@Override
-		public boolean contains(Object v) {
-			return ConcurrentIndexMap.this.containsValue(v);
-		}
-
-		@Override
-		public boolean isEmpty() {
-			return ConcurrentIndexMap.this.isEmpty();
-		}
-
-		@Override
-		public Iterator<E> iterator() {
-			return new ValueIterator();
+			};
 		}
 
 		@Override
@@ -685,16 +627,44 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 		}
 	}
 
-	/**
-	 * An entry set with a weakly consistent iterator. The set is guaranteed to reflect the latest
-	 * state of the map, but its iterator isn't.
-	 */
-	public final class EntrySet extends AbstractSet<Entry<Integer, E>> {
-		private EntrySet() {}
+	private final class ValueCollection extends AbstractCollection<V> {
+		@Override
+		public Iterator<V> iterator() {
+			return new Iterator<V>() {
+				final EntryIterator entryIterator = new EntryIterator();
 
+				@Override
+				public boolean hasNext() {
+					return entryIterator.hasNext();
+				}
+
+				@Override
+				public V next() {
+					return entryIterator.next().value;
+				}
+
+				@Override
+				public void remove() {
+					entryIterator.remove();
+				}
+			};
+		}
+
+		@Override
+		public int size() {
+			return ConcurrentIndexMap.this.size();
+		}
+	}
+
+	private final class EntrySet extends AbstractSet<Entry<Integer, V>> {
 		@Override
 		public EntryIterator iterator() {
 			return new EntryIterator();
+		}
+
+		@Override
+		public Spliterator<Entry<Integer, V>> spliterator() {
+			return null;
 		}
 
 		@Override
@@ -705,49 +675,93 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 		@Override
 		public boolean contains(Object o) {
 			if (o instanceof Entry) {
-				Entry<Integer, E> entry = (Entry)o;
-				Object value = ConcurrentIndexMap.this.get(entry.getKey().intValue());
+				Entry<Integer, V> entry = (Entry)o;
+				Object value = get(entry.getKey());
 				return value != null && entry.getValue().equals(value);
 			}
 			return false;
 		}
 
 		@Override
-		public boolean add(Entry<Integer, E> e) {
-			putIfAbsent(e.getKey(), e.getValue());
+		public boolean add(Entry<Integer, V> e) {
+			put(e.getKey(), e.getValue());
 			return true;
-		}
-
-		@Override
-		public void clear() {
-			ConcurrentIndexMap.this.clear();
 		}
 
 		@Override
 		public boolean remove(Object o) {
 			if (o instanceof Entry) {
-				Entry<Integer, E> entry = (Entry)o;
-				return ConcurrentIndexMap.this.remove(entry.getKey().intValue(), entry.getValue());
+				Entry<Integer, V> entry = (Entry)o;
+				return ConcurrentIndexMap.this.remove(entry.getKey(), entry.getValue());
 			}
 			return false;
 		}
 	}
 
 	/**
-	 * Represents a key-value entry of this map. The key is an integer. The key and the value aren't
-	 * null.
+	 * Weakly consistent iterator. An iterator is to be used by only one thread, therefore this
+	 * class isn't thread-safe.
 	 */
-	public final class IndexEntry implements Entry<Integer, E> {
-		private final int key;
-		private E value;
+	public final class EntryIterator implements Iterator<Entry<Integer, V>> {
+		private final Object[] arr = array;
+		private int cursor = -1, lastCursor = -1;
+		private V lastValue;
+		private IndexEntry next;
 
-		public IndexEntry(int key, E value) {
-			this.key = key;
-			this.value = value;
+		@Override
+		public boolean hasNext() {
+			if (next == null && cursor < arr.length - 1) {
+				searchNextElement();
+			}
+			return next != null;
 		}
 
-		public int getIntKey() {
-			return key;
+		@Override
+		public IndexEntry next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
+			IndexEntry result = next;
+			next = null;// to search the element the next time next() or hasNext() is called
+			lastCursor = cursor;// to make remove() work
+			lastValue = result.value;// to make remove() work
+			return result;
+		}
+
+		private void searchNextElement() {
+			while (cursor < arr.length - 1) {
+				V value = (V)arr[++cursor];
+				if (value != null) {
+					next = new IndexEntry(cursor, value);
+				}
+			}
+		}
+
+		@Override
+		public void remove() {
+			if (lastCursor == -1) {
+				throw new IllegalStateException();
+			}
+			ConcurrentIndexMap.this.remove(lastCursor, lastValue);
+			lastCursor = -1;//discards lastCursor
+			lastValue = null;//discards lastValue
+		}
+	}
+
+	/**
+	 * An entry in the map. The key never changes, the value changes only because of setValue, it
+	 * doesn't track the modifications of the IndexMap.
+	 */
+	private final class IndexEntry implements Entry<Integer, V> {
+		private final int key;
+		private volatile V value;
+
+		IndexEntry(int key, V value) {
+			if (value == null) {
+				throw new NullPointerException("Null values aren't supported");
+			}
+			this.key = key;
+			this.value = value;
 		}
 
 		@Override
@@ -756,34 +770,35 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 		}
 
 		@Override
-		public E getValue() {
+		public V getValue() {
 			return value;
 		}
 
 		@Override
-		public E setValue(E value) {
+		public V setValue(V value) {
 			this.value = value;
 			return put(key, value);
 		}
 
 		@Override
-		public boolean equals(Object obj) {
-			if (obj instanceof Entry) {
-				Entry entry = (Entry)obj;
-				return entry.getKey() != null
-					   && getKey().equals(entry.getKey())
-					   && entry.getValue() != null
-					   && getValue().equals(entry.getValue());
+		public boolean equals(Object o) {
+			if ((o instanceof Map.Entry)) {
+				Entry<?, ?> e = (Entry)o;
+				return (e.getKey() instanceof Integer)
+					   && (key == (Integer)e.getKey())
+					   && value.equals(e.getValue());
 			}
 			return false;
 		}
 
 		@Override
 		public int hashCode() {
-			int hash = 7;
-			hash = 43 * hash + key;
-			hash = 43 * hash + value.hashCode();
-			return hash;
+			return 31 * key + value.hashCode();
+		}
+
+		@Override
+		public String toString() {
+			return key + "=" + value;
 		}
 	}
 }
