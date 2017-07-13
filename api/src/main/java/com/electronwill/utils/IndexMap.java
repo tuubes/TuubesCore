@@ -117,10 +117,7 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 
 	@Override
 	public boolean containsKey(Object key) {
-		if (key instanceof Integer) {
-			return containsKey((int)key);
-		}
-		return false;
+		return (key instanceof Integer) && containsKey((int)key);
 	}
 
 	@Override
