@@ -85,9 +85,19 @@ public final class IndexMap<E> extends AbstractMap<Integer, E> {
 	 * Compacts this IndexMap to minimize its use of memory.
 	 */
 	public void compact() {
-		if (array.length != size) {
-			array = Arrays.copyOf(array, size);
+		int idealLength = getMaxIndex() + 1;
+		if (array.length != idealLength) {
+			array = Arrays.copyOf(array, idealLength);
 		}
+	}
+
+	private int getMaxIndex() {
+		for (int i = array.length - 1; i >= 0; i--) {
+			if (array[i] != null) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	/**

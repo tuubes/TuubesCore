@@ -85,10 +85,21 @@ public final class ConcurrentIndexMap<E> extends AbstractMap<Integer, E>
 	@Override
 	public void compact() {
 		synchronized (this) {
-			if (array.length != size) {
-				array = Arrays.copyOf(array, size);
+			Object[] arr = array;
+			int idealLength = getMaxIndex(arr) + 1;
+			if (arr.length != idealLength) {
+				array = Arrays.copyOf(arr, idealLength);
 			}
 		}
+	}
+
+	private int getMaxIndex(Object[] arr) {
+		for (int i = arr.length - 1; i >= 0; i--) {
+			if (arr[i] != null) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	/**
