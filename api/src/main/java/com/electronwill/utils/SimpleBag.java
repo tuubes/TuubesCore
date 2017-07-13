@@ -73,8 +73,7 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 	@Override
 	public boolean contains(Object o) {
 		for (int i = 0; i < size; i++) {
-			Object e = array[i];
-			if (e.equals(o)) {
+			if (array[i].equals(o)) {
 				return true;
 			}
 		}
@@ -119,10 +118,9 @@ public class SimpleBag<E> extends AbstractCollection<E> implements Bag<E> {
 
 	@Override
 	public boolean remove(Object o) {
-		for (int j = 0; j < size; j++) {
-			Object element = array[j];
-			if (element.equals(o)) {
-				remove(j);
+		for (int i = 0; i < size; i++) {
+			if (array[i].equals(o)) {
+				remove(i);
 				return true;
 			}
 		}
