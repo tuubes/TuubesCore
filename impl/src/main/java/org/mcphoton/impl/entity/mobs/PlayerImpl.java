@@ -3,26 +3,50 @@ package org.mcphoton.impl.entity.mobs;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.MetadataType;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.TrackedMetadataValue;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.spawn.ServerSpawnPlayerPacket;
+import com.github.steveice10.packetlib.Client;
+import com.github.steveice10.packetlib.Session;
+import com.github.steveice10.packetlib.packet.Packet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import org.mcphoton.entity.EntityType;
 import org.mcphoton.entity.living.Player;
-import org.mcphoton.impl.entity.AbstractEntity;
+import org.mcphoton.impl.world.PlayerZone;
 import org.mcphoton.inventory.Inventory;
 import org.mcphoton.messaging.ChatMessage;
 import org.mcphoton.utils.Location;
 
 /**
+ * Represents a connected player.
+ *
  * @author TheElectronWill
  */
 public class PlayerImpl extends AbstractMob implements Player {
+	private final Session session;
+	/**
+	 * The zone around the player that is used to notify it about the world updates. Note that
+	 * the PlayerImpl is not in its own {@link #playerZones} Set, therefore the methods
+	 * {@link #sendToClients(Packet)} don't send the packet to the PlayerImpl, only to the other
+	 * players.
+	 */
+	private final PlayerZone zone;
 	private final UUID accoundId;
 	private final String name;
 
-	public PlayerImpl(Location location, String name, UUID accoundId) {
+	public PlayerImpl(Location location, String name, UUID accoundId, Session session,
+					  int zoneSize) {
 		super(location);
 		this.name = name;
 		this.accoundId = accoundId;
+		this.session = session;
+		this.zone = new PlayerZone(this, zoneSize);
+	}
+
+	public Session getSession() {
+		return session;
+	}
+
+	public PlayerZone getZone() {
+		return zone;
 	}
 
 	@Override
@@ -37,10 +61,12 @@ public class PlayerImpl extends AbstractMob implements Player {
 
 	@Override
 	public void spawn() {
-		world.addEntity(this);
-		UUID uuid = accoundId;
-		int typeId = getType().getId();
-		//TODO new ServerSpawnPlayerPacket(...)
+		world.getEntitiesManager().registerEntity(this);
+		Packet packet = new ServerSpawnPlayerPacket(id, accoundId, position, yaw, pitch,
+													dataStorage);
+		sendToClients(packet);
+		//TODO send the packet when a new player, that isn't aware of the existence of this player,
+		// gets in the zone
 	}
 
 	@Override

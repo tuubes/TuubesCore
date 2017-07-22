@@ -1,12 +1,23 @@
 package org.mcphoton.impl.world;
 
-import com.github.steveice10.mc.protocol.data.game.chunk.Chunk;
-import com.github.steveice10.mc.protocol.data.game.chunk.Column;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
+import com.github.steveice10.mc.protocol.data.game.chunk.ChunkColumnData;
+import com.github.steveice10.packetlib.io.NetInput;
+import com.github.steveice10.packetlib.io.NetOutput;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.xml.crypto.Data;
+import jdk.nashorn.internal.ir.Block;
+import org.mcphoton.Photon;
+import org.mcphoton.block.BlockType;
+import org.mcphoton.impl.entity.AbstractEntity;
+import org.mcphoton.utils.Location;
+import org.mcphoton.world.BiomeType;
 import org.mcphoton.world.ChunkColumn;
 import org.mcphoton.world.ChunkSection;
+import org.mcphoton.world.World;
+import org.mcphoton.world.areas.Area;
 
 /**
  * Basic implementation of ChunkColumn. It is thread-safe.
@@ -15,180 +26,190 @@ import org.mcphoton.world.ChunkSection;
  * @see <a href="http://wiki.vg/SMP_Map_Format">wiki.vg - Protocol map format</a>
  */
 public final class ChunkColumnImpl implements ChunkColumn {
-	private final Column libColumn;
-	private final ChunkSectionImpl[] sections;
+	/**
+	 * The chunk's world. Needed to implement the Area interface.
+	 */
+	private final World world;
+	/**
+	 * Contains the persistent chunk data.
+	 */
+	private final Data data;
+	/**
+	 * The player zones that contain this chunk column. Every modification is notified to the
+	 * players.
+	 */
+	private final Set<PlayerZone> playerZones = ConcurrentHashMap.newKeySet();// thread-safe
 
-	public ChunkColumnImpl(int x, int z, ChunkSectionImpl[] sections, byte[] biomes,
-						   CompoundTag[] tileEntities) {
-		this.sections = sections;
-		Chunk[] chunks = new Chunk[sections.length];
-		for (int i = 0; i < sections.length; i++) {
-			ChunkSectionImpl section = sections[i];
-			chunks[i] = section.libChunk;
-		}
-		this.libColumn = new Column(x, z, chunks, biomes, tileEntities);
+	public ChunkColumnImpl(World world, Data data) {
+		this.world = world;
+		this.data = data;
 	}
 
-	public ChunkColumnImpl(Column libColumn) {
-		this.libColumn = libColumn;
-		this.sections = new ChunkSectionImpl[libColumn.getChunks().length];
-		for (int i = 0; i < libColumn.getChunks().length; i++) {
-			Chunk libChunk = libColumn.getChunks()[i];
-			sections[i] = new ChunkSectionImpl(libChunk);
-		}
+	public Data getData() {
+		return data;
 	}
 
-	public Column getLibColumn() {
-		return libColumn;
-	}
-	public int getX() {
-		return libColumn.getX();
+	public Set<AbstractEntity> getEntities() {
+		return data.entities;
 	}
 
-	public int getZ() {
-		return libColumn.getZ();
+	public Set<PlayerZone> getPlayerZones() {
+		return playerZones;
 	}
 
-	@Override
-	public int getBiomeId(int x, int z) {
-		byte[] biomes = libColumn.getBiomeData();
-		synchronized (biomes) {
-			return biomes[z * 16 + x];
-		}
+	public ChunkCoordinates getCoords() {
+		return new ChunkCoordinates(data.x, data.z);
 	}
 
 	@Override
-	public synchronized void setBiomeId(int x, int z, int biomeId) {
-		byte[] biomes = libColumn.getBiomeData();
-		synchronized (biomes) {
-			biomes[z * 16 + x] = (byte)biomeId;
-		}
+	public boolean contains(int x, int y, int z) {
+		return (x / 16 == data.x) && (x / 16 == data.z);
 	}
 
 	@Override
-	public int getBlockFullId(int x, int y, int z) {
-		int sectionIndex = y / 16;
-		int yInSection = y & 15;
-		// Fast remainder: if divisor is a power of two, value & (divisor - 1) is equal to value % divisor
-		synchronized (sections) {
-			return sections[sectionIndex].getBlockFullId(x, yInSection, z);
-		}
-	}
-
-	@Override
-	public void setBlockFullId(int x, int y, int z, int blockFullId) {
-		int sectionIndex = y / 16;
-		int yInSection = y & 15;// Fast remainder
-		synchronized (sections) {
-			sections[sectionIndex].setBlockFullId(x, yInSection, z, blockFullId);
-		}
-	}
-
-	@Override
-	public int getBlockId(int x, int y, int z) {
-		int sectionIndex = y / 16;
-		int yInSection = y & 15;// Fast remainder
-		synchronized (sections) {
-			return sections[sectionIndex].getBlockId(x, yInSection, z);
-		}
-	}
-
-	@Override
-	public void setBlockId(int x, int y, int z, int blockId) {
-		int sectionIndex = y / 16;
-		int yInSection = y & 15;// Fast remainder
-		synchronized (sections) {
-			sections[sectionIndex].setBlockId(x, yInSection, z, blockId);
-		}
-	}
-
-	@Override
-	public int getBlockMetadata(int x, int y, int z) {
-		int sectionIndex = y / 16;
-		int yInSection = y & 15;// Fast remainder
-		synchronized (sections) {
-			return sections[sectionIndex].getBlockMetadata(x, yInSection, z);
-		}
-	}
-
-	@Override
-	public void setBlockMetadata(int x, int y, int z, int blockMetadata) {
-		int sectionIndex = y / 16;
-		int yInSection = y & 15;// Fast remainder
-		synchronized (sections) {
-			sections[sectionIndex].setBlockMetadata(x, yInSection, z, blockMetadata);
-		}
+	public World getWorld() {
+		return world;
 	}
 
 	@Override
 	public ChunkSection getSection(int index) {
-		return sections[index];
+		return data.sections[index];
 	}
 
 	@Override
-	public void setSection(int index, ChunkSection section) {
-		ChunkSectionImpl impl = (ChunkSectionImpl)section;
-		sections[index] = impl;
-		libColumn.getChunks()[index] = impl.libChunk;
+	public void fill(BlockType blockType) {
+		//TODO
 	}
 
 	@Override
-	public void fillBlockFullId(int x0, int y0, int z0, int x1, int y1, int z1, int blockFullId) {
-		for (int y = y0; y < y1; y++) {
-			int sectionIndex = y / 16;
-			int yInSection = y & 15;
-			ChunkSection section;
-			synchronized (sections) {
-				section = sections[sectionIndex];
-			}
-			section.fillBlockFullId(x0, yInSection, z0, x1, yInSection + 1, z1, blockFullId);
+	public void replace(BlockType type, BlockType replacement) {
+		//TODO
+	}
+
+	@Override
+	public Area subArea(int x1, int y1, int z1, int x2, int y2, int z2) {
+		return null;//TODO
+	}
+
+	@Override
+	public BiomeType getBiomeType(int x, int z) {
+		byte typeId;
+		synchronized (data.biomes) {
+			typeId = data.biomes[z << 4 | x];
+		}
+		return Photon.getGameRegistry().getBiome(typeId);//TODO
+	}
+
+	@Override
+	public void setBiomeType(int x, int z, BiomeType biomeType) {
+		int typeId = ((AbstractBiomeType)biomeType).getId();
+		synchronized (data.biomes) {
+			data.biomes[z << 4 | x] = (byte)typeId;
 		}
 	}
 
 	@Override
-	public void fillBlockId(int x0, int y0, int z0, int x1, int y1, int z1, int blockId) {
-		for (int y = y0; y < y1; y++) {
-			int sectionIndex = y / 16;
-			int yInSection = y & 15;
-			ChunkSection section;
-			synchronized (sections) {
-				section = sections[sectionIndex];
-			}
-			section.fillBlockId(x0, yInSection, z0, x1, yInSection + 1, z1, blockId);
+	public BlockType getBlockType(int x, int y, int z) {
+		ChunkSection section = data.sections[y / 16];
+		if (section == null) {
+			return null;//TODO return StandardBlocks.AIR
 		}
+		return section.getBlockType(x, y & 15, z);
+
 	}
 
 	@Override
-	public void replaceBlockFullId(int toReplace, int replacement) {
-		for (int i = 0; i < 16; i++) {
-			ChunkSection section;
-			synchronized (sections) {
-				section = sections[i];
-			}
-			section.replaceBlockFullId(toReplace, replacement);
+	public void setBlockType(int x, int y, int z, BlockType type) {
+		ChunkSection section = data.sections[y / 16];
+		if (section == null) {
+			section = new ChunkSectionImpl()
 		}
+		section.setBlockType(x, y & 15, z, type);
 	}
 
 	@Override
-	public void replaceBlockId(int toReplace, int replacement) {
-		for (int i = 0; i < 16; i++) {
-			ChunkSection section;
-			synchronized (sections) {
-				section = sections[i];
-			}
-			section.replaceBlockId(toReplace, replacement);
-		}
+	public Iterator<Location> iterator() {
+		return null;//TODO
 	}
 
-	@Override
-	public void writeTo(OutputStream out) throws IOException {
-		out.write(sections.length);
-		for (ChunkSection section : sections) {
-			if (section == null) {
-				out.write(0);
-			} else {
-				section.writeTo(out);
+	public static final class Data implements ChunkColumnData {
+		private final Set<AbstractEntity> entities = ConcurrentHashMap.newKeySet();
+		private volatile ChunkSectionImpl[] sections;
+		private final byte[] biomes;
+		private final int x, z;
+		private final boolean skylight;
+		private volatile boolean biomesChanged;
+
+		public Data(int x, int z, ChunkSectionImpl[] sections, byte[] biomes, boolean skylight) {
+			this.x = x;
+			this.z = z;
+			this.sections = sections;
+			this.biomes = biomes;
+			this.skylight = skylight;
+		}
+
+		@Override
+		public int getX() {
+			return x;
+		}
+
+		@Override
+		public int getZ() {
+			return z;
+		}
+
+		@Override
+		public ChunkSectionImpl[] getSections() {
+			return sections;
+		}
+
+		@Override
+		public byte[] getBiomeData() {
+			return biomes;
+		}
+
+		@Override
+		public void writeBlockEntitiesNBT(NetOutput out) throws IOException {
+			//TODO
+		}
+
+		@Override
+		public boolean hasSkylight() {
+			return skylight;
+		}
+
+		public boolean hasChanged() {
+			if (biomesChanged) {
+				return true;
 			}
+			for (ChunkSectionImpl section : sections) {
+				if (section != null && section.hasChanged()) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public void save(NetOutput out) throws IOException {
+			out.writeBoolean(skylight);
+			int bitmask;
+			for (int i = 0; i < sections.length; i++) {
+				ChunkSectionImpl section = sections[i];
+				if (section != null) {
+					out.writeByte(i);//section index
+					section.getBlocks().write(out);
+					section.getBlockLight().write(out);
+					if (skylight) {
+						section.getSkyLight().write(out);
+					}
+				}
+			}
+		}
+
+		public static Data read(NetInput in) throws IOException {
+			boolean skylight = in.readBoolean();
+			ChunkSectionImpl[] sections = new ChunkSectionImpl[16];
+
 		}
 	}
 }

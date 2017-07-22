@@ -1,18 +1,23 @@
 package org.mcphoton.world;
 
-import java.io.IOException;
-import java.io.OutputStream;
+import org.mcphoton.block.BlockType;
+import org.mcphoton.world.areas.Area;
 
 /**
- * A chunk column: up to 16 chunk sections aligned vertically, for a total of 16x256x16 = 65536
- * blocks.
+ * A chunk column: up to 16 {@link ChunkSection}s aligned vertically, for a total of 16x256x16 =
+ * 65536 blocks.
  *
  * @author TheElectronWill
  */
-public interface ChunkColumn {
+public interface ChunkColumn extends Area {
+	@Override
+	default int size() {
+		return 65536;
+	}
+
 	/**
 	 * Gets the chunk section at the given index. The first section, at index 0, contains the blocks
-	 * from y=0 to y=15, and so on.
+	 * from y=0 to y=15, the second section contains the blocks from y=16 to y=31, etc.
 	 *
 	 * @param index the section's index.
 	 * @return the chunk section at the given index.
@@ -20,132 +25,44 @@ public interface ChunkColumn {
 	ChunkSection getSection(int index);
 
 	/**
-	 * Sets the chunk section at the given index. The first section, at index 0, contains the blocks
-	 * from y=0 to y=15. The second section, at index 1, contains the blocks from y=16 to y=31.
-	 *
-	 * @param index the section's index.
-	 * @section the ChunkSection to set.
+	 * Returns a cubic area contained in this chunk column, and defined by its lower corner P1
+	 * (x1,y1,z1) and its upper corner P2(x2,y2,z2), defined in relation to the chunk column.
 	 */
-	void setSection(int index, ChunkSection section);
+	Area subArea(int x1, int y1, int z1, int x2, int y2, int z2);
 
 	/**
-	 * Gets the biome's id of a given XZ column.
+	 * Gets the biome type of an XZ column.
 	 *
-	 * @param x the column's x coordinate in the chunk.
-	 * @param z the column's z coordinate in the chunk.
-	 * @return the biome's id of the given column.
+	 * @param x the x coordinate, relative to the chunk column
+	 * @param z the z coordinate, relative to the chunk column
+	 * @return the biome type
 	 */
-	int getBiomeId(int x, int z);
+	BiomeType getBiomeType(int x, int z);
 
 	/**
-	 * Sets the biome's id of a given XZ column.
+	 * Sets the biome type of an XZ column.
 	 *
-	 * @param x       the column's x coordinate in the chunk.
-	 * @param z       the column's z coordinate in the chunk.
-	 * @param biomeId the biome's id to set.
+	 * @param x         the x coordinate, relative to the chunk column
+	 * @param z         the z coordinate, relative to the chunk column
+	 * @param biomeType the biome type to set
 	 */
-	void setBiomeId(int x, int z, int biomeId);
+	void setBiomeType(int x, int z, BiomeType biomeType);
 
 	/**
-	 * @param x X coordinate in the chunk column.
-	 * @param y Y coordinate in the chunk column.
-	 * @param z Z coordinate in the chunk column.
-	 * @return the block's simple id (without its metadata).
+	 * @param x the x coordinate, relative to the chunk
+	 * @param y the y coordinate, relative to the chunk column
+	 * @param z the z coordinate, relative to the chunk column
+	 * @return the block type
 	 */
-	int getBlockId(int x, int y, int z);
+	BlockType getBlockType(int x, int y, int z);
 
 	/**
 	 * Sets a block's id (simple id, without the metadata).
 	 *
-	 * @param x       X coordinate in the chunk column.
-	 * @param y       Y coordinate in the chunk column.
-	 * @param z       Z coordinate in the chunk column.
-	 * @param blockId the block's simple id (without its metadata).
+	 * @param x    the x coordinate, relative to the chunk column
+	 * @param y    the y coordinate, relative to the chunk column
+	 * @param z    the z coordinate, relative to the chunk column
+	 * @param type the block type to set
 	 */
-	void setBlockId(int x, int y, int z, int blockId);
-
-	/**
-	 * @param x X coordinate in the chunk column.
-	 * @param y Y coordinate in the chunk column.
-	 * @param z Z coordinate in the chunk column.
-	 * @return the block's full id (with its metadata).
-	 */
-	int getBlockFullId(int x, int y, int z);
-
-	/**
-	 * Sets a block's full id (with the metadata).
-	 *
-	 * @param x           X coordinate in the chunk column.
-	 * @param y           Y coordinate in the chunk column.
-	 * @param z           Z coordinate in the chunk column.
-	 * @param blockFullId the block's full id (with its metadata).
-	 */
-	void setBlockFullId(int x, int y, int z, int blockFullId);
-
-	/**
-	 * @param x X coordinate in the chunk column.
-	 * @param y Y coordinate in the chunk column.
-	 * @param z Z coordinate in the chunk column.
-	 * @return the block's metadata (without its id).
-	 */
-	int getBlockMetadata(int x, int y, int z);
-
-	/**
-	 * Sets a block's metadata (without the id).
-	 *
-	 * @param x             X coordinate in the chunk column.
-	 * @param y             Y coordinate in the chunk column.
-	 * @param z             Z coordinate in the chunk column.
-	 * @param blockMetadata the block's metadata (without its id).
-	 */
-	void setBlockMetadata(int x, int y, int z, int blockMetadata);
-
-	/**
-	 * Fills a part of this chunk column with the specified block type.
-	 *
-	 * @param x0      initial x coordinate in the chunk column.
-	 * @param y0      initial y coordinate in the chunk column.
-	 * @param z0      initial z coordinate in the chunk column.
-	 * @param x1      final x coordinate in the chunk column.
-	 * @param y1      final y coordinate in the chunk column.
-	 * @param z1      final z coordinate in the chunk column.
-	 * @param blockId the block's simple id (without its metadata).
-	 */
-	void fillBlockId(int x0, int y0, int z0, int x1, int y1, int z1, int blockId);
-
-	/**
-	 * Fills a part of this chunk column with the specified block type.
-	 *
-	 * @param x0          initial x coordinate in the chunk column.
-	 * @param y0          initial y coordinate in the chunk column.
-	 * @param z0          initial z coordinate in the chunk column.
-	 * @param x1          final x coordinate in the chunk column.
-	 * @param y1          final y coordinate in the chunk column.
-	 * @param z1          final z coordinate in the chunk column.
-	 * @param blockFullId the block's full id (with its metadata).
-	 */
-	void fillBlockFullId(int x0, int y0, int z0, int x1, int y1, int z1, int blockFullId);
-
-	/**
-	 * Replaces every occurence of a block's id.
-	 *
-	 * @param toReplace   the id (without metadata) to replace.
-	 * @param replacement the replacement.
-	 */
-	void replaceBlockId(int toReplace, int replacement);
-
-	/**
-	 * Replaces every occurence of a block's full id.
-	 *
-	 * @param toReplace   the full id to replace.
-	 * @param replacement the replacement.
-	 */
-	void replaceBlockFullId(int toReplace, int replacement);
-
-	/**
-	 * Writes this ChunkColumn to an OutputStream. This is mainly used to save the chunk in a file.
-	 *
-	 * @param out the stream to write this chunk to.
-	 */
-	void writeTo(OutputStream out) throws IOException;
+	void setBlockType(int x, int y, int z, BlockType type);
 }

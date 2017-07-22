@@ -5,6 +5,8 @@ import org.mcphoton.entity.EntityType;
 import org.mcphoton.impl.AbstractType;
 
 /**
+ * Base type for "mob" entities.
+ *
  * @author TheElectronWill
  */
 public abstract class AbstractMobType extends AbstractType implements EntityType {

@@ -1,6 +1,7 @@
 package org.mcphoton.impl.world;
 
-import com.github.steveice10.mc.protocol.data.game.chunk.Column;
+import com.github.steveice10.mc.protocol.data.game.chunk.ChunkColumnData;
+import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.nio.channels.CompletionHandler;
@@ -28,7 +29,7 @@ public final class ChunkCache {
 
 	private static final class CacheValue extends SoftReference<ChunkColumnImpl> {
 		private final ChunkCoordinates key;// Used to remove the value from the map when collected
-		private final Column libColumn;// Used to save the chunk's data when collected
+		private final ChunkColumnData libColumn;// Used to save the chunk's data when collected
 
 		CacheValue(ChunkCoordinates key, ChunkColumnImpl value,
 				   ReferenceQueue<? super ChunkColumnImpl> queue) {
@@ -52,7 +53,7 @@ public final class ChunkCache {
 			discarded by the GC.
 			*/
 			if (value.libColumn.hasChanged()) {
-				ChunkColumnImpl chunkColumn = new ChunkColumnImpl(value.libColumn);
+				ChunkColumnImpl chunkColumn = new ChunkColumnImpl(world, value.libColumn);
 				ChunkCoordinates coords = new ChunkCoordinates(chunkColumn.getX(),
 															   chunkColumn.getZ());
 				CacheValue newValue = new CacheValue(coords, chunkColumn, collectedChunks);
@@ -92,6 +93,39 @@ public final class ChunkCache {
 	}
 
 	/**
+	 * Synchronously gets a chunk column. If it isn't in the cache then it is either read or
+	 * generated, and this methods blocks until the operation completes.
+	 * <b>This method should be used only when necessary.</b> Prefer
+	 * {@link #getCached(int, int)} or {@link #getAsync(int, int, Object, CompletionHandler)}
+	 *
+	 * @param x the chunk X coordinate
+	 * @param z the chunk Z coordinate
+	 * @return the chunk with the given coordinates, not null
+	 */
+	public ChunkColumnImpl getSync(int x, int z) {
+		log.debug("In world {}: ChunkCache.getSync(x={}, z={})", world.getName(), x, z);
+		cleanCollectedChunks();// Processes the collected references
+		ChunkCoordinates coords = new ChunkCoordinates(x, z);
+		CacheValue ref = chunksMap.get(coords);
+		ChunkColumnImpl chunk;
+		if (ref != null && (chunk = ref.get()) != null) {// Chunk in cache
+			return chunk;
+		} else {// Chunk not in cache
+			ChunkIO chunkIO = world.chunkIO;
+			if (chunkIO.isChunkOnDisk(x, z)) {// Chunk on disk
+				try {
+					chunkIO.readChunkNow(x, z);//sync read
+				} catch (IOException e) {
+					throw new RuntimeException("Failed to read chunk at " + coords);
+				}
+			} else {// Chunk needs to be generated
+				ChunkColumnImpl generatedChunk = (ChunkColumnImpl)world.chunkGenerator.generate(x, z);
+				chunksMap.put(coords, new CacheValue(coords, generatedChunk, collectedChunks));
+			}
+		}
+	}
+
+	/**
 	 * Asynchronously gets a chunk column. The completionHandler is called when the chunk is
 	 * available or when there is an error.
 	 * <p>
@@ -122,8 +156,7 @@ public final class ChunkCache {
 				chunkIO.readChunk(x, z, attachment, completionHandler);//async read
 			} else {// Chunk needs to be generated
 				Runnable task = () -> {
-					ChunkColumnImpl generatedChunk = (ChunkColumnImpl)world.chunkGenerator.generate(
-							x, z);
+					ChunkColumnImpl generatedChunk = (ChunkColumnImpl)world.chunkGenerator.generate(x, z);
 					chunksMap.put(coords, new CacheValue(coords, generatedChunk, collectedChunks));
 					completionHandler.completed(generatedChunk, attachment);
 				};

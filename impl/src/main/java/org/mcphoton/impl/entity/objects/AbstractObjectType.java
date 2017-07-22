@@ -5,6 +5,8 @@ import org.mcphoton.entity.EntityType;
 import org.mcphoton.impl.AbstractType;
 
 /**
+ * Basic type for "object" entities.
+ *
  * @author TheElectronWill
  */
 public abstract class AbstractObjectType extends AbstractType implements EntityType {

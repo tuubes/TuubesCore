@@ -1,9 +1,11 @@
 package org.mcphoton.impl.world;
 
-import com.github.steveice10.mc.protocol.data.game.chunk.Chunk;
-import com.github.steveice10.mc.protocol.data.game.chunk.FlexibleStorage;
-import java.io.IOException;
-import java.io.OutputStream;
+import com.github.steveice10.mc.protocol.data.game.chunk.BlockStorage;
+import com.github.steveice10.mc.protocol.data.game.chunk.ChunkSectionData;
+import com.github.steveice10.mc.protocol.data.game.chunk.NibbleArray3d;
+import org.mcphoton.Photon;
+import org.mcphoton.block.BlockType;
+import org.mcphoton.impl.block.AbstractBlockType;
 import org.mcphoton.world.ChunkSection;
 
 /**
@@ -11,110 +13,78 @@ import org.mcphoton.world.ChunkSection;
  *
  * @author TheElectronWill
  */
-public final class ChunkSectionImpl implements ChunkSection {
-	final Chunk libChunk;
+public final class ChunkSectionImpl implements ChunkSection, ChunkSectionData {
+	/**
+	 * true iff the section has changed since the last save.
+	 */
+	private volatile boolean changed;
+	/**
+	 * Contains the blocks ids and palette.
+	 */
+	private final BlockStorage blocks;
+	private final NibbleArray3d blockLight, skyLight;
 
-	public ChunkSectionImpl(Chunk libChunk) {
-		this.libChunk = libChunk;
+	ChunkSectionImpl(BlockStorage blocks, NibbleArray3d blockLight, NibbleArray3d skyLight) {
+		this.blocks = blocks;
+		this.blockLight = blockLight;
+		this.skyLight = skyLight;
 	}
 
-	public ChunkSectionImpl(boolean skylight) {
-		this.libChunk = new Chunk(skylight);
+	public boolean hasChanged() {
+		return changed;
 	}
 
-	@Override
-	public synchronized void fillBlockFullId(int x0, int y0, int z0, int x1, int y1, int z1,
-											 int blockFullId) {
-		for (int x = x0; x < x1; x++) {
-			for (int y = y0; y < y1; y++) {
-				for (int z = z0; z < z1; z++) {
-					setBlockFullId(x, y, z, blockFullId);
-				}
-			}
-		}
-	}
-
-	@Override
-	public synchronized void fillBlockId(int x0, int y0, int z0, int x1, int y1, int z1,
-										 int blockId) {
-		for (int x = x0; x < x1; x++) {
-			for (int y = y0; y < y1; y++) {
-				for (int z = z0; z < z1; z++) {
-					setBlockId(x, y, z, blockId);
-				}
-			}
-		}
+	public void setChanged(boolean changed) {
+		this.changed = changed;
 	}
 
 	@Override
-	public synchronized int getBlockFullId(int x, int y, int z) {
-		return libChunk.getBlocks().get(x, y, z);
+	public BlockStorage getBlocks() {
+		return blocks;
 	}
 
 	@Override
-	public int getBlockId(int x, int y, int z) {
-		return getBlockFullId(x, y, z) >> 4;
+	public NibbleArray3d getBlockLight() {
+		return blockLight;
 	}
 
 	@Override
-	public int getBlockMetadata(int x, int y, int z) {
-		return getBlockFullId(x, y, z) & 15;
+	public NibbleArray3d getSkyLight() {
+		return skyLight;
 	}
 
 	@Override
-	public synchronized void replaceBlockFullId(int toReplace, int replacement) {
-		for (int x = 0; x < 16; x++) {
-			for (int y = 0; y < 16; y++) {
-				for (int z = 0; z < 16; z++) {
-					int fullId = getBlockFullId(x, y, z);
-					if (fullId == toReplace) {
-						setBlockFullId(x, y, z, replacement);
-					}
-				}
-			}
-		}
+	public BlockType getBlockType(int x, int y, int z) {
+		int typeId = blocks.get(x, y, z);
+		return Photon.getGameRegistry().getBlock(typeId);
 	}
 
 	@Override
-	public synchronized void replaceBlockId(int toReplace, int replacement) {
-		for (int x = 0; x < 16; x++) {
-			for (int y = 0; y < 16; y++) {
-				for (int z = 0; z < 16; z++) {
-					int id = getBlockId(x, y, z);
-					if (id == toReplace) {
-						setBlockId(x, y, z, replacement);
-					}
-				}
-			}
-		}
+	public void setBlockType(int x, int y, int z, BlockType type) {
+		changed = true;
+		int typeId = ((AbstractBlockType)type).getId();
+		blocks.set(x, y, z, typeId);
 	}
 
 	@Override
-	public synchronized void setBlockFullId(int x, int y, int z, int blockFullId) {
-		libChunk.getBlocks().set(x, y, z, blockFullId);
+	public void fill(BlockType blockType) {
+		//TODO
 	}
 
 	@Override
-	public void setBlockId(int x, int y, int z, int blockId) {
-		setBlockFullId(x, y, z, blockId << 4);
+	public void fill(BlockType blockType, int x1, int y1, int z1, int x2, int y2, int z2) {
+		//TODO
 	}
 
 	@Override
-	public synchronized void setBlockMetadata(int x, int y, int z, int blockMetadata) {
-		int fullId = getBlockFullId(x, y, z);
-		fullId &= ~15;//set metadata to zero
-		fullId |= (blockMetadata & 15);//set metadata to the specified value
-		setBlockFullId(x, y, z, fullId);
+	public void replace(BlockType type, BlockType replacement) {
+		//TODO
 	}
 
 	@Override
-	public void writeTo(OutputStream out) throws IOException {
-		FlexibleStorage storage = libChunk.getBlocks().getStorage();
-		out.write(storage.getBitsPerEntry());
-		out.write(storage.getData().length);
-		for (long l : storage.getData()) {
-			out.write((int)(l >>> 8));
-			out.write((int)l);
-		}
+	public void replace(BlockType type, BlockType replacement, int x1, int y1, int z1, int x2,
+						int y2, int z2) {
+		//TODO
 	}
+	//TODO method sendUpdates()
 }

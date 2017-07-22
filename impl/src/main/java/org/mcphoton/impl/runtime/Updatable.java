@@ -1,5 +1,7 @@
 package org.mcphoton.impl.runtime;
 
+import java.io.IOException;
+
 /**
  * @author TheElectronWill
  */
@@ -15,4 +17,9 @@ public interface Updatable {
 	 * Destroys this updatable and release all associated resources.
 	 */
 	void destroy();
+
+	/**
+	 * Sends the changes to the clients.
+	 */
+	void sendUpdates() throws IOException;
 }

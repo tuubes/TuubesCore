@@ -1,5 +1,6 @@
 package org.mcphoton.world.areas;
 
+import org.mcphoton.block.BlockType;
 import org.mcphoton.utils.Location;
 import org.mcphoton.world.World;
 
@@ -31,4 +32,19 @@ public interface Area extends Iterable<Location> {
 	 * Gets the area's size, in blocks (empty blocks are counted).
 	 */
 	int size();
+
+	/**
+	 * Fills the area with a given block.
+	 *
+	 * @param blockType the block type
+	 */
+	void fill(BlockType blockType);
+
+	/**
+	 * Replaces all occurences of a block by another one.
+	 *
+	 * @param type        the type to replace
+	 * @param replacement the replacement type
+	 */
+	void replace(BlockType type, BlockType replacement);
 }

@@ -1,5 +1,6 @@
 package org.mcphoton.impl.world;
 
+import com.github.steveice10.mc.protocol.data.game.chunk.BasicChunkData;
 import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerChunkDataPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -23,17 +25,16 @@ import org.mcphoton.world.World;
  * @author TheElectronWill
  */
 public final class ChunkIO {
+	private final World world;
 	private final Path chunksDirectory;
 
 	public ChunkIO(World world) {
-		this(new File(world.getDirectory(), "chunks"));
-	}
-
-	public ChunkIO(File chunksDirectory) {
-		this.chunksDirectory = chunksDirectory.toPath();
-		if (!chunksDirectory.isDirectory()) {
-			chunksDirectory.mkdir();
+		this.world = world;
+		File dir = new File(world.getDirectory(), "chunks");
+		if (!dir.isDirectory()) {
+			dir.mkdir();
 		}
+		this.chunksDirectory = dir.toPath();
 	}
 
 	/**
@@ -81,11 +82,11 @@ public final class ChunkIO {
 	 */
 	<A> void writeChunk(ChunkColumnImpl chunk, A attachment,
 						CompletionHandler<ChunkColumnImpl, A> completionHandler) {
-		Path chunkPath = getChunkPath(chunk.getX(), chunk.getZ());
+		Path chunkPath = getChunkPath(chunk.getData().getX(), chunk.getData().getZ());
 		try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(chunkPath,
 																			StandardOpenOption.WRITE)) {
 			// Writes the data to an extensible Stream
-			ServerChunkDataPacket chunkPacket = new ServerChunkDataPacket(chunk.getLibColumn());
+			ServerChunkDataPacket chunkPacket = new ServerChunkDataPacket(chunk.getData());
 			ByteArrayOutputStream byteStream = new ByteArrayOutputStream(8192);
 			NetOutput netOutput = new StreamNetOutput(byteStream);
 			chunkPacket.write(netOutput);
@@ -145,7 +146,8 @@ public final class ChunkIO {
 					} catch (IOException e) {
 						completionHandler.failed(e, attachment);
 					}
-					ChunkColumnImpl chunk = new ChunkColumnImpl(packet.getColumn());
+					BasicChunkData packetData = (BasicChunkData)packet.getColumn();
+					ChunkColumnImpl chunk = new ChunkColumnImpl(world, packet.getColumn());
 					completionHandler.completed(chunk, attachment);
 				}
 
@@ -158,6 +160,31 @@ public final class ChunkIO {
 			channel.read(buffer, 0, attachment, lowLevelHandler);
 		} catch (IOException e) {
 			completionHandler.failed(e, attachment);
+		}
+	}
+
+	/**
+	 * Reads a chunk, and wait for the read to complete.
+	 *
+	 * @param x the X chunk coordinate
+	 * @param z the Z chunk coordinate
+	 * @return the chunk that has been read
+	 *
+	 * @throws IOException if an IO error occurs
+	 */
+	ChunkColumnImpl readChunkNow(int x, int z) throws IOException {
+		Path chunkPath = getChunkPath(x, z);
+		if (!Files.exists(chunkPath)) {
+			throw new NoSuchFileException("The chunk file doesn't exist.");
+		}
+		try (FileChannel channel = FileChannel.open(chunkPath, StandardOpenOption.READ)) {
+			// Allocates a ByteBuffer of the size of the chunk file
+			int fileSize = (int)channel.size();
+			ByteBuffer buffer = ByteBuffer.allocate(fileSize);
+			NetInput netInput = new ByteBufferNetInput(buffer);
+			ServerChunkDataPacket packet = new ServerChunkDataPacket();
+			packet.read(netInput);
+			return new ChunkColumnImpl(world, packet.getColumn());
 		}
 	}
 }

@@ -1,9 +1,13 @@
 package org.mcphoton.impl.entity.mobs;
 
-import com.github.steveice10.mc.protocol.data.game.entity.metadata.EmptyMetadataStorage;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.MetadataType;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.TrackedMetadataStorage;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.TrackedMetadataValue;
+import com.github.steveice10.mc.protocol.packet.ingame.server.entity.ServerEntityHeadLookPacket;
+import com.github.steveice10.mc.protocol.packet.ingame.server.entity.ServerEntityPositionPacket;
+import com.github.steveice10.mc.protocol.packet.ingame.server.entity.ServerEntityPositionRotationPacket;
+import com.github.steveice10.mc.protocol.packet.ingame.server.entity.ServerEntityRotationPacket;
+import com.github.steveice10.mc.protocol.packet.ingame.server.entity.ServerEntityTeleportPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.spawn.ServerSpawnMobPacket;
 import com.github.steveice10.packetlib.packet.Packet;
 import java.util.ArrayList;
@@ -11,14 +15,18 @@ import java.util.List;
 import java.util.UUID;
 import org.mcphoton.impl.entity.AbstractEntity;
 import org.mcphoton.utils.Location;
+import org.mcphoton.utils.Vector;
 
 /**
  * @author TheElectronWill
  */
 public abstract class AbstractMob extends AbstractEntity {
+	private static final Vector MAX_POSITION_CHANGE = new Vector(8, 8, 8);
 	/** Rotation angle, in radians (converted when writing packets). */
 	protected volatile float pitch, yaw, headPitch;
-	protected final TrackedMetadataStorage dataStorage = new TrackedMetadataStorage(initializeDataStorage());
+	protected volatile boolean rotationChanged, headRotationChanged;
+	protected final TrackedMetadataStorage dataStorage = new TrackedMetadataStorage(
+			initializeDataStorage());
 
 	protected AbstractMob(Location location) {
 		super(location);
@@ -45,6 +53,31 @@ public abstract class AbstractMob extends AbstractEntity {
 		UUID uuid = new UUID(0, id);
 		int typeId = getType().getId();
 		Packet packet = new ServerSpawnMobPacket(id, uuid, typeId, position, yaw, pitch, headPitch,
-												 velocity, EmptyMetadataStorage.INSTANCE);
+												 velocity, dataStorage);
+		sendToClients(packet);
+	}
+
+	@Override
+	protected List<Packet> createUpdatePackets() {
+		List<Packet> packets = super.createUpdatePackets();
+		if (headRotationChanged) {
+			packets.add(new ServerEntityHeadLookPacket(id, headPitch));
+		}
+		if (positionChange == null || positionChange.isNull()) {
+			if (rotationChanged) {
+				packets.add(new ServerEntityRotationPacket(id, yaw, pitch, true));
+			}
+		} else if (positionChange.isSmallerThan(MAX_POSITION_CHANGE)) {
+			if (rotationChanged) {
+				packets.add(new ServerEntityPositionRotationPacket(id, positionChange, yaw, pitch,
+																   true));
+			} else {
+				packets.add(new ServerEntityPositionPacket(id, positionChange, true));
+			}
+		} else {
+			packets.add(new ServerEntityTeleportPacket(id, position, yaw, pitch, true));
+		}
+		//TODO store onGround
+		return packets;
 	}
 }

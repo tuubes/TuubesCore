@@ -1,11 +1,9 @@
 package org.mcphoton.impl.world;
 
 /**
- *
  * @author TheElectronWill
  */
 public final class ChunkCoordinates {
-
 	public final int x, z;
 
 	public ChunkCoordinates(int x, int z) {
@@ -27,10 +25,14 @@ public final class ChunkCoordinates {
 			return true;
 		}
 		if (obj instanceof ChunkCoordinates) {
-			ChunkCoordinates coords = (ChunkCoordinates) obj;
+			ChunkCoordinates coords = (ChunkCoordinates)obj;
 			return coords.x == x && coords.z == z;
 		}
 		return false;
 	}
 
+	@Override
+	public String toString() {
+		return "x=" + x + ", z=" + z;
+	}
 }
