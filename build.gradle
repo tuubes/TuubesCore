@@ -1,10 +1,7 @@
-version = 'indev'
-description 'The runnable Photon server'
+version = '0.5-alpha'
+description 'The Photon server'
 
-// Java plugin
-apply plugin: 'java'
-sourceCompatibility = '1.8'
-[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+apply plugin: 'scala'
 
 // Dependencies
 repositories {
@@ -12,11 +9,10 @@ repositories {
 	maven { url 'https://jitpack.io' }
 }
 dependencies {
-	compile project(':api')
-	compile project(':protocol-lib')
-	compile 'net.magik6k:bitbuffer:1.5.1'
+	compile 'org.scala-lang:scala-library:2.12.2'
 	compile 'com.github.TheElectronWill:Night-Config:v2.1'
 	compile 'org.slf4j:slf4j-api:1.7.25'
+	compile project(':protocol-lib')
 }
 
 // Build runnable jar

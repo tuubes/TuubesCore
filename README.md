@@ -29,5 +29,4 @@ The Photon server **isn't ready** yet. As of release "0.4.0" you can connect to 
 The progress of the project can be found [here](https://github.com/mcphoton/Photon-Server/projects/1).
 
 ## License
-- Module api: LGPLv3
-- Module impl and everything else: AGPLv3
+LGPLv3

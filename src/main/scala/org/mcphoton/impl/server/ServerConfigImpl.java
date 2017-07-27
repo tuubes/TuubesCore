@@ -38,11 +38,11 @@ public final class ServerConfigImpl implements ServerConfiguration {
 	private volatile int maxPlayers = 10;
 	private volatile int port = 25565;
 
-	@Conversion(ServerConfigImpl.LocationConverter.class)
+	@Conversion(LocationConverter.class)
 	private volatile Location spawnLocation;
 	private volatile boolean onlineMode = false;
 
-	@Conversion(ServerConfigImpl.LoggingLevelConverter.class)
+	@Conversion(LoggingLevelConverter.class)
 	private volatile LogLevel logLevel = LogLevel.TRACE;
 
 	@SpecIntInRange(min = 1, max = 100)
