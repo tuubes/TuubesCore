@@ -73,6 +73,10 @@ object Location {
 		new Location3d(coords, world)
 	}
 
+	private[block] def test() = {
+
+	}
+
 	/* Creates a new Location from a Vec3i and a World */
 	def apply(coords: Vec3i, world: World): Location = {
 		new Location3i(coords, world)

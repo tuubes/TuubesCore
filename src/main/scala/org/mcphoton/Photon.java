@@ -4,12 +4,11 @@ import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
 import org.mcphoton.command.GlobalCommandRegistry;
 import org.mcphoton.event.GlobalEventsManager;
-import org.mcphoton.impl.GameRegistry;
-import org.mcphoton.impl.command.GlobalCommandRegistryImpl;
-import org.mcphoton.impl.event.GlobalEventsManagerImpl;
-import org.mcphoton.impl.permissions.GlobalPermissionsManagerImpl;
-import org.mcphoton.impl.plugin.GlobalPluginsManagerImpl;
-import org.mcphoton.impl.server.ServerImpl;
+import org.mcphoton.command.GlobalCommandRegistryImpl;
+import org.mcphoton.event.GlobalEventsManagerImpl;
+import org.mcphoton.permissions.GlobalPermissionsManagerImpl;
+import org.mcphoton.plugin.GlobalPluginsManagerImpl;
+import org.mcphoton.server.ServerImpl;
 import org.mcphoton.permissions.GlobalPermissionsManager;
 import org.mcphoton.plugin.GlobalPluginsManager;
 
