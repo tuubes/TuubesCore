@@ -10,7 +10,7 @@ import org.mcphoton.event.WorldEventsManager;
 import org.mcphoton.permissions.WorldPermissionsManager;
 import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.utils.Coordinates;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 
 /**
  * A game world.

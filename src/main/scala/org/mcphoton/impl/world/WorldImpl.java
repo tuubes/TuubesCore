@@ -17,7 +17,7 @@ import org.mcphoton.impl.world.generation.SimpleHeightmapBasedGenerator;
 import org.mcphoton.permissions.WorldPermissionsManager;
 import org.mcphoton.plugin.WorldPluginsManager;
 import org.mcphoton.utils.Coordinates;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 import org.mcphoton.world.ChunkGenerator;
 import org.mcphoton.world.World;
 import org.mcphoton.world.WorldType;

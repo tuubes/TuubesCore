@@ -17,7 +17,7 @@ import org.mcphoton.impl.runtime.ExecutionGroup;
 import org.mcphoton.impl.runtime.Updatable;
 import org.mcphoton.impl.world.PlayerZone;
 import org.mcphoton.impl.world.WorldImpl;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 import org.mcphoton.utils.Vector;
 
 /**

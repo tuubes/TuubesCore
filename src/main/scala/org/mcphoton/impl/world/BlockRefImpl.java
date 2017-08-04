@@ -13,8 +13,7 @@ import org.mcphoton.block.BlockEntity;
 import org.mcphoton.block.BlockRef;
 import org.mcphoton.block.BlockType;
 import org.mcphoton.block.BlockTypeObserver;
-import org.mcphoton.utils.Location;
-import org.mcphoton.world.ChunkColumn;
+import org.mcphoton.world.Location;
 
 /**
  * A BlockRef that

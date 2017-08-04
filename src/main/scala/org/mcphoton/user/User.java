@@ -4,7 +4,7 @@ import java.util.UUID;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.inventory.InventoryHolder;
 import org.mcphoton.permissions.Permissible;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 
 /**
  * Represents the informations that the Photon server has about a particular user.

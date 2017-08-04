@@ -2,7 +2,7 @@ package org.mcphoton.block;
 
 import java.util.Optional;
 import java.util.function.Consumer;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 
 /**
  * A reference to a block.

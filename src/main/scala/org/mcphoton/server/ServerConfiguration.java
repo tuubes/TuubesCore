@@ -1,7 +1,7 @@
 package org.mcphoton.server;
 
 import java.awt.image.BufferedImage;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 
 /**
  * Represents the server's configuration.

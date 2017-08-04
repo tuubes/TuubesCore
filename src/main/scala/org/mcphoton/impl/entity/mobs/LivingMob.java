@@ -3,7 +3,7 @@ package org.mcphoton.impl.entity.mobs;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.MetadataType;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.TrackedMetadataValue;
 import java.util.List;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 
 /**
  * @author TheElectronWill

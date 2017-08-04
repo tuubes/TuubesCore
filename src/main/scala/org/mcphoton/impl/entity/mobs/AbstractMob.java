@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.mcphoton.impl.entity.AbstractEntity;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 import org.mcphoton.utils.Vector;
 
 /**

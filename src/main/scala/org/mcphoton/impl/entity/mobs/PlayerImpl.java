@@ -3,17 +3,15 @@ package org.mcphoton.impl.entity.mobs;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.MetadataType;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.TrackedMetadataValue;
 import com.github.steveice10.mc.protocol.packet.ingame.server.entity.spawn.ServerSpawnPlayerPacket;
-import com.github.steveice10.packetlib.Client;
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.packet.Packet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.impl.world.PlayerZone;
 import org.mcphoton.inventory.Inventory;
 import org.mcphoton.messaging.ChatMessage;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 
 /**
  * Represents a connected player.

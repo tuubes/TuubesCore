@@ -1,7 +1,7 @@
 package org.mcphoton.impl.entity.objects;
 
 import org.mcphoton.impl.entity.AbstractEntity;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 
 /**
  * @author TheElectronWill

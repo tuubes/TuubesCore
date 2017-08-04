@@ -12,7 +12,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
@@ -21,7 +20,7 @@ import org.mcphoton.impl.world.WorldImpl;
 import org.mcphoton.server.LogLevel;
 import org.mcphoton.server.Server;
 import org.mcphoton.server.ServerConfiguration;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 import org.mcphoton.world.World;
 import org.mcphoton.world.WorldType;
 

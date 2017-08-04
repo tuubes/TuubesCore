@@ -1,6 +1,6 @@
 package org.mcphoton.block;
 
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 import org.mcphoton.utils.Vector;
 
 /**

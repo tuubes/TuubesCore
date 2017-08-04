@@ -1,7 +1,7 @@
 package org.mcphoton.entity;
 
 import org.mcphoton.runtime.ContextBound;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 import org.mcphoton.utils.Vector;
 
 /**

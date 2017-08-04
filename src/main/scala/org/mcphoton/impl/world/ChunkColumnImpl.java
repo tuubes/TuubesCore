@@ -7,12 +7,10 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.xml.crypto.Data;
-import jdk.nashorn.internal.ir.Block;
 import org.mcphoton.Photon;
 import org.mcphoton.block.BlockType;
 import org.mcphoton.impl.entity.AbstractEntity;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 import org.mcphoton.world.BiomeType;
 import org.mcphoton.world.ChunkColumn;
 import org.mcphoton.world.ChunkSection;
@@ -122,7 +120,7 @@ public final class ChunkColumnImpl implements ChunkColumn {
 	public void setBlockType(int x, int y, int z, BlockType type) {
 		ChunkSection section = data.sections[y / 16];
 		if (section == null) {
-			section = new ChunkSectionImpl()
+			section = new ChunkSectionImpl(null,null,null);
 		}
 		section.setBlockType(x, y & 15, z, type);
 	}

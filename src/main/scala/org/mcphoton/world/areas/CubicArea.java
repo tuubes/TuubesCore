@@ -2,7 +2,7 @@ package org.mcphoton.world.areas;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.mcphoton.utils.Location;
+import org.mcphoton.world.Location;
 import org.mcphoton.world.World;
 
 /**
