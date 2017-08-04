@@ -1,6 +1,7 @@
 # Build files
 bin/
 build/
+out/
 
 # Directory where the server is launched and tested
 run/
