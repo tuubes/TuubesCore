@@ -13,6 +13,7 @@ dependencies {
 	compile 'com.github.TheElectronWill:Night-Config:3.0.1'
 	compile 'org.slf4j:slf4j-api:1.7.25'
 	compile project(':protocol-lib')
+	compile project(':photon-utils')
 }
 
 // Build runnable jar
