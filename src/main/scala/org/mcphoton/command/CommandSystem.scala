@@ -46,8 +46,8 @@ class CommandSystem {
 	 */
 	def getAlias(alias: String): Option[String] = aliases.get(alias)
 
-	private[this] val commands: concurrent.Map[String, Command] = new ConcurrentHashMap[String, Command].asScala
-	private[this] val aliases: concurrent.Map[String, String] = new ConcurrentHashMap[String, String].asScala
+	private[this] val commands: concurrent.Map[String, Command] = new ConcurrentHashMap().asScala
+	private[this] val aliases: concurrent.Map[String, String] = new ConcurrentHashMap().asScala
 }
 object CommandSystem {
 	def apply(implicit w: World): CommandSystem = w.commandSystem
