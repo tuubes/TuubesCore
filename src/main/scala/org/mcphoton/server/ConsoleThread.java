@@ -4,7 +4,6 @@ import com.electronwill.utils.StringUtils;
 import java.util.List;
 import java.util.Scanner;
 import org.mcphoton.Photon;
-import org.mcphoton.command.Command;
 import org.mcphoton.messaging.ChatMessage;
 import org.mcphoton.messaging.Messageable;
 import org.mcphoton.world.World;

@@ -11,8 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import org.mcphoton.Photon;
 import org.mcphoton.entity.living.Player;
-import org.mcphoton.command.GlobalCommandRegistryImpl;
-import org.mcphoton.command.ListCommand;
 import org.mcphoton.command.StopCommand;
 import org.mcphoton.impl.network.ProtocolLibAdapter;
 import org.mcphoton.plugin.GlobalPluginsManagerImpl;

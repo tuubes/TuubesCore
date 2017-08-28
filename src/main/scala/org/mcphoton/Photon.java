@@ -2,9 +2,7 @@ package org.mcphoton;
 
 import java.io.File;
 import java.util.concurrent.ScheduledExecutorService;
-import org.mcphoton.command.GlobalCommandRegistry;
 import org.mcphoton.event.GlobalEventsManager;
-import org.mcphoton.command.GlobalCommandRegistryImpl;
 import org.mcphoton.event.GlobalEventsManagerImpl;
 import org.mcphoton.permissions.GlobalPermissionsManagerImpl;
 import org.mcphoton.plugin.GlobalPluginsManagerImpl;
