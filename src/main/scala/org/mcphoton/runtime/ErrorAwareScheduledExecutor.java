@@ -1,4 +1,4 @@
-package org.mcphoton.impl.runtime;
+package org.mcphoton.runtime;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Delayed;

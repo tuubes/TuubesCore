@@ -1,4 +1,4 @@
-package org.mcphoton.impl.network;
+package org.mcphoton.network;
 
 import com.github.steveice10.packetlib.Session;
 import com.github.steveice10.packetlib.packet.Packet;

@@ -1,4 +1,4 @@
-package org.mcphoton.impl.network;
+package org.mcphoton.network;
 
 import com.github.steveice10.mc.protocol.ServerLoginHandler;
 import com.github.steveice10.mc.protocol.data.game.entity.player.GameMode;

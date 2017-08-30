@@ -1,4 +1,4 @@
-package org.mcphoton.impl.runtime;
+package org.mcphoton.runtime;
 
 import com.electronwill.utils.Bag;
 import com.electronwill.utils.SimpleBag;
@@ -8,8 +8,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import org.mcphoton.Photon;
-import org.mcphoton.runtime.ContextBound;
-import org.mcphoton.runtime.ExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

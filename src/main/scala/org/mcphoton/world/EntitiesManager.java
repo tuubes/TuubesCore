@@ -3,7 +3,7 @@ package org.mcphoton.world;
 import com.electronwill.utils.ConcurrentIndexMap;
 import com.electronwill.utils.IntBag;
 import org.mcphoton.entity.AbstractEntity;
-import org.mcphoton.impl.runtime.ExecutionGroup;
+import org.mcphoton.runtime.ExecutionGroup;
 
 /**
  * Manages all the entities in one World.

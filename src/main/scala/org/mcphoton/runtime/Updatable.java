@@ -1,4 +1,4 @@
-package org.mcphoton.impl.runtime;
+package org.mcphoton.runtime;
 
 import java.io.IOException;
 

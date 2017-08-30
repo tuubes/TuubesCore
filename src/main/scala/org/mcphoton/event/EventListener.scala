@@ -1,6 +1,6 @@
 package org.mcphoton.event
 
-import org.mcphoton.impl.runtime.ExecutionGroup
+import org.mcphoton.runtime.ExecutionGroup
 
 /**
  * @author TheElectronWill
