@@ -26,21 +26,23 @@ public final class TaskSystem {
 		executor = Executors.newScheduledThreadPool(0, factory);
 	}
 
-	public static void execute(Runnable task) {
-		executor.execute(task);
+	public static CancellableTask execute(Runnable task) {
+		return new CancellableFuture<>(executor.submit(task));
 	}
 
-	public static void schedule(Runnable command, long delay, TimeUnit unit) {
-		executor.schedule(command, delay, unit);
+	public static DelayedTask schedule(Runnable command, long delay, TimeUnit unit) {
+		return new DelayedFuture(executor.schedule(command, delay, unit));
 	}
 
-	public static void scheduleAtFixedRate(Runnable command, long initialDelay, long period,
-										   TimeUnit unit) {
-		executor.scheduleAtFixedRate(command, initialDelay, period, unit);
+	public static DelayedTask scheduleAtFixedRate(Runnable command, long initialDelay,
+													  long period, TimeUnit unit) {
+		return new DelayedFuture(
+				executor.scheduleAtFixedRate(command, initialDelay, period, unit));
 	}
 
-	public static void scheduleWithFixedDelay(Runnable command, long initialDelay, long delay,
-											  TimeUnit unit) {
-		executor.scheduleWithFixedDelay(command, initialDelay, delay, unit);
+	public static DelayedTask scheduleWithFixedDelay(Runnable command, long initialDelay,
+														 long delay, TimeUnit unit) {
+		return new DelayedFuture(
+				executor.scheduleWithFixedDelay(command, initialDelay, delay, unit));
 	}
 }
