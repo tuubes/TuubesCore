@@ -5,7 +5,7 @@ import java.net.{HttpURLConnection, URL, URLConnection}
 import java.nio.channels.FileChannel
 import java.nio.file.OpenOption
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicReference}
-import java.util.concurrent.{ConcurrentLinkedQueue, Executor}
+import java.util.concurrent.{ConcurrentLinkedQueue, Executor, TimeUnit}
 
 import org.mcphoton.runtime.TaskStatus._
 
@@ -286,7 +286,23 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	}
 
 	/**
-	 * Executes a function when this tasks fail.
+	 * After this task, waits a specific amount of time.
+	 *
+	 * @param time the time to wait for
+	 * @param unit the time's unit
+	 * @return a new task that is triggered after the given delay
+	 */
+	def thenDelay(time: Long, unit: TimeUnit): AsyncTask[B, B] = {
+		val after = new ChildTask[B, B](root, Success(_), executor)
+		val f = (b: B) => {
+			TaskSystem.schedule(() => after.start(), time, unit)
+			Success(b)
+		}
+		addNext(f, executor)
+	}
+
+	/**
+	 * Executes a function when this task fail.
 	 * @param f the function to execute
 	 * @return this task
 	 */
@@ -491,6 +507,44 @@ object AsyncTask {
 	}
 
 	/**
+	 * Creates a new delayed task. When started, the task is not submitted immediately but after
+	 * the given delay.
+	 *
+	 * @param time the delay
+	 * @param unit the delay's unit
+	 * @return the task, unstarted
+	 */
+	def delay(time: Long, unit: TimeUnit): AsyncTask[Unit, Unit] = {
+		new DelayedRootTask[Unit](time, unit, Success(_), DummyExecutor)
+	}
+
+	/**
+	 * Creates a new delayed CPU task that produces a result.
+	 *
+	 * @param time the delay
+	 * @param unit the delay's unit
+	 * @param f the function producing the result
+	 * @tparam R the result type
+	 * @return the task, unstarted
+	 */
+	def delayCompute[R](time: Long, unit: TimeUnit, f: () => Try[R]): AsyncTask[Unit, R] = {
+		new DelayedRootTask[R](time, unit, wrap(f), DummyExecutor)
+	}
+
+	/**
+	 * Creates a new CPU task that produces a result.
+	 *
+	 * @param time the delay
+	 * @param unit the delay's unit
+	 * @param f the function producing the result
+	 * @tparam R the result type
+	 * @return the task, unstarted
+	 */
+	def delayCompute[R](time: Long, unit: TimeUnit, f: ThrowableFunction0[R]): AsyncTask[Unit, R] = {
+		new DelayedRootTask[R](time, unit, wrap(f), DummyExecutor)
+	}
+
+	/**
 	 * Creates a new (CPU) task that completes when some of the given tasks complete. If too many
 	 * tasks fail then the task fails too.
 	 *
@@ -674,6 +728,19 @@ private final class AwaitingRootTask[R, T](private[this] val tasks: AsyncTask[_,
 		if (casStatus(CREATED, SUBMITTED)) {
 			AsyncTask.markRootSubmitted(nextTasksIterator())
 			tasks.foreach(_.start()) // Ensures that the tasks we wait for are started
+		}
+	}
+}
+private final class DelayedRootTask[B](private[this] val delay: Long,
+									   private[this] val unit: TimeUnit,
+									   f: () => Try[B], e: Executor)
+	extends AsyncTask[Unit, B](_ => f(), e) {
+
+	protected[this] val root = this
+	override def start(): Unit = {
+		if (casStatus(CREATED, SUBMITTED)) {
+			AsyncTask.markRootSubmitted(nextTasksIterator())
+			TaskSystem.schedule(() => submit(()), delay, unit)
 		}
 	}
 }
