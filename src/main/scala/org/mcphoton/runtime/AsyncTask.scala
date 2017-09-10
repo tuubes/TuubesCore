@@ -349,6 +349,18 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 		this
 	}
 
+	/**
+	 * Starts (ie launches asynchronously) some tasks when this task fail.
+	 *
+	 * @param tasks the tasks to start
+	 * @return this task
+	 */
+	@varargs
+	def startOnFailure(tasks: AsyncTask[_, _]*): this.type = {
+		failureHandlers.add((_, fail) => {tasks.foreach(_.start()); fail})
+		this
+	}
+
 	protected final def addNext[C](f: B => Try[C], executor: Executor): AsyncTask[B, C] = {
 		val next = new ChildTask[B, C](root, f, executor)
 		next.casStatus(CREATED, ROOT_SUBMITTED)
