@@ -6,12 +6,12 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * @author TheElectronWill
  */
-private[test] final class DependencyGraph {
+private[plugin] final class DependencyGraph {
 	/** The errors that occured during build or resolve */
-	private[test] val errors = new ArrayBuffer[String]
+	private[this] val errors = new ArrayBuffer[String]
 
 	/** The registered nodes */
-	private[test] val dataMap = new mutable.HashMap[String, Node] // node.data.name -> node
+	private[this] val dataMap = new mutable.HashMap[String, Node] // node.data.name -> node
 
 	def register(data: PluginInfos): Unit = dataMap.put(data.name, new Node(data))
 
@@ -165,7 +165,7 @@ private[test] final class DependencyGraph {
 	}
 
 	/** A Node in the graph. Each node is linked to its dependencies and dependents */
-	private[test] final class Node(val data: PluginInfos) {
+	private[plugin] final class Node(val data: PluginInfos) {
 		/** The nodes that this node depends on */
 		val hardDependencies = new ArrayBuffer[Node]
 
