@@ -6,7 +6,7 @@ package org.mcphoton.plugin
  *
  * @author TheElectronWill
  */
-class DelegateClassLoader(val delegate: OpenURLClassLoader, val parent: ClassLoader) extends
+final class DelegateClassLoader(val delegate: OpenURLClassLoader, val parent: ClassLoader) extends
 	ClassLoader(parent) {
 	override def findClass(name: String): Class[_] = delegate.findClass(name)
 

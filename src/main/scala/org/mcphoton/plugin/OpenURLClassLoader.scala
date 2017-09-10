@@ -8,7 +8,7 @@ import java.net.{URL, URLClassLoader}
  *
  * @author TheElectronWill
  */
-class OpenURLClassLoader(url: URL, parent: ClassLoader) extends URLClassLoader(Array(url), parent) {
+final class OpenURLClassLoader(url: URL, parent: ClassLoader) extends URLClassLoader(Array(url), parent) {
 	// make public
 	override def findClass(name: String): Class[_] = super.findClass(name)
 

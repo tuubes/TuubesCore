@@ -7,7 +7,7 @@ import com.electronwill.utils.StringUtils
 /**
  * @author TheElectronWill
  */
-class DependencyRequirement(val name: String, val compatibilityChecker: String => Boolean,
+final class DependencyRequirement(val name: String, val compatibilityChecker: String => Boolean,
 							val optional: Boolean) {
 	def accepts(nameAndVersion: String): Boolean = {
 		val splitted = StringUtils.split(nameAndVersion, ':')
