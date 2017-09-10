@@ -299,7 +299,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	}
 
 	/**
-	 * Executes a task when this tasks fail.
+	 * Executes a task when this task fail.
 	 * @param task the task to execute
 	 * @return this task
 	 */
@@ -312,7 +312,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	}
 
 	/**
-	 * Tries to recover a result when this tasks fail.
+	 * Tries to recover a result when this task fail.
 	 *
 	 * @param f the recovery function
 	 * @return this task
@@ -323,7 +323,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	}
 
 	/**
-	 * Tries to recover a result when this tasks fail.
+	 * Tries to recover a result when this task fail.
 	 *
 	 * @param f the recovery function
 	 * @return this task
