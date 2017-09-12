@@ -15,7 +15,7 @@ trait PluginSystem[P <: Plugin] {
 
 	def disable(p: P)
 
-	def plugin(name: String): Option[P] = plugins.get(name)
+	def get(name: String): Option[P] = plugins.get(name)
 
 	protected[this] val plugins: mutable.Map[String, P] = new ConcurrentHashMap[String, P]().asScala
 }

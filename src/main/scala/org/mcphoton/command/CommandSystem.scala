@@ -26,7 +26,7 @@ class CommandSystem {
 	def unregister(cmd: Command) = commands.remove(cmd.name).isDefined
 
 	/** @return the command with the given name */
-	def command(name: String): Option[Command] = commands.get(name)
+	def get(name: String): Option[Command] = commands.get(name)
 
 	/**
 	 * Defines an alias that executes a command. The command may have arguments, as if it was
