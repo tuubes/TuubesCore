@@ -15,14 +15,7 @@ public final class TaskSystem {
 	static final ScheduledExecutorService executor;
 
 	static {
-		ThreadFactory factory = new ThreadFactory() {
-			private final AtomicInteger count = new AtomicInteger();
-
-			@Override
-			public Thread newThread(Runnable runnable) {
-				return new Thread("TaskThread-" + count.getAndIncrement());
-			}
-		};
+		ThreadFactory factory = new CountingThreadFactory("TaskThread_");
 		executor = Executors.newScheduledThreadPool(0, factory);
 	}
 

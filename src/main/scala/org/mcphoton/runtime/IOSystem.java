@@ -23,7 +23,8 @@ import java.util.function.Consumer;
 public final class IOSystem {
 	private IOSystem() {}
 
-	static final ExecutorService executor = Executors.newCachedThreadPool();
+	static final ExecutorService executor = Executors.newCachedThreadPool(
+			new CountingThreadFactory("IOThread_"));
 
 	/**
 	 * Executes an IOTask in the background. The submitted task is executed at some time in the
