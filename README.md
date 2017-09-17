@@ -1,8 +1,17 @@
+![project logo](photon-logo.png)
+
+# Photon Server
+
 [![](https://img.shields.io/badge/next%20version-0.5.0-yellow.svg)](https://github.com/mcphoton/Photon-Server/projects/1)
 [![](https://img.shields.io/badge/progress-60%25-yellow.svg)](https://github.com/mcphoton/Photon-Server/projects/1)
 [![](https://img.shields.io/badge/discord-join%20chat!-7289DA.svg)](https://discord.gg/vWYembz)
 
-From-scratch, extensible and multithreaded minecraft server.
+Photon is a from-scratch implementation of a Minecraft server whose main goals are:
+- To scale extremely well by taking advantage of multiple CPU cores
+- To provide a very powerful and easy-to-use plugin API for developers
+- To free the community from the proprietary, opaque and buggy Mojang's server
+
+Photon is a free software licensed under the LGPLv3.
 
 ## Project setup
 Photon uses [gradle](http://gradle.org) to manage its dependencies.
@@ -13,27 +22,27 @@ Photon uses [gradle](http://gradle.org) to manage its dependencies.
 ```bash
 bash <(curl -s https://raw.githubusercontent.com/mcphoton/Photon-Server/scala-rewrite/setup.sh)
 ```
-This will clone all the repositories and create two scripts: `fetch-all.sh`and `pull-all.sh` to fetch and pull all the repos at once.
+This will clone all the required repositories and create two scripts: `fetch-all.sh` and `pull-all.sh` to fetch and pull all the repos at once.
+
 3. To build the project, cd in the Photon-Server directory and run `./gradlew build`
 
 ### Windows
-1. Install the Java 8 SDK.
+1. Install the Java 8 SDK and a git client.
 2. Create a directory for the project and clone this repo + [the ProcolLib repo](https://github.com/mcphoton/Photon-ProtocolLib) + [the Utils repo](https://github.com/mcphoton/Utils)
 3. To build the project, cd in the Photon-Server directory and run `gradlew build`
 
 ## How to contribute
-You can fork this project and send me pull requests :)
-* To contribute to the Photon implementation, you must first understand the Photon API. ~~Please read [the API wiki](https://github.com/mcphoton/Photon-API/wiki) to know about the project's guidelines and architecture.~~ The wiki isn't exactly up-to-date, and since major changes are coming it won't be updated in a near future.
-* Please respect [the coding style](https://github.com/mcphoton/Photon-Server/blob/develop/Coding%20Style.md).
-* Good java skills are required.
+Contributors are always welcome :-) 
+To contribute to the code, fork the repositories and send me a [pull request](https://help.github.com/articles/about-pull-requests/).
+
+For more informations please read [the contributing guidelines](CONTRIBUTING.md).
 
 ## Branches
-The *develop* branch contains the latest **in development** version of the Photon server. It's probably unstable and may not work at all. More stable releases can be found in the *master* branch.
+- **master**: stable releases only
+- **develop**: base branch for unstable development
+- **scala-rewrite**: contains the ongoing work to rewrite a part of Photon in [the Scala programming language](http://docs.scala-lang.org). See issue #9
 
-## Current status
-The Photon server **isn't ready** yet. As of release "0.4.0" you can connect to it, but you can't do anything in the world (well, actually there's no real world: the map is completely empty).
+## Offering ideas/reporting issues
+New ideas and issues can be reported as [github issues](https://github.com/mcphoton/Photon-Server/issues).
 
-The progress of the project can be found [here](https://github.com/mcphoton/Photon-Server/projects/1).
-
-## License
-LGPLv3
+To discuss about the project, [join the discord server](https://discord.gg/vWYembz)!
