@@ -18,8 +18,8 @@ Look at the [current issues](https://github.com/mcphoton/Photon-Server/issues) t
 ## What should I do before contributing?
 
 1. [Setup the project](README.md#Project%20Setup).
-2. Read the **mandatory** [coding style](Coding%20Style.md) and configure your IDE to respect it.
-3. Read [the wiki](wiki) to learn more about the project's internals.
+2. If you code, read the **mandatory** [coding style](Coding%20Style.md) and configure your IDE to respect it.
+3. Read [the wiki](https://github.com/mcphoton/Photon-Server/wiki) to learn more about the project's internals.
 4. Join the [discord server](https://discord.gg/vWYembz). Of course, I won't force you to do it (and I won't discriminate your pull requests if you don't join the discord that would not be nice), but it's really useful to ask questions and discuss about the project.
 
 ## I've found a bug, how do I report it?
