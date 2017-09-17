@@ -4,15 +4,22 @@
 
 From-scratch, extensible and multithreaded minecraft server.
 
-## How to build
-Photon uses [gradle](http://gradle.org) to manage its dependencies. Building the project is very easy:
+## Project setup
+Photon uses [gradle](http://gradle.org) to manage its dependencies.
 
-1. Install the Java 8 SDK (aka JDK 8) if you don't already have it.
-2. Put the [Photon Protocol library](https://github.com/mcphoton/Photon-ProtocolLib) in the same directory as the Photon Server project folder. 
-3. In the Photon Server project's directory, run this command: `./gradlew build`
+### Linux and MacOS
+1. Install the Java 8 SDK and git.
+2. Open a terminal where you want the project to be, and execute
+```bash
+bash <(curl -s https://raw.githubusercontent.com/mcphoton/Photon-Server/scala-rewrite/setup.sh)
+```
+This will clone all the repositories and create two scripts: `fetch-all.sh`and `pull-all.sh` to fetch and pull all the repos at once.
+3. To build the project, cd in the Photon-Server directory and run `./gradlew build`
 
-**Note:** The Photon-API repository is now useless and won't be updated anymore. The API is now
-part of this repository.
+### Windows
+1. Install the Java 8 SDK.
+2. Create a directory for the project and clone this repo + [the ProcolLib repo](https://github.com/mcphoton/Photon-ProtocolLib) + [the Utils repo](https://github.com/mcphoton/Utils)
+3. To build the project, cd in the Photon-Server directory and run `gradlew build`
 
 ## How to contribute
 You can fork this project and send me pull requests :)
