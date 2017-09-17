@@ -6,6 +6,7 @@
 
 ## Spaces
 Put a space where it's useful, ie after a comma, around keywords, etc.
+
 - No space when casting: ```(int)value```
 - No trailing space at the end of a line.
 
@@ -14,5 +15,6 @@ Put a space where it's useful, ie after a comma, around keywords, etc.
 - No empty line after the declaration of a class/interface/etc.
 
 ## Everything else
-Learn from the code that is already there.
-And follow this draft: http://cr.openjdk.java.net/~alundblad/styleguide/index-v6.html
+- Learn from the code that is already there.
+- For Scala code: follow http://docs.scala-lang.org/style/
+- For Java code: follow http://cr.openjdk.java.net/~alundblad/styleguide/index-v6.html
