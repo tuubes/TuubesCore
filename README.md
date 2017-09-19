@@ -20,7 +20,7 @@ Photon uses [gradle](http://gradle.org) to manage its dependencies.
 1. Install the Java 8 SDK and git.
 2. Open a terminal where you want the project to be, and execute
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/mcphoton/Photon-Server/scala-rewrite/setup.sh)
+curl -s "https://raw.githubusercontent.com/mcphoton/Photon-Server/scala-rewrite/setup.sh" | bash
 ```
 This will clone all the required repositories and create two scripts: `fetch-all.sh` and `pull-all.sh` to fetch and pull all the repos at once.
 
