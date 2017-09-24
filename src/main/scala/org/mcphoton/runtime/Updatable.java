@@ -19,6 +19,14 @@ public interface Updatable {
 	void destroy();
 
 	/**
+	 * Checks if this Updatable has been destroyed. A destroyed Updatable should not be updated
+	 * nor used.
+	 *
+	 * @return true if this updatable has been destroyed, false otherwise
+	 */
+	boolean isDestroyed();
+
+	/**
 	 * Sends the changes to the clients.
 	 */
 	void sendUpdates() throws IOException;
