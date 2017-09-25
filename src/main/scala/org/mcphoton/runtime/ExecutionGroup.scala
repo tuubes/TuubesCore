@@ -89,7 +89,7 @@ final class ExecutionGroup private(private[this] val name: String) extends Execu
 		val it = updatables.iterator()
 		while (it.hasNext) {
 			val updatable = it.next()
-			if (updatable.isDestroyed) {
+			if (!updatable.isValid) {
 				it.remove()
 			} else {
 				try {
@@ -106,7 +106,7 @@ final class ExecutionGroup private(private[this] val name: String) extends Execu
 		var n = 1
 		var updatable = newUpdatables.poll()
 		while (n < limit && updatable != null) {
-			if (!updatable.isDestroyed) {
+			if (updatable.isValid) {
 				updatables.add(updatable)
 			}
 			updatable = newUpdatables.poll()
