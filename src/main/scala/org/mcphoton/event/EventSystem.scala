@@ -20,12 +20,12 @@ class EventSystem[I] {
 			//TODO TaskSystem.submit(()=>l.onEvent(e))
 		}
 	}
-	def listen[E <: Event](listenType: ListenType, eventClass: Class[E],
+	def listen[E <: Event](mode: ListenMode, eventClass: Class[E],
 						   listener: EventListener[E, I]): ListenKey[E, I] = {
-		val container = listenType match {
-			case ListenType.BLOCKING =>
+		val container = mode match {
+			case ListenMode.BLOCKING =>
 				blockingListeners.getOrElseUpdate(eventClass, new mutable.HashSet())
-			case ListenType.AFTER =>
+			case ListenMode.AFTER =>
 				afterListeners.getOrElseUpdate(eventClass, new mutable.HashSet())
 		}
 		container += listener

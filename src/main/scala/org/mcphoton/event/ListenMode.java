@@ -3,6 +3,6 @@ package org.mcphoton.event;
 /**
  * @author TheElectronWill
  */
-public enum ListenType {
+public enum ListenMode {
 	BLOCKING, AFTER
 }
