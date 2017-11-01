@@ -14,7 +14,7 @@ public interface Entity extends ContextBound {
 	/**
 	 * @return the entity's type.
 	 */
-	EntityType getType();
+	MobType getType();
 
 	/**
 	 * @return the velocity (speed) per ticks of the entity.

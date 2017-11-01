@@ -7,10 +7,10 @@ abstract class Type[T <: Type[T]] protected(val uniqueName: String) {
 	/**
 	 * Checks if this type is the same as or a variant of some other type.
 	 * <p>
-	 * This method defines an equivalence relation, similar to  [[Object#equals(Object)]]. It has
+	 * This method defines an equivalence relation, similar to [[Object#equals(Object)]]. It has
 	 * the following properties:
-	 * <li>Symmetry: t.isVariant(t) returns true for all t</li>
-	 * <li>Transitivity: a.isVariant(b) and b.isVariant(a) return the same value</li>
+	 * <li>Reflexivity: t.isVariant(t) returns true for all t</li>
+	 * <li>Symmetry: a.isVariant(b) and b.isVariant(a) return the same value</li>
 	 * <li>Transitivity: a.isVariant(b) and b.isVariant(c) are true if and only if a.isVariant(c)
 	 * is true.</li>
 	 *
