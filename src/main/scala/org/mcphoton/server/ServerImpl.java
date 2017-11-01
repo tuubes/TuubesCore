@@ -14,7 +14,6 @@ import org.mcphoton.entity.living.Player;
 import org.mcphoton.command.StopCommand;
 import org.mcphoton.network.ProtocolLibAdapter;
 import org.mcphoton.plugin.GlobalPluginsManagerImpl;
-import org.mcphoton.runtime.ErrorAwareScheduledExecutor;
 import org.mcphoton.world.WorldImpl;
 import org.mcphoton.world.World;
 import org.mcphoton.world.WorldType;
