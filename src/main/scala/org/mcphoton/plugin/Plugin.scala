@@ -1,8 +1,8 @@
 package org.mcphoton.plugin
 
-import java.io.File
-
+import better.files.File
 import com.typesafe.scalalogging.Logger
+import org.mcphoton.server.PhotonServer
 import org.mcphoton.world.World
 
 /**
@@ -13,7 +13,7 @@ trait Plugin {
 	val version: String
 	val requiredDependencies: Iterable[String] = Nil
 	val optionalDependencies: Iterable[String] = Nil
-	final val directory = new File(PhotonServer.pluginsDir, name)
+	final val directory: File = PhotonServer.PluginsDir / name
 	final lazy val logger = Logger(name)
 
 	@volatile private[plugin] final var state = PluginState.LOADED
