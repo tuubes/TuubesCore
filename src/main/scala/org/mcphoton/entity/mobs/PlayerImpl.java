@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 import org.mcphoton.entity.living.Player;
 import org.mcphoton.world.PlayerZone;
-import org.mcphoton.inventory.Inventory;
+import org.mcphoton.item.Inventory;
 import org.mcphoton.messaging.ChatMessage;
 import org.mcphoton.world.Location;
 

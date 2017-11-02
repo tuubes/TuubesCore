@@ -1,4 +1,4 @@
-package org.mcphoton.inventory;
+package org.mcphoton.item;
 
 /**
  * Interface for entities or objects that have an inventory.

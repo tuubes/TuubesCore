@@ -1,6 +1,4 @@
-package org.mcphoton.inventory;
-
-import org.mcphoton.item.ItemStack;
+package org.mcphoton.item;
 
 /**
  * An inventory, which contains some ItemStacks.
