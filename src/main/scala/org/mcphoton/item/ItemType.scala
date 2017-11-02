@@ -8,4 +8,6 @@ import org.mcphoton.{GameRegistry, Type}
 class ItemType(n: String) extends Type[ItemType](n) {
 	private[mcphoton] val (id, additionalData) = GameRegistry.registerItem(uniqueName, this)
 	private[mcphoton] def fullId: Int = id << 4 | additionalData.getOrElse(0)
+
+	def hasDataVariants: Boolean = additionalData.isDefined
 }
