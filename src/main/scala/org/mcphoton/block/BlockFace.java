@@ -1,7 +1,6 @@
 package org.mcphoton.block;
 
-import org.mcphoton.world.Location;
-import org.mcphoton.utils.Vector;
+import com.electronwill.utils.Vec3d;
 
 /**
  * A block face.
@@ -93,29 +92,9 @@ public enum BlockFace {
 	public abstract BlockFace getOppositeFace();
 
 	/**
-	 * Adds modX, modY and modZ to a Location.
-	 *
-	 * @param l the location
-	 * @return a new location that is the result of the modification.
-	 */
-	public Location applyMod(Location l) {
-		return l.add(modX, modY, modZ);
-	}
-
-	/**
-	 * Adds modX, modY and modZ to a Vector.
-	 *
-	 * @param v the vector to modify
-	 * @return the vector v
-	 */
-	public Vector applyMod(Vector v) {
-		return v.add(toVector());
-	}
-
-	/**
 	 * @return a new Vector (modX, modY, modZ).
 	 */
-	public Vector toVector() {
-		return new Vector(modX, modY, modZ);
+	public Vec3d toVector() {
+		return new Vec3d(modX, modY, modZ);
 	}
 }
