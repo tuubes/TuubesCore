@@ -8,7 +8,7 @@ import com.electronwill.nightconfig.core.file.FileConfig
 import org.mcphoton.block.BlockType
 import org.mcphoton.entity.{MobType, ObjectType}
 import org.mcphoton.item.ItemType
-import org.mcphoton.server.PhotonServer.ConfigDir
+import org.mcphoton.server.PhotonServer.DirConfig
 import org.mcphoton.world.BiomeType
 
 /**
@@ -16,11 +16,11 @@ import org.mcphoton.world.BiomeType
  */
 object GameRegistry {
 	// Configs that contains "uniqueName -> id" definitions
-	private val blocksConfig = FileConfig.of((ConfigDir / "blocks.toml").toJava)
-	private val mobsConfig = FileConfig.of((ConfigDir / "entities_mobs.toml").toJava)
-	private val objectsConfig = FileConfig.of((ConfigDir / "entities_objects.toml").toJava)
-	private val itemsConfig = FileConfig.of((ConfigDir / "items.toml").toJava)
-	private val biomesConfig = FileConfig.of((ConfigDir / "biomes.toml").toJava)
+	private val blocksConfig = FileConfig.of((DirConfig / "blocks.toml").toJava)
+	private val mobsConfig = FileConfig.of((DirConfig / "entities_mobs.toml").toJava)
+	private val objectsConfig = FileConfig.of((DirConfig / "entities_objects.toml").toJava)
+	private val itemsConfig = FileConfig.of((DirConfig / "items.toml").toJava)
+	private val biomesConfig = FileConfig.of((DirConfig / "biomes.toml").toJava)
 
 	// Map that link ids to types
 	private val blocksIdMap = new IndexMap[Registration[BlockType]]

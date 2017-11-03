@@ -13,7 +13,7 @@ trait Plugin {
 	val version: String
 	val requiredDependencies: Iterable[String] = Nil
 	val optionalDependencies: Iterable[String] = Nil
-	final val directory: File = PhotonServer.PluginsDir / name
+	final val directory: File = PhotonServer.DirPlugins / name
 	final lazy val logger = Logger(name)
 
 	@volatile private[plugin] final var state = PluginState.LOADED

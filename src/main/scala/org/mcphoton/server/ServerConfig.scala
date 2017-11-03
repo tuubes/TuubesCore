@@ -16,7 +16,7 @@ import org.mcphoton.world.{Location, World, WorldImpl, WorldType}
  */
 final class ServerConfig {
 	@transient
-	private val file = PhotonServer.MainDir / "server_config.toml"
+	private val file = PhotonServer.DirConfig / "server_config.toml"
 
 	@transient
 	@volatile
@@ -52,7 +52,7 @@ final class ServerConfig {
 			"server-icon.png", "server-icon.jpg", "server_icon.png", "server_icon.jpg",
 			"logo.png", "logo.jpg")
 		for (possibility <- possibilities) {
-			val file = (PhotonServer.MainDir / possibility).toJava
+			val file = (PhotonServer.DirMain / possibility).toJava
 			if (file.exists) {
 				try
 					return Some(ImageIO.read(file))

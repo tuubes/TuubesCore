@@ -16,7 +16,7 @@ import scala.collection.mutable
  * @author TheElectronWill
  */
 object UserManager {
-	private[this] final val dataDir = PhotonServer.MainDir / "players"
+	private[this] final val dataDir = PhotonServer.DirMain / "players"
 	private[this] final val onlineUids = new mutable.HashMap[UUID, Player]
 	private[this] final val onlineNames = new mutable.HashMap[String, Player]
 
