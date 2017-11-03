@@ -1,7 +1,5 @@
 package org.mcphoton.world;
 
-import com.github.steveice10.mc.protocol.data.game.chunk.BasicChunkData;
-import com.github.steveice10.mc.protocol.packet.ingame.server.world.ServerChunkDataPacket;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
 import com.github.steveice10.packetlib.io.buffer.ByteBufferNetInput;
@@ -29,7 +27,7 @@ public final class ChunkIO {
 
 	public ChunkIO(World world) {
 		this.world = world;
-		File dir = new File(world.getDirectory(), "chunks");
+		File dir = new File(world.dir().toJava(), "chunks");
 		if (!dir.isDirectory()) {
 			dir.mkdir();
 		}
@@ -82,13 +80,14 @@ public final class ChunkIO {
 	<A> void writeChunk(ChunkColumnImpl chunk, A attachment,
 						CompletionHandler<ChunkColumnImpl, A> completionHandler) {
 		Path chunkPath = getChunkPath(chunk.getData().getX(), chunk.getData().getZ());
-		try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(chunkPath,
-																			StandardOpenOption.WRITE)) {
+		try {
+			AsynchronousFileChannel channel = AsynchronousFileChannel.open(chunkPath,
+																		   StandardOpenOption.WRITE);
 			// Writes the data to an extensible Stream
-			ServerChunkDataPacket chunkPacket = new ServerChunkDataPacket(chunk.getData());
 			ByteArrayOutputStream byteStream = new ByteArrayOutputStream(8192);
 			NetOutput netOutput = new StreamNetOutput(byteStream);
-			chunkPacket.write(netOutput);
+			chunk.getData().save(netOutput);
+
 			// Copies the data to a ByteBuffer
 			ByteBuffer buffer = ByteBuffer.wrap(
 					byteStream.toByteArray());//TODO avoid copying: use array directly
@@ -97,6 +96,12 @@ public final class ChunkIO {
 				@Override
 				public void completed(Integer result, A attachment) {
 					completionHandler.completed(chunk, attachment);
+					try {
+						channel.close();
+					} catch (IOException e) {
+						//TODO how to handle this?
+						e.printStackTrace();
+					}
 				}
 
 				@Override
@@ -129,8 +134,9 @@ public final class ChunkIO {
 			completionHandler.failed(new NoSuchFileException("The chunk file doesn't exist."),
 									 attachment);
 		}
-		try (AsynchronousFileChannel channel = AsynchronousFileChannel.open(chunkPath,
-																			StandardOpenOption.READ)) {
+		try {
+			AsynchronousFileChannel channel = AsynchronousFileChannel.open(chunkPath,
+																		   StandardOpenOption.READ);
 			// Allocates a ByteBuffer of the size of the chunk file
 			int fileSize = (int)channel.size();
 			ByteBuffer buffer = ByteBuffer.allocate(fileSize);
@@ -138,16 +144,14 @@ public final class ChunkIO {
 			CompletionHandler<Integer, A> lowLevelHandler = new CompletionHandler<Integer, A>() {
 				@Override
 				public void completed(Integer result, A attachment) {
-					NetInput netInput = new ByteBufferNetInput(buffer);
-					ServerChunkDataPacket packet = new ServerChunkDataPacket();
 					try {
-						packet.read(netInput);
-					} catch (IOException e) {
-						completionHandler.failed(e, attachment);
+						NetInput netInput = new ByteBufferNetInput(buffer);
+						ChunkColumnImpl.Data data = ChunkColumnImpl.Data.read(netInput, x, z);
+						ChunkColumnImpl chunk = new ChunkColumnImpl(world, data);
+						completionHandler.completed(chunk, attachment);
+					} catch (IOException ex) {
+						completionHandler.failed(ex, attachment);
 					}
-					BasicChunkData packetData = (BasicChunkData)packet.getColumn();
-					ChunkColumnImpl chunk = new ChunkColumnImpl(world, packet.getColumn());
-					completionHandler.completed(chunk, attachment);
 				}
 
 				@Override
@@ -180,10 +184,10 @@ public final class ChunkIO {
 			// Allocates a ByteBuffer of the size of the chunk file
 			int fileSize = (int)channel.size();
 			ByteBuffer buffer = ByteBuffer.allocate(fileSize);
+			channel.read(buffer);
 			NetInput netInput = new ByteBufferNetInput(buffer);
-			ServerChunkDataPacket packet = new ServerChunkDataPacket();
-			packet.read(netInput);
-			return new ChunkColumnImpl(world, packet.getColumn());
+			ChunkColumnImpl.Data data = ChunkColumnImpl.Data.read(netInput, x, z);
+			return new ChunkColumnImpl(world, data);
 		}
 	}
 }

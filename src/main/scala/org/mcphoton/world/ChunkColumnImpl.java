@@ -1,16 +1,19 @@
 package org.mcphoton.world;
 
+import com.github.steveice10.mc.protocol.data.game.chunk.BasicChunkData;
+import com.github.steveice10.mc.protocol.data.game.chunk.BasicChunkSection;
+import com.github.steveice10.mc.protocol.data.game.chunk.BlockStorage;
 import com.github.steveice10.mc.protocol.data.game.chunk.ChunkColumnData;
+import com.github.steveice10.mc.protocol.data.game.chunk.NibbleArray3d;
 import com.github.steveice10.packetlib.io.NetInput;
 import com.github.steveice10.packetlib.io.NetOutput;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import org.mcphoton.Photon;
+import org.mcphoton.GameRegistry;
 import org.mcphoton.block.BlockType;
 import org.mcphoton.entity.AbstractEntity;
-import org.mcphoton.world.Location;
 import org.mcphoton.world.areas.Area;
 
 /**
@@ -91,12 +94,12 @@ public final class ChunkColumnImpl implements ChunkColumn {
 		synchronized (data.biomes) {
 			typeId = data.biomes[z << 4 | x];
 		}
-		return Photon.getGameRegistry().getBiome(typeId);//TODO
+		return GameRegistry.biome(typeId);
 	}
 
 	@Override
 	public void setBiomeType(int x, int z, BiomeType biomeType) {
-		int typeId = ((AbstractBiomeType)biomeType).getId();
+		int typeId = (biomeType).id();
 		synchronized (data.biomes) {
 			data.biomes[z << 4 | x] = (byte)typeId;
 		}
@@ -116,7 +119,7 @@ public final class ChunkColumnImpl implements ChunkColumn {
 	public void setBlockType(int x, int y, int z, BlockType type) {
 		ChunkSection section = data.sections[y / 16];
 		if (section == null) {
-			section = new ChunkSectionImpl(null,null,null);
+			section = new ChunkSectionImpl(null, null, null);
 		}
 		section.setBlockType(x, y & 15, z, type);
 	}
@@ -135,11 +138,42 @@ public final class ChunkColumnImpl implements ChunkColumn {
 		private volatile boolean biomesChanged;
 
 		public Data(int x, int z, ChunkSectionImpl[] sections, byte[] biomes, boolean skylight) {
+			if (sections.length != 16) {
+				throw new IllegalArgumentException("Invalid number of sections: need 16");
+			}
+			if (biomes.length != 256) {
+				throw new IllegalArgumentException("Invalid size of biomes data: need 256 bytes");
+			}
 			this.x = x;
 			this.z = z;
 			this.sections = sections;
 			this.biomes = biomes;
 			this.skylight = skylight;
+		}
+
+		public Data(BasicChunkData basicChunkData) {
+			this.x = basicChunkData.getX();
+			this.z = basicChunkData.getZ();
+			BasicChunkSection[] basicSections = basicChunkData.getSections();
+
+			this.sections = new ChunkSectionImpl[basicSections.length];
+			if (sections.length != 16) {
+				throw new IllegalArgumentException("Invalid number of sections: need 16");
+			}
+
+			this.biomes = basicChunkData.getBiomeData();
+			if (biomes.length != 256) {
+				throw new IllegalArgumentException("Invalid size of biomes data: need 256 bytes");
+			}
+			for (int i = 0; i < basicSections.length; i++) {
+				BasicChunkSection basicSection = basicSections[i];
+				if (basicSection != null) {
+					sections[i] = new ChunkSectionImpl(basicSection.getBlocks(),
+													   basicSection.getBlockLight(),
+													   basicSection.getSkyLight());
+				}
+			}
+			this.skylight = basicChunkData.hasSkylight();
 		}
 
 		@Override
@@ -172,6 +206,15 @@ public final class ChunkColumnImpl implements ChunkColumn {
 			return skylight;
 		}
 
+		public int getBiomeId(int x, int z) {
+			return biomes[z << 4 | x];
+		}
+
+		public void setBiomes(int x, int z, int biomeId) {
+			biomesChanged = true;
+			biomes[z << 4 | x] = (byte)biomeId;
+		}
+
 		public boolean hasChanged() {
 			if (biomesChanged) {
 				return true;
@@ -187,7 +230,7 @@ public final class ChunkColumnImpl implements ChunkColumn {
 		public void save(NetOutput out) throws IOException {
 			out.writeBoolean(skylight);
 			int bitmask;
-			for (int i = 0; i < sections.length; i++) {
+			for (int i = 0; i < 16; i++) {
 				ChunkSectionImpl section = sections[i];
 				if (section != null) {
 					out.writeByte(i);//section index
@@ -198,12 +241,21 @@ public final class ChunkColumnImpl implements ChunkColumn {
 					}
 				}
 			}
+			out.writeBytes(biomes);
 		}
 
-		public static Data read(NetInput in) throws IOException {
-			boolean skylight = in.readBoolean();
+		public static Data read(NetInput in, int x, int z) throws IOException {
+			boolean hasSkylight = in.readBoolean();
 			ChunkSectionImpl[] sections = new ChunkSectionImpl[16];
-
+			for (int i = 0; i < 16; i++) {
+				int index = in.readByte();
+				BlockStorage blocks = new BlockStorage(in);
+				NibbleArray3d blocklight = new NibbleArray3d(in, 4096);
+				NibbleArray3d skylight = hasSkylight ? new NibbleArray3d(in, 4096) : null;
+				sections[index] = new ChunkSectionImpl(blocks, blocklight, skylight);
+			}
+			byte[] biomes = in.readBytes(256);
+			return new Data(x, z, sections, biomes, hasSkylight);
 		}
 	}
 }

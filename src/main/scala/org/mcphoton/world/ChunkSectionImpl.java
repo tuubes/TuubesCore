@@ -3,10 +3,8 @@ package org.mcphoton.world;
 import com.github.steveice10.mc.protocol.data.game.chunk.BlockStorage;
 import com.github.steveice10.mc.protocol.data.game.chunk.ChunkSectionData;
 import com.github.steveice10.mc.protocol.data.game.chunk.NibbleArray3d;
-import org.mcphoton.Photon;
+import org.mcphoton.GameRegistry;
 import org.mcphoton.block.BlockType;
-import org.mcphoton.block.AbstractBlockType;
-import org.mcphoton.world.ChunkSection;
 
 /**
  * Basic implementation of ChunkSection. It is thread-safe.
@@ -56,14 +54,13 @@ public final class ChunkSectionImpl implements ChunkSection, ChunkSectionData {
 	@Override
 	public BlockType getBlockType(int x, int y, int z) {
 		int typeId = blocks.get(x, y, z);
-		return Photon.getGameRegistry().getBlock(typeId);
+		return GameRegistry.block(typeId);
 	}
 
 	@Override
 	public void setBlockType(int x, int y, int z, BlockType type) {
 		changed = true;
-		int typeId = ((AbstractBlockType)type).getId();
-		blocks.set(x, y, z, typeId);
+		blocks.set(x, y, z, type.fullId());
 	}
 
 	@Override

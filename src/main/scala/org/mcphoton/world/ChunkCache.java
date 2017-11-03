@@ -1,6 +1,5 @@
 package org.mcphoton.world;
 
-import com.github.steveice10.mc.protocol.data.game.chunk.ChunkColumnData;
 import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
@@ -24,18 +23,19 @@ public final class ChunkCache {
 		this.world = world;
 	}
 
-	private final ConcurrentMap<ChunkCoordinates, CacheValue> chunksMap = new ConcurrentHashMap<>(512);
+	private final ConcurrentMap<ChunkCoordinates, CacheValue> chunksMap = new ConcurrentHashMap<>(
+			512);
 	private final ReferenceQueue<ChunkColumnImpl> collectedChunks = new ReferenceQueue<>();
 
 	private static final class CacheValue extends SoftReference<ChunkColumnImpl> {
 		private final ChunkCoordinates key;// Used to remove the value from the map when collected
-		private final ChunkColumnData libColumn;// Used to save the chunk's data when collected
+		private final ChunkColumnImpl.Data libColumn;// Used to save the chunk's data when collected
 
 		CacheValue(ChunkCoordinates key, ChunkColumnImpl value,
 				   ReferenceQueue<? super ChunkColumnImpl> queue) {
 			super(value, queue);
 			this.key = key;
-			this.libColumn = value.getLibColumn();
+			this.libColumn = value.getData();
 		}
 	}
 
@@ -54,25 +54,23 @@ public final class ChunkCache {
 			*/
 			if (value.libColumn.hasChanged()) {
 				ChunkColumnImpl chunkColumn = new ChunkColumnImpl(world, value.libColumn);
-				ChunkCoordinates coords = new ChunkCoordinates(chunkColumn.getX(),
-															   chunkColumn.getZ());
+				ChunkCoordinates coords = value.key;
 				CacheValue newValue = new CacheValue(coords, chunkColumn, collectedChunks);
 				chunksMap.put(value.key, newValue);
-				CompletionHandler<ChunkColumnImpl, Object> completionHandler = new CompletionHandler<ChunkColumnImpl, Object>() {
+				CompletionHandler<ChunkColumnImpl, ChunkCoordinates> completionHandler = new CompletionHandler<ChunkColumnImpl, ChunkCoordinates>() {
 					@Override
-					public void completed(ChunkColumnImpl result, Object attachment) {
-						log.debug("Chunk saved: world {}, x={}, z={}", world, result.getX(),
-								  result.getZ());
+					public void completed(ChunkColumnImpl result, ChunkCoordinates coords) {
+						log.debug("Chunk saved: world {}, x={}, z={}", world, coords.x, coords.z);
 						//Let the reference go if the chunk isn't used
 					}
 
 					@Override
-					public void failed(Throwable exc, Object attachment) {
+					public void failed(Throwable exc, ChunkCoordinates coords) {
 						log.error("Failed to save chunk in world {}, x={}, z={}", world.getName(),
 								  coords.x, coords.z, exc);
 					}
 				};
-				world.chunkIO.writeChunk(chunkColumn, null, completionHandler);
+				world.chunkIO.writeChunk(chunkColumn, coords, completionHandler);
 			}
 		}
 	}
@@ -114,13 +112,14 @@ public final class ChunkCache {
 			ChunkIO chunkIO = world.chunkIO;
 			if (chunkIO.isChunkOnDisk(x, z)) {// Chunk on disk
 				try {
-					chunkIO.readChunkNow(x, z);//sync read
+					return chunkIO.readChunkNow(x, z);//sync read
 				} catch (IOException e) {
 					throw new RuntimeException("Failed to read chunk at " + coords);
 				}
 			} else {// Chunk needs to be generated
 				ChunkColumnImpl generatedChunk = (ChunkColumnImpl)world.chunkGenerator.generate(x, z);
 				chunksMap.put(coords, new CacheValue(coords, generatedChunk, collectedChunks));
+				return generatedChunk;
 			}
 		}
 	}
@@ -156,7 +155,8 @@ public final class ChunkCache {
 				chunkIO.readChunk(x, z, attachment, completionHandler);//async read
 			} else {// Chunk needs to be generated
 				Runnable task = () -> {
-					ChunkColumnImpl generatedChunk = (ChunkColumnImpl)world.chunkGenerator.generate(x, z);
+					ChunkColumnImpl generatedChunk = (ChunkColumnImpl)world.chunkGenerator.generate(
+							x, z);
 					chunksMap.put(coords, new CacheValue(coords, generatedChunk, collectedChunks));
 					completionHandler.completed(generatedChunk, attachment);
 				};
