@@ -53,6 +53,7 @@ object GameRegistry {
 	// Get registration info by ID
 	private[mcphoton] def blocks(id: Int): Registration[BlockType] = blocksIdMap.get(id)
 	private[mcphoton] def items(id: Int): Registration[ItemType] = itemsIdMap.get(id)
+	private[mcphoton] def block(fullId: Int): BlockType = block(fullId >> 4, fullId & 16)
 
 	// Get type by name
 	def block(name: String): BlockType = blocksNameMap.get(name)
