@@ -11,6 +11,15 @@ trait Updatable {
 	private[mcphoton] val _status = new AtomicReference[UpdatableStatus](CREATED)
 
 	@volatile protected[mcphoton] var execGroup: ExecutionGroup = _
+	/**
+	 * The previous ExecutionGroup of this Updatable. This field is set when the Updatable is
+	 * moved to another group.
+	 */
+	@volatile private[mcphoton] var oldGroup = new AtomicReference[ExecutionGroup]
+
+	private[mcphoton] def checkOldGroup(callerGroup: ExecutionGroup): Boolean = {
+		oldGroup.compareAndSet(callerGroup, null)
+	}
 
 	/**
 	 * Performs an update.
