@@ -9,10 +9,10 @@ repositories {
 	maven { url 'https://jitpack.io' }
 }
 dependencies {
-	compile 'org.scala-lang:scala-library:2.12.3'
+	compile 'org.scala-lang:scala-library:2.12.4'
 	compile 'com.github.TheElectronWill:Night-Config:3.0.1'
 	compile 'com.typesafe.scala-logging:scala-logging_2.12:3.7.2'
-	compile 'com.github.pathikrit:better-files_2.12:3.0.0'
+	compile 'com.github.pathikrit:better-files_2.12:3.2.0'
 	compile 'org.fusesource.jansi:jansi:1.16'
 	compile project(':protocol-lib')
 	compile project(':photon-utils')
