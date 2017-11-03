@@ -23,7 +23,7 @@ class CommandSystem {
 	 * @param cmd the command to unregister
 	 * @return true if the command has been unregistered, false if it wasn't registered
 	 */
-	def unregister(cmd: Command) = commands.remove(cmd.name).isDefined
+	def unregister(cmd: Command): Boolean = commands.remove(cmd.name).isDefined
 
 	/** @return the command with the given name */
 	def get(name: String): Option[Command] = commands.get(name)
