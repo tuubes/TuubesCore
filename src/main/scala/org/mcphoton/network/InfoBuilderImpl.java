@@ -11,6 +11,7 @@ import com.github.steveice10.mc.protocol.data.status.handler.ServerInfoBuilder;
 import com.github.steveice10.packetlib.Session;
 import java.awt.image.BufferedImage;
 import org.mcphoton.Photon;
+import org.mcphoton.server.PhotonServer;
 import org.mcphoton.server.Server;
 
 /**
@@ -25,12 +26,11 @@ public class InfoBuilderImpl implements ServerInfoBuilder {
 
 	@Override
 	public ServerStatusInfo buildInfo(Session session) {
-		Server server = Photon.getServer();
-		PlayerInfo playerInfo = new PlayerInfo(server.getConfiguration().getMaxPlayers(),
-											   server.getOnlinePlayers().size(),
+		PlayerInfo playerInfo = new PlayerInfo(PhotonServer.Config().maxPlayers(),
+											   PhotonServer.onlinePlayers().size(),
 											   EMPTY_PROFILE_ARRAY);
-		Message message = new TextMessage(server.getConfiguration().getMOTD());
-		BufferedImage icon = server.getConfiguration().getIcon();
+		Message message = new TextMessage(PhotonServer.Config().motd());
+		BufferedImage icon = PhotonServer.Config().icon().orNull();
 		return new ServerStatusInfo(VERSION_INFO, playerInfo, message, icon);
 	}
 }

@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.mcphoton.Photon;
+import org.mcphoton.server.PhotonServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,8 +47,7 @@ public final class ProtocolLibAdapter {
 		logger.info("Starting the network part...");
 		logger.debug("Configuring the ProtocolLib...");
 		libServer.setGlobalFlag(MinecraftConstants.AUTH_PROXY_KEY, Proxy.NO_PROXY);
-		libServer.setGlobalFlag(MinecraftConstants.VERIFY_USERS_KEY,
-								Photon.getServer().getConfiguration().isOnlineMode());
+		libServer.setGlobalFlag(MinecraftConstants.VERIFY_USERS_KEY, PhotonServer.Config().onlineMode());
 		libServer.setGlobalFlag(MinecraftConstants.SERVER_INFO_BUILDER_KEY, new InfoBuilderImpl());
 		libServer.setGlobalFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY, new LoginHandlerImpl());
 		libServer.setGlobalFlag(MinecraftConstants.SERVER_COMPRESSION_THRESHOLD, -1);
@@ -96,9 +96,9 @@ public final class ProtocolLibAdapter {
 				logger.warn("Unhandled: session removed: {}", event.getSession().getHost());
 			}
 		});
-		logger.debug("Initializing the protocol server...");
+		logger.debug("Initializing the TCP server...");
 		libServer.bind();
-		logger.debug("The protocol server is ready.");
+		logger.debug("The TCP server is ready.");
 	}
 
 	/**
@@ -109,10 +109,8 @@ public final class ProtocolLibAdapter {
 	}
 
 	public void addHandler(Class<? extends Packet> packetClass, PacketHandler handler) {
-		List<PacketHandler> handlerList = handlersMap.get(packetClass);
-		if (handlerList == null) {
-			handlerList = new ArrayList<>();
-		}
+		List<PacketHandler> handlerList = handlersMap.computeIfAbsent(packetClass,
+																	  k -> new ArrayList<>());
 		handlerList.add(handler);
 	}
 
