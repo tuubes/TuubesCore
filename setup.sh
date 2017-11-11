@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 
 # Download the coloration script if needed
 if [ ! -f 'terminal-colors.sh' ]; then
-	wget -q --show-progress 'https://raw.githubusercontent.com/RPM-Outpost/common-utils/master/scripts/terminal-colors.sh'
+	curl --progress-bar 'https://raw.githubusercontent.com/RPM-Outpost/common-utils/master/scripts/terminal-colors.sh' > 'terminal-colors.sh'
 fi
 # Use it:
 source terminal-colors.sh
