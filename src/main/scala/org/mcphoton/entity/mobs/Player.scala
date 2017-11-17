@@ -4,11 +4,12 @@ import java.util
 
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.{MetadataType, TrackedMetadataValue}
 import org.mcphoton.entity.MobType
+import org.mcphoton.user.User
 
 /**
  * @author TheElectronWill
  */
-class Player extends LivingEntity(PlayerType) {
+class Player extends LivingEntity(PlayerType) with User {
 	override protected def dataStorageSizeHint: Int = ???
 	override def update(dt: Double): Unit = ???
 	override def sendUpdates(): Unit = ???
