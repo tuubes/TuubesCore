@@ -1,8 +1,9 @@
 package org.mcphoton.plugin
 
-import java.util.jar.JarFile
+import java.util.jar.{JarEntry, JarFile}
+import java.{util => ju}
 
-import better.files.{File, ManagedResource}
+import better.files.File
 
 import scala.util.{Failure, Success, Try}
 
@@ -48,8 +49,9 @@ object PluginInfos {
 		}
 
 		// Gets the first class that inherits from Plugin
-		for (jar: ManagedResource[JarFile] <- new JarFile(file.toJava).autoClosed) {
-			val entries = jar.head.entries
+		import better.files.CloseableOps
+		for (jar: JarFile <- new JarFile(file.toJava).autoClosed) {
+			val entries: ju.Enumeration[JarEntry] = jar.entries()
 			while (entries.hasMoreElements) {
 				val entry = entries.nextElement()
 				val entryName = entry.getName
