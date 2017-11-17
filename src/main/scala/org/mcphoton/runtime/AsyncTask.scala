@@ -11,7 +11,9 @@ import org.mcphoton.runtime.TaskStatus._
 
 import scala.annotation.{tailrec, varargs}
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
+import org.mcphoton.runtime.{VolatileArray => VArr}
 
 /**
  * An asynchronous task that can be chained with other tasks.
@@ -119,7 +121,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	 * @return the newly created IO task
 	 */
 	@varargs
-	def thenIOFile[C](file: File, f: ThrowableFunction1[(B, FileChannel), C],
+	def thenIOFile[C](file: File, f: ThrowableFunction2[B, FileChannel, C],
 					  openOptions: OpenOption*): AsyncTask[B, C] = {
 		val ioFunction = ioFunctionFile[C](file, f)
 		addNext(AsyncTask.wrap(ioFunction), IOSystem.executor)
@@ -137,7 +139,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	@varargs
 	def thenIOFile[C](file: File, f: (B, FileChannel) => Try[C],
 					  openOptions: OpenOption*): AsyncTask[B, C] = {
-		val ioFunction = ioFunctionFile[C](file, f)
+		val ioFunction = ioFunctionFile[Try[C]](file, f)
 		addNext(AsyncTask.wrap(ioFunction), IOSystem.executor)
 	}
 
@@ -149,7 +151,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	 * @tparam C the function's return type
 	 * @return the newly created IO task
 	 */
-	def thenIOUrl[C](url: String, f: ThrowableFunction1[(B, URLConnection), C]): AsyncTask[B, C] = {
+	def thenIOUrl[C](url: String, f: ThrowableFunction2[B, URLConnection, C]): AsyncTask[B, C] = {
 		val ioFunction = ioFunctionURL[C](url, f)
 		addNext(AsyncTask.wrap(ioFunction), IOSystem.executor)
 	}
@@ -163,7 +165,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	 * @return the newly created IO task
 	 */
 	def thenIOUrl[C](url: String, f: (B, URLConnection) => Try[C]): AsyncTask[B, C] = {
-		val ioFunction = ioFunctionURL[C](url, f)
+		val ioFunction = ioFunctionURL[Try[C]](url, f)
 		addNext(AsyncTask.wrap(ioFunction), IOSystem.executor)
 	}
 
@@ -175,16 +177,14 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 								  openOptions: OpenOption*): B => R = {
 		(b: B) => {
 			var channel: FileChannel = null
-			var result: R = null
 			try {
 				channel = FileChannel.open(file.toPath, openOptions: _*)
-				result = f(b, channel)
+				f(b, channel)
 			} finally {
 				if (channel != null) {
 					channel.close()
 				}
 			}
-			result
 		}
 	}
 
@@ -195,16 +195,14 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	private def ioFunctionURL[R](url: String, f: (B, URLConnection) => R): B => R = {
 		(b: B) => {
 			var connection: URLConnection = null
-			var result: R = null
 			try {
 				connection = new URL(url).openConnection()
-				result = f(b, connection)
+				f(b, connection)
 			} finally {
 				if (connection.isInstanceOf[HttpURLConnection]) {
 					connection.asInstanceOf[HttpURLConnection].disconnect()
 				}
 			}
-			result
 		}
 	}
 
@@ -255,8 +253,8 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	 * @return a new task that is triggered when the given tasks complete
 	 */
 	@varargs
-	def thenAwaitSome[C](count: Int, tasks: AsyncTask[B, C]*): AsyncTask[Try[Array[C]], Array[C]] = {
-		val task = new ChildTask[Try[Array[C]], Array[C]](root, identity, DummyExecutor)
+	def thenAwaitSome[C](count: Int, tasks: AsyncTask[B, C]*): AsyncTask[Try[VArr[C]], VArr[C]] = {
+		val task = new ChildTask[Try[VArr[C]], VArr[C]](root, identity, DummyExecutor)
 
 		// See the comments in successConvergenceN and failureConvergenceN
 		val onSuccess = AsyncTask.successConvergenceN(task, count)
@@ -281,7 +279,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	 * @return a new task that is triggered when the given tasks complete
 	 */
 	@varargs
-	def thenAwaitAll[C](tasks: AsyncTask[B, C]*): AsyncTask[Try[Array[C]], Array[C]] = {
+	def thenAwaitAll[C](tasks: AsyncTask[B, C]*): AsyncTask[Try[VArr[C]], VArr[C]] = {
 		thenAwaitSome(tasks.length, tasks: _*)
 	}
 
@@ -303,6 +301,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 
 	/**
 	 * Executes a function when this task fail.
+	 *
 	 * @param f the function to execute
 	 * @return this task
 	 */
@@ -316,6 +315,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 
 	/**
 	 * Executes a task when this task fail.
+	 *
 	 * @param task the task to execute
 	 * @return this task
 	 */
@@ -527,7 +527,7 @@ object AsyncTask {
 	 * @return the task, unstarted
 	 */
 	def delay(time: Long, unit: TimeUnit): AsyncTask[Unit, Unit] = {
-		new DelayedRootTask[Unit](time, unit, Success(_), DummyExecutor)
+		new DelayedRootTask[Unit](time, unit, () => Success(()), DummyExecutor)
 	}
 
 	/**
@@ -535,7 +535,7 @@ object AsyncTask {
 	 *
 	 * @param time the delay
 	 * @param unit the delay's unit
-	 * @param f the function producing the result
+	 * @param f    the function producing the result
 	 * @tparam R the result type
 	 * @return the task, unstarted
 	 */
@@ -548,7 +548,7 @@ object AsyncTask {
 	 *
 	 * @param time the delay
 	 * @param unit the delay's unit
-	 * @param f the function producing the result
+	 * @param f    the function producing the result
 	 * @tparam R the result type
 	 * @return the task, unstarted
 	 */
@@ -566,8 +566,8 @@ object AsyncTask {
 	 * @return a new task that is triggered when the given tasks complete
 	 */
 	@varargs
-	def awaitSome[R](count: Int, tasks: AsyncTask[_, _ <: R]*): AsyncTask[Try[Array[R]], Array[R]] = {
-		val task = new AwaitingRootTask[Array[R], R](tasks: _*)
+	def awaitSome[R](count: Int, tasks: AsyncTask[_, _ <: R]*): AsyncTask[Try[VArr[R]], VArr[R]] = {
+		val task = new AwaitingRootTask[VArr[R], R](tasks: _*)
 		val onSuccess = successConvergenceN(task, count)
 		val onFailure = failureConvergenceN(task, tasks.length - count)
 		// Runs the completion functions after each specified task:
@@ -587,7 +587,7 @@ object AsyncTask {
 	 * @return a new task that is triggered when the given tasks complete
 	 */
 	@varargs
-	def awaitAll[R](tasks: AsyncTask[_, _ <: R]*): AsyncTask[Try[Array[R]], Array[R]] = {
+	def awaitAll[R](tasks: AsyncTask[_, _ <: R]*): AsyncTask[Try[VArr[R]], VArr[R]] = {
 		awaitSome(tasks.length, tasks: _*)
 	}
 
@@ -601,8 +601,8 @@ object AsyncTask {
 	 */
 	@varargs
 	def awaitAny[R](tasks: AsyncTask[_, _ <: R]*): AsyncTask[Try[R], R] = {
-		val task = new AwaitingRootTask[R, R](tasks: _*)
-		val onSuccess = successConvergence1(task)
+		val task: AsyncTask[Try[R], R] = new AwaitingRootTask[R, R](tasks: _*)
+		val onSuccess: R => Unit = successConvergence1(task)
 		val onFailure = failureConvergence1(task, tasks.length)
 		// Runs the completion functions after each specified task:
 		for (task <- tasks) {
@@ -625,7 +625,7 @@ object AsyncTask {
 	}
 
 	private[runtime]
-	def successConvergenceN[A](action: AsyncTask[Try[Array[A]], Array[A]], count: Int): A => Unit = {
+	def successConvergenceN[A](action: AsyncTask[Try[VArr[A]], _<:Any], count: Int): A => Unit = {
 		// Counts the number of successes
 		val successCounter = new AtomicInteger()
 
@@ -640,7 +640,7 @@ object AsyncTask {
 			if (currentCount <= count) {
 				resultArray(currentCount - 1) = a // volatile update with the unique currentCount
 				if (currentCount == count) {
-					action.submit(Success(resultArray.underlying))
+					action.submit(Success(resultArray))
 				}
 			}
 		}
@@ -660,8 +660,8 @@ object AsyncTask {
 	}
 
 	private[runtime]
-	def failureConvergenceN[A](action: AsyncTask[Try[Array[A]], Array[A]],
-							   failureTolerance: Int): (Try[Array[A]], Throwable) => Unit = {
+	def failureConvergenceN[A](action: AsyncTask[Try[VArr[A]], _<:Any],
+							   failureTolerance: Int): (Any, Throwable) => Unit = {
 		// Counts the number of tolered failures before the `action` fails
 		val toleranceCounter = new AtomicInteger(failureTolerance)
 		// This function is called by each failed task that we wait for. Its goal is to call the
@@ -676,7 +676,7 @@ object AsyncTask {
 
 	private[runtime]
 	def failureConvergence1[A](action: AsyncTask[Try[A], A],
-							   failureTolerance: Int): (Try[A], Throwable) => Unit = {
+							   failureTolerance: Int): (Any, Throwable) => Unit = {
 		// Counts the number of tolered failures before the `action` fails
 		val toleranceCounter = new AtomicInteger(failureTolerance)
 		// This function is called by each failed task that we wait for. Its goal is to call the
