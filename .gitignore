@@ -21,3 +21,6 @@ nbproject
 # IntelliJ files
 *.iml
 .idea
+
+# Mac OS DS_STORE
+.DS_STORE
