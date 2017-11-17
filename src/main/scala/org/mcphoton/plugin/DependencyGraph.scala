@@ -188,7 +188,7 @@ private[plugin] final class DependencyGraph {
 
 		/** The ClassLoader for the plugin (without its dependencies) */
 		val singleClassLoader: OpenURLClassLoader = {
-			new OpenURLClassLoader(data.url, classOf[DependencyGraph].getClassLoader)
+			data.urlClassLoader
 		}
 
 		/** The ClassLoader for the plugin and its dependencies */
