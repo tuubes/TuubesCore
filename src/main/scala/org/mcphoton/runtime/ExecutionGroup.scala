@@ -30,8 +30,8 @@ final class ExecutionGroup private(private[this] val name: String) extends Execu
 	/** The size of the updatable queue */
 	private[this] val addedUpdatableCount = new AtomicInteger(0)
 
-	@volatile private[this] val groupTask = TaskSystem.scheduleAtFixedRate(() => updateGroup(),
-		0, updatePeriod, TimeUnit.MILLISECONDS)
+	private[mcphoton] val task =
+		TaskSystem.scheduleAtFixedRate(() => updateGroup(), 0, updatePeriod, TimeUnit.MILLISECONDS)
 
 	private[this] var lastUpdateTime: Double = _
 
@@ -94,6 +94,8 @@ final class ExecutionGroup private(private[this] val name: String) extends Execu
 			} else {
 				try {
 					updatable.update(deltaTime)
+				} catch {
+					case e: Exception => logger.error(s"ERROR IN UPDATE $updatable", e)
 				}
 			}
 		}

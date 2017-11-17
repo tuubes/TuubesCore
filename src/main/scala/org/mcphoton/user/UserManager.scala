@@ -6,7 +6,7 @@ import better.files.File
 import com.electronwill.nightconfig.core.file.FileConfig
 import com.electronwill.nightconfig.json.JsonParser
 import com.electronwill.utils.StringUtils
-import org.mcphoton.entity.living.Player
+import org.mcphoton.entity.mobs.Player
 import org.mcphoton.server.PhotonServer
 import org.mcphoton.world.Location
 

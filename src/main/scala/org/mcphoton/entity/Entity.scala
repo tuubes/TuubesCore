@@ -12,26 +12,33 @@ import org.mcphoton.world.{Location, World}
 /**
  * @author TheElectronWill
  */
-abstract class Entity(val `type`: Type[_]) extends Updatable {
+abstract class Entity(val entityType: Type[_]) extends Updatable {
+	// ---- Internal entity management ----
 	private[this] val atomicId = new AtomicInteger(-1)
-	private[mcphoton] def setId(id: Int): Unit = atomicId.set(id)
-	def getId: Int = atomicId.get()
+
+	private[mcphoton] def init(id: Int, w: World, eg: ExecutionGroup): Unit = {
+		this.synchronized {
+			atomicId.set(id)
+			_world = w
+			oldGroup.set(execGroup)
+			execGroup = eg
+		}
+	}
+
+	private[mcphoton] def entityId: Int = atomicId.get()
 
 	override protected def destroyImpl(): Unit = {
 		//TODO world.unregister(this)
 		atomicId.set(-1)
 	}
 
+	// ---- Public entity state ----
+	var velocity: Vec3d = Vec3d.Zero
 	@volatile protected[this] var position: Vec3d = Vec3d.Zero
-	@volatile protected[this] var velocity: Vec3d = Vec3d.Zero
-	@volatile protected[this] var world: World = _
-	@volatile protected[this] var executionGroup: ExecutionGroup = _
+	@volatile protected[this] var _world: World = _
 
-	def getLocation: Location = Location(position, world)
-	def getVelocity: Vec3d = velocity
-	def setVelocity(vel: Vec3d): Unit = velocity = vel
-	def getWorld: World = world
-	def getExecutionGroup: ExecutionGroup = executionGroup
+	def location = Location(position, _world)
+	def world: World = _world
 
 	protected[this] val dataStorage = new TrackedMetadataStorage({
 		val list = new ju.ArrayList[TrackedMetadataValue](dataStorageSizeHint)
@@ -40,7 +47,7 @@ abstract class Entity(val `type`: Type[_]) extends Updatable {
 	})
 
 	protected def dataStorageSizeHint: Int
-	protected def buildDataStorage(values: ju.List[TrackedMetadataValue]): Unit
+	protected def buildDataStorage(values: ju.List[TrackedMetadataValue]): Unit = {}
 
 	/**
 	 * Makes the entity appear in its world. This method should register the entity to the world

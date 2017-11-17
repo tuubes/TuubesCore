@@ -29,7 +29,7 @@ import org.slf4j.impl.PhotonLogger;
 public final class ServerImpl implements Server {
 	private static final Logger log = LoggerFactory.getLogger(ServerImpl.class);
 
-	private final ConsoleThread consoleThread = new ConsoleThread();
+	private final ConsoleInputThread consoleThread = new ConsoleInputThread();
 	private final GlobalPluginsManagerImpl pluginsManager = new GlobalPluginsManagerImpl();
 	private final GlobalCommandRegistryImpl commandRegistry = new GlobalCommandRegistryImpl();
 	private final AccessListImpl whitelist = new AccessListImpl("whitelist");
@@ -70,7 +70,7 @@ public final class ServerImpl implements Server {
 		return blackList;
 	}
 
-	public ConsoleThread getConsoleThread() {
+	public ConsoleInputThread getConsoleThread() {
 		return consoleThread;
 	}
 
