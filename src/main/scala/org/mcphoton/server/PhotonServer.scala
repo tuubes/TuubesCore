@@ -2,6 +2,7 @@ package org.mcphoton.server
 
 import better.files.File
 import com.typesafe.scalalogging.StrictLogging
+import org.mcphoton.command.{CommandSystem, StopCommand}
 import org.mcphoton.entity.mobs.Player
 import org.mcphoton.network.ProtocolLibAdapter
 import org.mcphoton.world.World
@@ -16,7 +17,7 @@ object PhotonServer extends StrictLogging {
 	final val Version: String = "0.5-alpha"
 
 	// Directories
-	final val DirMain = new File(System.getProperty("user.dir"))
+	final val DirMain = File(System.getProperty("user.dir"))
 	final val DirConfig: File = DirMain / "config"
 	final val DirPlugins: File = DirMain / "plugins"
 	final val DirWorlds: File = DirMain / "worlds"
@@ -52,12 +53,15 @@ object PhotonServer extends StrictLogging {
 		logger.info("Loading the config")
 		Config.load()
 
+		logger.info("Loading the Photon's commands")
+		loadCommands()
+
 		//TODO load plugins
 
 		logger.info("Starting the TCP server")
 		startTcp()
 
-		logger.info("Done!")
+		logger.info(s"Done! You can connect on port ${Config.port}.")
 	}
 
 	private def loadDirs(): Unit = {
@@ -75,5 +79,9 @@ object PhotonServer extends StrictLogging {
 			val world = new World(dir.name)
 			registerWorld(world)
 		}
+	}
+
+	private def loadCommands(): Unit = {
+		CommandSystem.global.register(new StopCommand)
 	}
 }
