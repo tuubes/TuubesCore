@@ -24,11 +24,10 @@ object ConsoleInputThread extends Thread("console") with Messageable {
 	override def run(): Unit = {
 		val parts = new ju.ArrayList[String]
 		while (_run) {
-			val line = sc.tillEndOfLine()
+			val line = sc.nextLine()
 			StringUtils.splitArguments(line, parts)
 			val cmdName = parts.get(0)
 			val cmd = CommandSystem.global.get(cmdName)
-					  .orElse(CommandSystem.global.getAlias(cmdName))
 			cmd match {
 				case None => println(s"Unknown command: $cmdName")
 				case Some(c: Command) =>
