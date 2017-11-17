@@ -7,6 +7,7 @@ import java.util.{Collections, UUID, Collection => JSeq}
 import com.electronwill.nightconfig.core.ConfigSpec
 import com.electronwill.nightconfig.core.file.FileConfig
 import com.typesafe.scalalogging.StrictLogging
+import scala.collection.JavaConverters._
 
 /**
  * @author TheElectronWill
@@ -29,7 +30,7 @@ object AccessController extends StrictLogging {
 		if (nCorrections > 0) {
 			println(s"Corrected $nCorrections entries in ${File.name}")
 		}
-		for (accountString <- Config.get[JSeq[String]]("accounts")) {
+		for (accountString <- Config.get[JSeq[String]]("accounts").asScala) {
 			try {
 				accountSet.add(UUID.fromString(accountString))
 			} catch {
@@ -37,11 +38,11 @@ object AccessController extends StrictLogging {
 					logger.warn(s"Invalid account id $accountString")
 			}
 		}
-		for (addressString <- Config.get[JSeq[String]]("addresses")) {
+		for (addressString <- Config.get[JSeq[String]]("addresses").asScala) {
 			try {
 				addressSet.add(InetAddress.getByName(addressString))
 			} catch {
-				case _: IllegalArgumentException | UnknownHostException =>
+				case _: IllegalArgumentException | _: UnknownHostException =>
 					logger.warn(s"Invalid address $addressString")
 			}
 		}
