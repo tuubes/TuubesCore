@@ -15,10 +15,10 @@ import scala.collection.concurrent
 class EventSystem[I](private[this] val i: I) {
 	def notify(e: Event)(implicit callerGroup: ExecutionGroup): Unit = {
 		val eventClass = e.getClass
-		for (l: EventListener[Event, I] <- blockingListeners(eventClass).valuesIterator) {
+		for (l <- blockingListeners(eventClass).valuesIterator) {
 			l.onEvent(e)(callerGroup, i)
 		}
-		for (l: EventListener[Event, I] <- afterListeners(eventClass).valuesIterator) {
+		for (l <- afterListeners(eventClass).valuesIterator) {
 			TaskSystem.execute(() => l.onEvent(e)(null, i))
 		}
 	}
@@ -28,20 +28,20 @@ class EventSystem[I](private[this] val i: I) {
 		val container = mode match {
 			case ListenMode.BLOCKING =>
 				blockingListeners.getOrElseUpdate(eventClass,
-					new ConcurrentRecyclingIndex[EventListener[_, I]])
+					new ConcurrentRecyclingIndex[EventListener[Event, I]])
 			case ListenMode.AFTER =>
 				afterListeners.getOrElseUpdate(eventClass,
-					new ConcurrentRecyclingIndex[EventListener[_, I]])
+					new ConcurrentRecyclingIndex[EventListener[Event, I]])
 		}
-		val id = container += listener
+		val id = container += listener.asInstanceOf[EventListener[Event, I]]
 		new IndexRegistration(container, id)
 	}
 
 	private[this] val blockingListeners: concurrent.Map[Class[_ <: Event],
-			Index[EventListener[_, I]]] = new ConcurrentHashMap().asScala
+		Index[EventListener[Event, I]]] = new ConcurrentHashMap().asScala
 
 	private[this] val afterListeners: concurrent.Map[Class[_ <: Event],
-			Index[EventListener[_, I]]] = new ConcurrentHashMap().asScala
+		Index[EventListener[Event, I]]] = new ConcurrentHashMap().asScala
 }
 
 object EventSystem {
