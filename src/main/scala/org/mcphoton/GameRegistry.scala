@@ -136,8 +136,8 @@ object GameRegistry {
 	/**
 	 * Registration infos of a type that has mutliple variants (like Stone).
 	 */
-	private[mcphoton] final class VariantsRegistration[A](firstVariantType: A,
-														  firstVariantData: Int) extends Registration[A] {
+	private[mcphoton] final class VariantsRegistration[A <: Type[_]](firstVariantType: A,
+																	 firstVariantData: Int) extends Registration[A] {
 		private[mcphoton] val variants = new ConcurrentIndexMap[A]
 		variants.put(firstVariantData, firstVariantType)
 		override def variant(damageData: Int): A = variants.get(damageData)
@@ -146,7 +146,7 @@ object GameRegistry {
 	/**
 	 * Registration info of a simple item type that has no variants.
 	 */
-	private[mcphoton] final class SingleRegistration[A](val `type`: A) extends Registration[A] {
+	private[mcphoton] final class SingleRegistration[A <: Type[_]](val `type`: A) extends Registration[A] {
 		override def variant(damageData: Int): A = `type`
 	}
 }
