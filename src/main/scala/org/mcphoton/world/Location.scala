@@ -2,6 +2,7 @@ package org.mcphoton.world
 
 import com.electronwill.utils.StringUtils._
 import com.electronwill.utils.{Vec3d, Vec3i}
+import org.mcphoton.server.PhotonServer
 
 /**
  * An immutable location in a world.
@@ -46,7 +47,7 @@ private final class Location3d(val coords: Vec3d, override val world: World) ext
 
 	override def toVec3i: Vec3i = coords
 
-	override def toString: String = s"$x,$y,$z,${world.getName}"
+	override def toString: String = s"$x,$y,$z,${world.name}"
 }
 
 /**
@@ -69,7 +70,7 @@ private final class Location3i(val coords: Vec3i, override val world: World) ext
 
 	override def toVec3i: Vec3i = coords
 
-	override def toString: String = s"$blockX,$blockY,$blockZ,${world.getName}"
+	override def toString: String = s"$blockX,$blockY,$blockZ,${world.name}"
 }
 
 object Location {
@@ -105,11 +106,12 @@ object Location {
 		val s1 = splitted.get(1)
 		val s2 = splitted.get(2)
 		val s3 = splitted.get(3)
-		val sCoords = s0 + s1 + s2
-		if (contains(sCoords, '.', 'e', 'E')) {
-			new Location3d(Vec3d.fromString(sCoords), WorldManager.get(s3).get)
+		val fpClues = Array('.', 'e', 'E')
+		val world = PhotonServer.world(s3).get
+		if (contains(s0, fpClues) || contains(s1, fpClues) || contains(s2, fpClues)) {
+			new Location3d(new Vec3d(s0.toDouble, s1.toDouble, s2.toDouble), world)
 		} else {
-			new Location3i(Vec3i.fromString(sCoords), WorldManager.get(s3).get)
+			new Location3i(new Vec3i(s0.toInt, s1.toInt, s2.toInt), world)
 		}
 	}
 }
