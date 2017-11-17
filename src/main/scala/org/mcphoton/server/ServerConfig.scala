@@ -28,16 +28,16 @@ final class ServerConfig {
 	@volatile var onlineMode = false
 
 	@Conversion(classOf[LocationConverter])
-	@volatile var spawnLocation: Location
+	@volatile var spawnLocation: Location = _
 
 	@Conversion(classOf[LogLevelConverter])
 	@volatile var logLevel = LogLevel.TRACE
 
-	@SpecIntInRange(0, 1000)
+	@SpecIntInRange(min = 0, max = 1000)
 	@volatile var threadNumber = Runtime.getRuntime.availableProcessors()
 
 	@transient
-	@volatile var icon: Option[BufferedImage]
+	@volatile var icon: Option[BufferedImage] = None
 
 	def load(): Unit = {
 		val conf = CommentedFileConfig.of(file.toJava)
@@ -70,14 +70,6 @@ final class ServerConfig {
 		override def convertFromField(value: LogLevel): String = value.name
 	}
 
-	private object LocationConverter {
-		/** Allows to use the Server instance before it's fully constructed.
-		 * This is needed because the construction of the server needs the config, which needs
-		 * the worlds, which are in the server instance. The worlds are retrieved before the
-		 * config is read so this works.
-		 */
-		private[server] val theServer: Server = null
-	}
 	private class LocationConverter extends Converter[Location, String] {
 		override def convertToField(v: String): Location = {
 			var value = v
@@ -95,7 +87,7 @@ final class ServerConfig {
 			val y: Double = parts.get(1).trim.toDouble
 			val z: Double = parts.get(2).trim.toDouble
 			val worldName: String = parts.get(3).trim
-			var world: World = LocationConverter.theServer.getWorld(worldName)
+			var world: World = PhotonServer.world(worldName).get
 			if (world == null) world = new WorldImpl(worldName, WorldType.OVERWORLD)
 			Location(x, y, z, world)
 		}
