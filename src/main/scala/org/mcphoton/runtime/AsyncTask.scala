@@ -11,7 +11,6 @@ import org.mcphoton.runtime.TaskStatus._
 
 import scala.annotation.{tailrec, varargs}
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
 import scala.util.{Failure, Success, Try}
 import org.mcphoton.runtime.{VolatileArray => VArr}
 
@@ -566,12 +565,12 @@ object AsyncTask {
 	 * @return a new task that is triggered when the given tasks complete
 	 */
 	@varargs
-	def awaitSome[R](count: Int, tasks: AsyncTask[_, _ <: R]*): AsyncTask[Try[VArr[R]], VArr[R]] = {
+	def awaitSome[R, T <: R, A](count: Int, tasks: AsyncTask[A, T]*): AsyncTask[Try[VArr[R]], VArr[R]] = {
 		val task = new AwaitingRootTask[VArr[R], R](tasks: _*)
 		val onSuccess = successConvergenceN(task, count)
 		val onFailure = failureConvergenceN(task, tasks.length - count)
 		// Runs the completion functions after each specified task:
-		for (task <- tasks) {
+		for (task: AsyncTask[A, T] <- tasks) {
 			task.addNext(c => {onSuccess(c); null}, DummyExecutor)
 			task.executeOnFailure(onFailure)
 		}
@@ -587,7 +586,7 @@ object AsyncTask {
 	 * @return a new task that is triggered when the given tasks complete
 	 */
 	@varargs
-	def awaitAll[R](tasks: AsyncTask[_, _ <: R]*): AsyncTask[Try[VArr[R]], VArr[R]] = {
+	def awaitAll[R, T <: R, A](tasks: AsyncTask[A, T]*): AsyncTask[Try[VArr[R]], VArr[R]] = {
 		awaitSome(tasks.length, tasks: _*)
 	}
 
@@ -600,12 +599,12 @@ object AsyncTask {
 	 * @return a new task that is triggered when the given tasks complete
 	 */
 	@varargs
-	def awaitAny[R](tasks: AsyncTask[_, _ <: R]*): AsyncTask[Try[R], R] = {
+	def awaitAny[R, T <: R, A](tasks: AsyncTask[A, T]*): AsyncTask[Try[R], R] = {
 		val task: AsyncTask[Try[R], R] = new AwaitingRootTask[R, R](tasks: _*)
 		val onSuccess: R => Unit = successConvergence1(task)
 		val onFailure = failureConvergence1(task, tasks.length)
 		// Runs the completion functions after each specified task:
-		for (task <- tasks) {
+		for (task: AsyncTask[A, T] <- tasks) {
 			task.addNext(c => {onSuccess(c); null}, DummyExecutor)
 			task.executeOnFailure(onFailure)
 		}
@@ -625,7 +624,7 @@ object AsyncTask {
 	}
 
 	private[runtime]
-	def successConvergenceN[A](action: AsyncTask[Try[VArr[A]], _<:Any], count: Int): A => Unit = {
+	def successConvergenceN[A](action: AsyncTask[Try[VArr[A]], _ <: Any], count: Int): A => Unit = {
 		// Counts the number of successes
 		val successCounter = new AtomicInteger()
 
@@ -660,7 +659,7 @@ object AsyncTask {
 	}
 
 	private[runtime]
-	def failureConvergenceN[A](action: AsyncTask[Try[VArr[A]], _<:Any],
+	def failureConvergenceN[A](action: AsyncTask[Try[VArr[A]], _ <: Any],
 							   failureTolerance: Int): (Any, Throwable) => Unit = {
 		// Counts the number of tolered failures before the `action` fails
 		val toleranceCounter = new AtomicInteger(failureTolerance)
