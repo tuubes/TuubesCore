@@ -13,7 +13,7 @@ import org.mcphoton.world.generation.SimpleHeightmapBasedGenerator
 /**
  * @author TheElectronWill
  */
-final class World(n: String) {
+final class World(n: String, val worldType: WorldType) {
 	private[this] var _name: String = n
 	private[this] var _dir: File = PhotonServer.DirWorlds / n
 	private[this] val entityIndex = new ConcurrentRecyclingIndex[Entity](200)
