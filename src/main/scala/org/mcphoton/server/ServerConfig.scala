@@ -9,7 +9,7 @@ import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig
 import com.electronwill.nightconfig.core.conversion.{Conversion, Converter, ObjectConverter, SpecIntInRange}
 import com.electronwill.nightconfig.core.file.CommentedFileConfig
 import com.electronwill.utils.StringUtils
-import org.mcphoton.world.{Location, World, WorldImpl, WorldType}
+import org.mcphoton.world.{Location, World, WorldType}
 
 /**
  * @author TheElectronWill
@@ -88,7 +88,7 @@ final class ServerConfig {
 			val z: Double = parts.get(2).trim.toDouble
 			val worldName: String = parts.get(3).trim
 			var world: World = PhotonServer.world(worldName).get
-			if (world == null) world = new WorldImpl(worldName, WorldType.OVERWORLD)
+			if (world == null) world = new World(worldName, WorldType.OVERWORLD)
 			Location(x, y, z, world)
 		}
 

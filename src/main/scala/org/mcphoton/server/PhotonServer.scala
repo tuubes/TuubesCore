@@ -5,7 +5,7 @@ import com.typesafe.scalalogging.StrictLogging
 import org.mcphoton.command.{CommandSystem, StopCommand}
 import org.mcphoton.entity.mobs.Player
 import org.mcphoton.network.ProtocolLibAdapter
-import org.mcphoton.world.World
+import org.mcphoton.world.{World, WorldType}
 
 import scala.collection.mutable
 
@@ -76,7 +76,7 @@ object PhotonServer extends StrictLogging {
 
 	private def loadWorlds(): Unit = {
 		for (dir <- DirWorlds.list if dir.isDirectory) {
-			val world = new World(dir.name)
+			val world = new World(dir.name, WorldType.OVERWORLD)
 			registerWorld(world)
 		}
 	}
