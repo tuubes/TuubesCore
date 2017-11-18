@@ -19,4 +19,5 @@ abstract class BasicEntity(t: Type[_]) extends Entity(t) {
 		values.add(new TrackedMetadataValue(MetadataType.BOOLEAN, false))//silent
 		values.add(new TrackedMetadataValue(MetadataType.BOOLEAN, false))//no gravity
 	}
+	override protected def dataStorageSizeHint = 6
 }

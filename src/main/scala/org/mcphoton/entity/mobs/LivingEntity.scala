@@ -17,4 +17,5 @@ abstract class LivingEntity(t: MobType) extends MobEntity(t) {
 		values.add(new TrackedMetadataValue(MetadataType.BOOLEAN, false))// is potion effect ambiant
 		values.add(new TrackedMetadataValue(MetadataType.VARINT, 0))// number of stuck arrows
 	}
+	override protected def dataStorageSizeHint = super.dataStorageSizeHint + 5
 }
