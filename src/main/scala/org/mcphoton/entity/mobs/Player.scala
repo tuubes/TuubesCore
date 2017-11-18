@@ -10,7 +10,6 @@ import org.mcphoton.user.User
 /**
  * @author TheElectronWill
  */
-	override protected def dataStorageSizeHint: Int = ???
 class Player(var name:String, val accountId: UUID) extends LivingEntity(PlayerType) with User {
 	override def update(dt: Double): Unit = ???
 	override def sendUpdates(): Unit = ???
@@ -27,6 +26,8 @@ class Player(var name:String, val accountId: UUID) extends LivingEntity(PlayerTy
 	}
 	override protected def dataStorageSizeHint: Int = super.dataStorageSizeHint + 6
 
+	override def isOnline = true
+	override def spawn(): Unit = ???
 }
 object PlayerType extends MobType("photon.player") {
 	override private[mcphoton] val id = 0
