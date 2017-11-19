@@ -40,7 +40,8 @@ final class ServerConfig {
 	@volatile var icon: Option[BufferedImage] = None
 
 	def load(): Unit = {
-		val conf = CommentedFileConfig.of(file.toJava)
+		val conf = CommentedFileConfig.builder(file.toJava)
+				   .defaultResource("/default-config.toml").build()
 		conf.load()
 		new ObjectConverter().toObject(conf, this)
 		savedComments = conf.getComments

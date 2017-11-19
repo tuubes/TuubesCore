@@ -19,7 +19,7 @@ object AccessController extends StrictLogging {
 
 	private val File = PhotonServer.DirConfig / "access_control.toml"
 	private val Config = FileConfig.builder(File.toJava)
-						 .defaultResource("resources/default-ac.toml")
+						 .defaultResource("/default-ac.toml")
 						 .build()
 	private val accountSet = new ConcurrentSkipListSet[UUID]
 	private val addressSet = new ConcurrentSkipListSet[InetAddress]
