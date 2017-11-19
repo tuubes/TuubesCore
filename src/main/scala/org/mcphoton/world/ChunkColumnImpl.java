@@ -90,7 +90,7 @@ public final class ChunkColumnImpl implements ChunkColumn {
 		synchronized (data.biomes) {
 			typeId = data.biomes[z << 4 | x];
 		}
-		return GameRegistry.biome(typeId);
+		return GameRegistry.biome$$temp(typeId);
 	}
 
 	@Override

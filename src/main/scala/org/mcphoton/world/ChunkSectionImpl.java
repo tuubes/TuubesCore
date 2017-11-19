@@ -60,7 +60,7 @@ public final class ChunkSectionImpl implements ChunkSection, ChunkSectionData {
 	@Override
 	public BlockType getBlockType(int x, int y, int z) {
 		int typeId = blocks.get(x, y, z);
-		return GameRegistry.block(typeId);
+		return GameRegistry.block$$temp(typeId);
 	}
 
 	@Override
