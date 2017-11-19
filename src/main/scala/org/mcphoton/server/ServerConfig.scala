@@ -11,6 +11,7 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig
 import com.electronwill.utils.StringUtils
 import org.mcphoton.server.ServerConfig.{LocationConverter, LogLevelConverter}
 import org.mcphoton.world.{Location, World, WorldType}
+import org.slf4j.impl.PhotonLogger
 
 /**
  * @author TheElectronWill
@@ -47,6 +48,7 @@ final class ServerConfig {
 		new ObjectConverter().toObject(conf, this)
 		savedComments = conf.getComments
 		icon = readIcon()
+		PhotonLogger.setLevel(logLevel)
 	}
 
 	private def readIcon(): Option[BufferedImage] = {
