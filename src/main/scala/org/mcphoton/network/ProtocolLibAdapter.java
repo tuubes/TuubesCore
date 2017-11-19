@@ -67,12 +67,14 @@ public final class ProtocolLibAdapter {
 								logger.trace("*Handler " + handler);
 								handler.handle(packet, session);
 							}
+						} else {
+							logger.warn("**No handler** for packet" + packet.getClass().getSimpleName() + ": " + packet);
 						}
 					}
 
 					@Override
 					public void packetSent(PacketSentEvent event) {
-						logger.warn("Unhandled: packet sent {} to {}", event.getPacket(),
+						logger.debug("Unhandled: packet sent {} to {}", event.getPacket(),
 									event.getSession().getHost());
 					}
 
@@ -118,5 +120,9 @@ public final class ProtocolLibAdapter {
 		if (handlerList != null) {
 			handlerList.remove(handler);
 		}
+	}
+
+	public void registerHandlers() {
+
 	}
 }

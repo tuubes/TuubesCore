@@ -91,6 +91,7 @@ object PhotonServer {
 
 	private def loadWorlds(): Unit = {
 		for (dir <- DirWorlds.list if dir.isDirectory) {
+			logger.debug(s"Registering world ${dir.name}")
 			val world = new World(dir.name, WorldType.OVERWORLD)
 			registerWorld(world)
 			//TODO load world config and spawn region
@@ -145,7 +146,7 @@ object PhotonServer {
 	private[mcphoton] def shutdown(): Unit = {
 		// TODO
 		logger.warn("Shutdown is not properly implemented yet!")
-		logger.info("Saving the worlds")
+		logger.debug("Saving the worlds... actually not because it's not ready yet ^_^")
 		for (world <- worldsNameMap.valuesIterator) {
 			//TODO world.save()
 		}

@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.mcphoton.GameRegistry;
 import org.mcphoton.block.BlockType;
+import org.mcphoton.block.StandardBlocks;
 import org.mcphoton.entity.Entity;
 import org.mcphoton.world.areas.Area;
 
@@ -105,7 +106,7 @@ public final class ChunkColumnImpl implements ChunkColumn {
 	public BlockType getBlockType(int x, int y, int z) {
 		ChunkSection section = data.sections[y / 16];
 		if (section == null) {
-			return null;//TODO return StandardBlocks.AIR
+			return StandardBlocks.Air();
 		}
 		return section.getBlockType(x, y & 15, z);
 
@@ -115,7 +116,7 @@ public final class ChunkColumnImpl implements ChunkColumn {
 	public void setBlockType(int x, int y, int z, BlockType type) {
 		ChunkSection section = data.sections[y / 16];
 		if (section == null) {
-			section = new ChunkSectionImpl(null, null, null);
+			section = new ChunkSectionImpl(true);
 		}
 		section.setBlockType(x, y & 15, z, type);
 	}
@@ -194,6 +195,7 @@ public final class ChunkColumnImpl implements ChunkColumn {
 
 		@Override
 		public void writeBlockEntitiesNBT(NetOutput out) throws IOException {
+			out.writeByte(0);// 0 means no data
 			//TODO
 		}
 
