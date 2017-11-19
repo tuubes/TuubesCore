@@ -38,14 +38,20 @@ public class LoginHandlerImpl implements ServerLoginHandler {
 		// Send chunks
 		int cx = spawnLocation.blockX() / 16;
 		int cz = spawnLocation.blockZ() / 16;
-		for (int dx = -2; dx <= 2; dx++) {
-			for (int dz = -2; dz <= 2; dz++) {
-				ChunkColumnImpl chunkColumn = spawnLocation.world()
-														   .chunkGenerator()
-														   .generate(cx + dx, cz + dz);
-				session.send(new ServerChunkDataPacket(chunkColumn.getData()));
+		for (int dx = -5; dx <= 5; dx++) {
+			for (int dz = -5; dz <= 5; dz++) {
+				try {
+					ChunkColumnImpl chunkColumn = spawnLocation.world()
+															   .chunkGenerator()
+															   .generate((cx + dx) * 16,
+																		 (cz + dz) * 16);
+					session.send(new ServerChunkDataPacket(chunkColumn.getData()));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
+		//NOTE: Unfortunately, using the TaskSystem to send packets doesn't work.
 
 		// Send welcome message
 		session.send(new ServerChatPacket(
