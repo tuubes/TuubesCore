@@ -145,6 +145,10 @@ object PhotonServer extends StrictLogging {
 		}
 		logger.info("Stopping the TCP server")
 		protocolLibAdapter.stop()
+
 		logger.info("Shutdown.")
+		System.exit(0)
 	}
+
+	Runtime.getRuntime.addShutdownHook(new Thread(() => LoggingService.close()))
 }
