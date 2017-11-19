@@ -1,13 +1,14 @@
 package org.mcphoton.server
 
 import better.files.File
-import com.typesafe.scalalogging.StrictLogging
 import org.mcphoton.GameRegistry
 import org.mcphoton.command.{CommandSystem, StopCommand}
 import org.mcphoton.entity.mobs.Player
 import org.mcphoton.network.ProtocolLibAdapter
 import org.mcphoton.plugin._
 import org.mcphoton.world.{World, WorldType}
+import org.slf4j.LoggerFactory
+import org.slf4j.impl.LoggingService
 
 import scala.collection.mutable
 import scala.util.{Failure, Success}
@@ -15,10 +16,13 @@ import scala.util.{Failure, Success}
 /**
  * @author TheElectronWill
  */
-object PhotonServer extends StrictLogging {
+object PhotonServer {
+	// Logger
+	private val logger = LoggerFactory.getLogger("PhotonServer")
+
 	// Constant infos
 	final val Version: String = "0.5-alpha"
-	final val MinecraftVersion: String = "1.12"
+	final val MinecraftVersion: String = "1.11.2"
 
 	// Directories
 	final val DirMain = File(System.getProperty("user.dir"))
