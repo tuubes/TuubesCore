@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.mcphoton.GameRegistry;
 import org.mcphoton.block.BlockType;
-import org.mcphoton.entity.AbstractEntity;
+import org.mcphoton.entity.Entity;
 import org.mcphoton.world.areas.Area;
 
 /**
@@ -46,7 +46,7 @@ public final class ChunkColumnImpl implements ChunkColumn {
 		return data;
 	}
 
-	public Set<AbstractEntity> getEntities() {
+	public Set<Entity> getEntities() {
 		return data.entities;
 	}
 
@@ -126,7 +126,7 @@ public final class ChunkColumnImpl implements ChunkColumn {
 	}
 
 	public static final class Data implements ChunkColumnData {
-		private final Set<AbstractEntity> entities = ConcurrentHashMap.newKeySet();
+		private final Set<Entity> entities = ConcurrentHashMap.newKeySet();
 		private volatile ChunkSectionImpl[] sections;
 		private final byte[] biomes;
 		private final int x, z;

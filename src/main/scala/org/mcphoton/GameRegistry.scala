@@ -158,7 +158,8 @@ object GameRegistry {
 
 	// --- Standard Types Registration ---
 	private[mcphoton] def autoRegister(): Unit = {
-		for (blockEntry: Config.Entry <- blocksConfig.entrySet()) {
+		import scala.collection.JavaConverters._
+		for (blockEntry: Config.Entry <- blocksConfig.entrySet().asScala) {
 			val name = blockEntry.getKey
 			new BlockType(name) // The registration is done by the constructor
 		}
