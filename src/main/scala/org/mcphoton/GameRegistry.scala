@@ -103,14 +103,13 @@ object GameRegistry {
 											  nameMap: util.Map[String, T]): (Int, Option[Int]) = {
 		val conf: UnmodifiableConfig = config.get(name)
 		val id: Int = conf.get("id")
-		val data: String = conf.get("data")
 		val result =
-			if (data == null || data == "none") {
+			if (!config.contains("data")) {
 				val reg = new SingleRegistration[T](t)
 				idMap.put(id, reg)
 				(id, None)
 			} else {
-				val dataValue: Int = data.toInt
+				val dataValue: Int = config.get("data")
 				idMap.compute(id, (_, v) => {
 					v match {
 						case null => new VariantsRegistration[T](t, dataValue)
