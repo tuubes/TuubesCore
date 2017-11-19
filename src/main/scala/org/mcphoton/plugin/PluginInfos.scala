@@ -16,6 +16,14 @@ final class PluginInfos(val name: String, val version: String, val requiredDeps:
 	def this(c: PluginInfosCompanion, className: String, cl: OpenURLClassLoader) = {
 		this(c.Name, c.Version, c.RequiredDependencies, c.OptionalDependencies, className, cl)
 	}
+
+	override def toString = s"PluginInfos(" +
+		s"name=$name, " +
+		s"version=$version, " +
+		s"requiredDeps=$requiredDeps, " +
+		s"optionalDeps=$optionalDeps, " +
+		s"pluginClassName=$pluginClassName, " +
+		s"urlClassLoader=$urlClassLoader)"
 }
 
 object PluginInfos {
