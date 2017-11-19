@@ -18,6 +18,8 @@ trait PluginSystem[P <: Plugin] {
 	def get(name: String): Option[P] = plugins.get(name)
 
 	protected[this] val plugins: mutable.Map[String, P] = new ConcurrentHashMap[String, P].asScala
+
+	def iterate: Iterator[P] = plugins.valuesIterator
 }
 
 object PluginSystem {
