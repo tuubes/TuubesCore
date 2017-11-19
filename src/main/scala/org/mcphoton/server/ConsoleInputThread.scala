@@ -28,13 +28,15 @@ object ConsoleInputThread extends Thread("console") with Messageable {
 			parts.clear()
 			val line = sc.nextLine()
 			StringUtils.splitArguments(line, parts)
-			val cmdName = parts.get(0)
-			val cmd = CommandSystem.global.get(cmdName)
-			cmd match {
-				case None => println(s"Unknown command: $cmdName")
-				case Some(c: Command) =>
-					val args = parts.subList(1, parts.size).asScala
-					c.execute(this, args)(null, null)
+			if (!parts.isEmpty) {
+				val cmdName = parts.get(0)
+				val cmd = CommandSystem.global.get(cmdName)
+				cmd match {
+					case None => println(s"Unknown command: $cmdName")
+					case Some(c: Command) =>
+						val args = parts.subList(1, parts.size).asScala
+						c.execute(this, args)(null, null)
+				}
 			}
 		}
 	}
