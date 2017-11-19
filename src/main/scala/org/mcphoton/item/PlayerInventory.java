@@ -1,6 +1,6 @@
 package org.mcphoton.item;
 
-import org.mcphoton.entity.living.Player;
+import org.mcphoton.entity.mobs.Player;
 
 /**
  * A player's inventory.

@@ -5,12 +5,18 @@ import java.util.UUID
 
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.{MetadataType, TrackedMetadataValue}
 import org.mcphoton.entity.MobType
+import org.mcphoton.item.{Inventory, InventoryHolder, PlayerInventory}
 import org.mcphoton.user.User
 
 /**
  * @author TheElectronWill
  */
-class Player(var name:String, val accountId: UUID) extends LivingEntity(PlayerType) with User {
+class Player(var name:String, val accountId: UUID)
+	extends LivingEntity(PlayerType) with User with InventoryHolder {
+
+	private[this] val inv: PlayerInventory = null
+	override def getInventory: Inventory = inv
+
 	override def update(dt: Double): Unit = ???
 	override def sendUpdates(): Unit = ???
 
