@@ -5,7 +5,7 @@ motd = "Hello, world!"
 port = 25565
 maxPlayers = 10
 onlineMode = false
-spawnLocation = "0,65,0,world"
+spawnLocation = "0,150,0,world"
 
 logLevel = "TRACE"
 threadNumber = 2
