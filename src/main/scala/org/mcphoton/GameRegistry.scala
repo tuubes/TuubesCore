@@ -8,6 +8,7 @@ import com.electronwill.nightconfig.core.{Config, UnmodifiableConfig}
 import org.mcphoton.block.BlockType
 import org.mcphoton.entity.{MobType, ObjectType}
 import org.mcphoton.item.ItemType
+import org.mcphoton.server.PhotonServer
 import org.mcphoton.server.PhotonServer.DirConfig
 import org.mcphoton.world.BiomeType
 
@@ -19,7 +20,7 @@ import org.mcphoton.world.BiomeType
 object GameRegistry {
 	// Configs that contains "uniqueName -> id" definitions
 	private val blocksConfig = FileConfig.builder((DirConfig / "blocks.toml").toJava)
-									     .defaultResource("standard-blocks.toml").build()
+									     .defaultResource("/standard-blocks.toml").build()
 	private val mobsConfig = FileConfig.of((DirConfig / "entities_mobs.toml").toJava)
 	private val objectsConfig = FileConfig.of((DirConfig / "entities_objects.toml").toJava)
 	private val itemsConfig = FileConfig.of((DirConfig / "items.toml").toJava)
@@ -161,9 +162,11 @@ object GameRegistry {
 	// --- Standard Types Registration ---
 	private[mcphoton] def autoRegister(): Unit = {
 		import scala.collection.JavaConverters._
+		blocksConfig.load()
 		for (blockEntry: Config.Entry <- blocksConfig.entrySet().asScala) {
 			val name = blockEntry.getKey
-			new BlockType(name) // The registration is done by the constructor
+			val blockType = new BlockType(name) // The registration is done by the constructor
+			PhotonServer.logger.debug(s"BlockType loaded: $name: ${blockType.id} & ${blockType.additionalData}")
 		}
 	}
 }
