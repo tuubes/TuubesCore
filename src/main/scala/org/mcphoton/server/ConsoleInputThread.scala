@@ -13,8 +13,9 @@ import scala.collection.JavaConverters._
  * @author TheElectronWill
  */
 object ConsoleInputThread extends Thread("console") with Messageable {
-	@volatile private var _run = true
-	private val sc = Scanner(System.in)
+	@volatile
+	private var _run = true
+	private val sc = Scanner.stdin
 
 	def stopNicely(): Unit = _run = false
 
@@ -24,6 +25,7 @@ object ConsoleInputThread extends Thread("console") with Messageable {
 	override def run(): Unit = {
 		val parts = new ju.ArrayList[String]
 		while (_run) {
+			parts.clear()
 			val line = sc.nextLine()
 			StringUtils.splitArguments(line, parts)
 			val cmdName = parts.get(0)
