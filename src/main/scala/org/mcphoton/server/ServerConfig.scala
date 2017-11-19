@@ -9,6 +9,7 @@ import com.electronwill.nightconfig.core.UnmodifiableCommentedConfig
 import com.electronwill.nightconfig.core.conversion.{Conversion, Converter, ObjectConverter, SpecIntInRange}
 import com.electronwill.nightconfig.core.file.CommentedFileConfig
 import com.electronwill.utils.StringUtils
+import org.mcphoton.server.ServerConfig.{LocationConverter, LogLevelConverter}
 import org.mcphoton.world.{Location, World, WorldType}
 
 /**
@@ -65,7 +66,8 @@ final class ServerConfig {
 		}
 		None
 	}
-
+}
+object ServerConfig {
 	private class LogLevelConverter extends Converter[LogLevel, String] {
 		override def convertToField(value: String): LogLevel = LogLevel.valueOf(value.toUpperCase)
 		override def convertFromField(value: LogLevel): String = value.name
@@ -88,8 +90,13 @@ final class ServerConfig {
 			val y: Double = parts.get(1).trim.toDouble
 			val z: Double = parts.get(2).trim.toDouble
 			val worldName: String = parts.get(3).trim
-			var world: World = PhotonServer.world(worldName).get
-			if (world == null) world = new World(worldName, WorldType.OVERWORLD)
+			val world = PhotonServer.world(worldName) match {
+				case None =>
+					val w = new World(worldName, WorldType.OVERWORLD)
+					PhotonServer.registerWorld(w)
+					w
+				case Some(w) => w
+			}
 			Location(x, y, z, world)
 		}
 
