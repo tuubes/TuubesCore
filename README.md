@@ -2,8 +2,7 @@
 
 # Photon Server
 
-[![](https://img.shields.io/badge/next%20version-0.5.0-yellow.svg)](https://github.com/mcphoton/Photon-Server/projects/1)
-[![](https://img.shields.io/badge/progress-60%25-yellow.svg)](https://github.com/mcphoton/Photon-Server/projects/1)
+[![](https://img.shields.io/badge/next%20version-0.6-green.svg)](https://github.com/mcphoton/Photon-Server/milestone/2)
 [![](https://img.shields.io/badge/discord-join%20chat!-7289DA.svg)](https://discord.gg/vWYembz)
 
 Photon is a from-scratch implementation of a Minecraft server whose main goals are:
@@ -46,3 +45,11 @@ For more informations please read [the contributing guidelines](CONTRIBUTING.md)
 New ideas and issues can be reported as [github issues](https://github.com/mcphoton/Photon-Server/issues).
 
 To discuss about the project, [join the discord server](https://discord.gg/vWYembz)!
+
+## State of the project
+After a major revamp in Scala, the project works more and more!
+For now, you spawn in a simple generated world with a few blocks (water, stone, grass, bedrock) 
+and a limited size. You can move and try to break the blocks (by hand), but your changes will be 
+reset on your next connection. The server responds correctly to the "server list ping".
+Below is a screenshot of what it looks like:
+![ingame screenshot](ingame-screenshot.png)
