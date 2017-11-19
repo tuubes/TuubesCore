@@ -30,8 +30,8 @@ public final class ChunkSectionImpl implements ChunkSection, ChunkSectionData {
 
 	public ChunkSectionImpl(boolean hasSkylight) {
 		this.blocks = new BlockStorage();
-		this.blockLight = new NibbleArray3d(2048);
-		this.skyLight = new NibbleArray3d(2048);
+		this.blockLight = new NibbleArray3d(4096);
+		this.skyLight = new NibbleArray3d(4096);
 	}
 
 	public boolean hasChanged() {
