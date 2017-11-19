@@ -19,7 +19,7 @@ import scala.util.{Failure, Success}
  */
 object PhotonServer {
 	// Logger
-	private val logger = LoggerFactory.getLogger("PhotonServer")
+	private[mcphoton] val logger = LoggerFactory.getLogger("PhotonServer")
 
 	// Constant infos
 	final val Version: String = "0.5-alpha"
