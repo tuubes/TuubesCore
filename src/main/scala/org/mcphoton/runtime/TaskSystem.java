@@ -5,6 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.mcphoton.server.PhotonServer;
 
 /**
  * @author TheElectronWill
@@ -16,7 +17,7 @@ public final class TaskSystem {
 
 	static {
 		ThreadFactory factory = new CountingThreadFactory("TaskThread_");
-		executor = Executors.newScheduledThreadPool(0, factory);
+		executor = Executors.newScheduledThreadPool(PhotonServer.Config().threadNumber(), factory);
 	}
 
 	public static CancellableTask execute(Runnable task) {
