@@ -31,15 +31,15 @@ public final class ChunkColumnImpl implements ChunkColumn {
 	 * Contains the persistent chunk data.
 	 */
 	private final Data data;
-	/**
-	 * The player zones that contain this chunk column. Every modification is notified to the
-	 * players.
-	 */
-	private final Set<PlayerZone> playerZones = ConcurrentHashMap.newKeySet();// thread-safe
 
 	public ChunkColumnImpl(World world, Data data) {
 		this.world = world;
 		this.data = data;
+	}
+
+	public ChunkColumnImpl(World world, int x, int z, boolean skylight) {
+		this.world = world;
+		this.data = new Data(x, z, new ChunkSectionImpl[16], new byte[256], skylight);
 	}
 
 	public Data getData() {
@@ -48,10 +48,6 @@ public final class ChunkColumnImpl implements ChunkColumn {
 
 	public Set<AbstractEntity> getEntities() {
 		return data.entities;
-	}
-
-	public Set<PlayerZone> getPlayerZones() {
-		return playerZones;
 	}
 
 	public ChunkCoordinates getCoords() {
@@ -229,7 +225,6 @@ public final class ChunkColumnImpl implements ChunkColumn {
 
 		public void save(NetOutput out) throws IOException {
 			out.writeBoolean(skylight);
-			int bitmask;
 			for (int i = 0; i < 16; i++) {
 				ChunkSectionImpl section = sections[i];
 				if (section != null) {

@@ -19,8 +19,7 @@ public interface Area extends Iterable<Location> {
 	 * Checks if the given location is inside this area.
 	 */
 	default boolean contains(Location loc) {
-		return loc.getWorld() == getWorld() && contains(loc.getBlockX(), loc.getBlockY(),
-														loc.getBlockZ());
+		return loc.world() == getWorld() && contains(loc.blockX(), loc.blockY(), loc.blockZ());
 	}
 
 	/**

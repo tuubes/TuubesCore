@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.mcphoton.Photon;
 import org.mcphoton.server.PhotonServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,7 @@ public final class ProtocolLibAdapter {
 		logger.debug("Configuring the ProtocolLib...");
 		libServer.setGlobalFlag(MinecraftConstants.AUTH_PROXY_KEY, Proxy.NO_PROXY);
 		libServer.setGlobalFlag(MinecraftConstants.VERIFY_USERS_KEY, PhotonServer.Config().onlineMode());
-		libServer.setGlobalFlag(MinecraftConstants.SERVER_INFO_BUILDER_KEY, new InfoBuilderImpl());
+		libServer.setGlobalFlag(MinecraftConstants.SERVER_INFO_BUILDER_KEY, new InfoBuilder());
 		libServer.setGlobalFlag(MinecraftConstants.SERVER_LOGIN_HANDLER_KEY, new LoginHandlerImpl());
 		libServer.setGlobalFlag(MinecraftConstants.SERVER_COMPRESSION_THRESHOLD, -1);
 		libServer.addListener(new ServerAdapter() {

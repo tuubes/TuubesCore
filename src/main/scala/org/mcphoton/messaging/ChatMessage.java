@@ -1,6 +1,7 @@
 package org.mcphoton.messaging;
 
-import com.electronwill.nightconfig.json.JsonConfig;
+import com.electronwill.nightconfig.core.Config;
+import com.electronwill.nightconfig.json.JsonFormat;
 import com.electronwill.nightconfig.json.MinimalJsonWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -236,7 +237,7 @@ public abstract class ChatMessage {
 	 */
 	@Override
 	public String toString() {
-		JsonConfig conf = new JsonConfig(map);
+		Config conf = Config.wrap(map, JsonFormat.minimalInstance());
 		return new MinimalJsonWriter().writeToString(conf);
 	}
 }

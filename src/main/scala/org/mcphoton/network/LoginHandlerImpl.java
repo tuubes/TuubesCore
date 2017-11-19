@@ -7,7 +7,7 @@ import com.github.steveice10.mc.protocol.data.game.world.WorldType;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerChatPacket;
 import com.github.steveice10.mc.protocol.packet.ingame.server.ServerJoinGamePacket;
 import com.github.steveice10.packetlib.Session;
-import org.mcphoton.Photon;
+import org.mcphoton.server.PhotonServer;
 
 /**
  * Handles the login of a Player.
@@ -21,6 +21,6 @@ public class LoginHandlerImpl implements ServerLoginHandler {
 				new ServerJoinGamePacket(0, false, GameMode.SURVIVAL, 0, Difficulty.PEACEFUL, 10,
 										 WorldType.DEFAULT, false));
 		session.send(new ServerChatPacket(
-				"Welcome to the Photon server! Version " + Photon.getImplVersion()));
+				"Welcome to the Photon server! Version " + PhotonServer.Version()));
 	}
 }

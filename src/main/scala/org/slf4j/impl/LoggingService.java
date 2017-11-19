@@ -8,11 +8,12 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import org.mcphoton.messaging.Color;
+import org.mcphoton.server.PhotonServer;
+
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoField.YEAR;
-import org.mcphoton.Photon;
-import org.mcphoton.messaging.Color;
 
 /**
  * Writes the log messages to the console and to the disk, and manages log file rotation.
@@ -31,7 +32,7 @@ public final class LoggingService {
 			.toFormatter();
 
 	private static final String ANSI_RESET = "\u001B[0m";// ansi code for resetting the color of the console
-	private static final File LOGS_DIR = new File(Photon.getMainDirectory(), "logs");
+	private static final File LOGS_DIR = PhotonServer.DirLogs().toJava();
 
 	static {
 		if (!LOGS_DIR.isDirectory()) {

@@ -2,7 +2,6 @@ package org.mcphoton.messaging;
 
 import java.util.List;
 import java.util.Map;
-import org.mcphoton.Photon;
 
 /**
  * A textual chat message. This class also provides a way to parse a message that uses '§'-codes,
@@ -205,7 +204,7 @@ public class TextChatMessage extends ChatMessage {
 
 	@Override
 	public String toConsoleString() {
-		return Photon.isConsoleAdvanced() ? toColorfoulConsoleString() : toBasicConsoleString();
+		return toColorfoulConsoleString();
 	}
 
 	private String toColorfoulConsoleString() {

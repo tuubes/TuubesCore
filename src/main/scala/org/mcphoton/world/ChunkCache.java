@@ -6,25 +6,24 @@ import java.lang.ref.SoftReference;
 import java.nio.channels.CompletionHandler;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.mcphoton.Photon;
+import org.mcphoton.runtime.TaskSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A memory-sensitive cache that uses {@link SoftReference} to stores the chunks of one world.
+ * A memory-sensitive cache that uses {@link SoftReference} to store the chunks of one world.
  *
  * @author TheElectronWill
  */
 public final class ChunkCache {
 	private static final Logger log = LoggerFactory.getLogger(ChunkCache.class);
-	private final WorldImpl world;
+	private final World world;
 
-	public ChunkCache(WorldImpl world) {
+	public ChunkCache(World world) {
 		this.world = world;
 	}
 
-	private final ConcurrentMap<ChunkCoordinates, CacheValue> chunksMap = new ConcurrentHashMap<>(
-			512);
+	private final ConcurrentMap<ChunkCoordinates, CacheValue> chunksMap = new ConcurrentHashMap<>(512);
 	private final ReferenceQueue<ChunkColumnImpl> collectedChunks = new ReferenceQueue<>();
 
 	private static final class CacheValue extends SoftReference<ChunkColumnImpl> {
@@ -66,11 +65,11 @@ public final class ChunkCache {
 
 					@Override
 					public void failed(Throwable exc, ChunkCoordinates coords) {
-						log.error("Failed to save chunk in world {}, x={}, z={}", world.getName(),
+						log.error("Failed to save chunk in world {}, x={}, z={}", world.name(),
 								  coords.x, coords.z, exc);
 					}
 				};
-				world.chunkIO.writeChunk(chunkColumn, coords, completionHandler);
+				world.chunkIO().writeChunk(chunkColumn, coords, completionHandler);
 			}
 		}
 	}
@@ -83,7 +82,7 @@ public final class ChunkCache {
 	 * @return the chunk with the given coordinates, or {@code null} if it's not in the cache
 	 */
 	public ChunkColumnImpl getCached(int x, int z) {
-		log.debug("In world {}: ChunkCache.getCached(x={}, z={})", world.getName(), x, z);
+		log.debug("In world {}: ChunkCache.getCached(x={}, z={})", world.name(), x, z);
 		cleanCollectedChunks();// Processes the collected references
 		ChunkCoordinates coords = new ChunkCoordinates(x, z);
 		CacheValue ref = chunksMap.get(coords);
@@ -101,7 +100,7 @@ public final class ChunkCache {
 	 * @return the chunk with the given coordinates, not null
 	 */
 	public ChunkColumnImpl getSync(int x, int z) {
-		log.debug("In world {}: ChunkCache.getSync(x={}, z={})", world.getName(), x, z);
+		log.debug("In world {}: ChunkCache.getSync(x={}, z={})", world.name(), x, z);
 		cleanCollectedChunks();// Processes the collected references
 		ChunkCoordinates coords = new ChunkCoordinates(x, z);
 		CacheValue ref = chunksMap.get(coords);
@@ -109,7 +108,7 @@ public final class ChunkCache {
 		if (ref != null && (chunk = ref.get()) != null) {// Chunk in cache
 			return chunk;
 		} else {// Chunk not in cache
-			ChunkIO chunkIO = world.chunkIO;
+			ChunkIO chunkIO = world.chunkIO();
 			if (chunkIO.isChunkOnDisk(x, z)) {// Chunk on disk
 				try {
 					return chunkIO.readChunkNow(x, z);//sync read
@@ -117,7 +116,7 @@ public final class ChunkCache {
 					throw new RuntimeException("Failed to read chunk at " + coords);
 				}
 			} else {// Chunk needs to be generated
-				ChunkColumnImpl generatedChunk = (ChunkColumnImpl)world.chunkGenerator.generate(x, z);
+				ChunkColumnImpl generatedChunk = (ChunkColumnImpl)world.chunkGenerator().generate(x, z);
 				chunksMap.put(coords, new CacheValue(coords, generatedChunk, collectedChunks));
 				return generatedChunk;
 			}
@@ -141,7 +140,7 @@ public final class ChunkCache {
 	 */
 	public <A> void getAsync(int x, int z, A attachment,
 							 CompletionHandler<ChunkColumnImpl, A> completionHandler) {
-		log.debug("In world {}: ChunkCache.getAsync(x={}, z={}, attachment={})", world.getName(), x,
+		log.debug("In world {}: ChunkCache.getAsync(x={}, z={}, attachment={})", world.name(), x,
 				  z, attachment);
 		cleanCollectedChunks();// Processes the collected references
 		ChunkCoordinates coords = new ChunkCoordinates(x, z);
@@ -150,17 +149,16 @@ public final class ChunkCache {
 		if (ref != null && (chunk = ref.get()) != null) {// Chunk in cache
 			completionHandler.completed(chunk, attachment);
 		} else {// Chunk not in cache
-			ChunkIO chunkIO = world.chunkIO;
+			ChunkIO chunkIO = world.chunkIO();
 			if (chunkIO.isChunkOnDisk(x, z)) {// Chunk on disk
 				chunkIO.readChunk(x, z, attachment, completionHandler);//async read
 			} else {// Chunk needs to be generated
 				Runnable task = () -> {
-					ChunkColumnImpl generatedChunk = (ChunkColumnImpl)world.chunkGenerator.generate(
-							x, z);
+					ChunkColumnImpl generatedChunk = (ChunkColumnImpl)world.chunkGenerator().generate(x, z);
 					chunksMap.put(coords, new CacheValue(coords, generatedChunk, collectedChunks));
 					completionHandler.completed(generatedChunk, attachment);
 				};
-				Photon.getExecutorService().execute(task);//async generation
+				TaskSystem.execute(task);//async generation
 			}
 		}
 	}
