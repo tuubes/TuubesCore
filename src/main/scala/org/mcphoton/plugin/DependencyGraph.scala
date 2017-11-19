@@ -6,7 +6,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * @author TheElectronWill
  */
-private[plugin] final class DependencyGraph {
+final class DependencyGraph {
 	/** The errors that occured during build or resolve */
 	private[this] val errors = new ArrayBuffer[String]
 
