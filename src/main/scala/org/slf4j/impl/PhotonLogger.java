@@ -38,7 +38,7 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 			.appendValue(SECOND_OF_MINUTE, 2)
 			.toFormatter();
 
-	private static final boolean USE_COLORS = !System.getProperty("os.name").toLowerCase().contains("windows") && System.console() != null;
+	private static final boolean USE_COLORS = true;
 	private static volatile LogLevel level = LogLevel.INFO;
 
 	public static LogLevel getLevel() {

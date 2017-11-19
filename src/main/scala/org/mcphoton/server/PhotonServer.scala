@@ -1,6 +1,7 @@
 package org.mcphoton.server
 
 import better.files.File
+import org.fusesource.jansi.AnsiConsole
 import org.mcphoton.GameRegistry
 import org.mcphoton.command.{CommandSystem, StopCommand}
 import org.mcphoton.entity.mobs.Player
@@ -49,6 +50,7 @@ object PhotonServer {
 	def main(args: Array[String]): Unit = {
 		logger.info(s"Photon Server version $Version")
 		loadDirs()
+		AnsiConsole.systemInstall()
 
 		logger.info("Loading the access controller")
 		AccessController.load()
@@ -154,5 +156,8 @@ object PhotonServer {
 		System.exit(0)
 	}
 
-	Runtime.getRuntime.addShutdownHook(new Thread(() => LoggingService.close()))
+	Runtime.getRuntime.addShutdownHook(new Thread(() => {
+		AnsiConsole.systemUninstall()
+		LoggingService.close()
+	}))
 }
