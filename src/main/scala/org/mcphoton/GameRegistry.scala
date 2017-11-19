@@ -3,8 +3,8 @@ package org.mcphoton
 import java.util
 
 import com.electronwill.collections.{ConcurrentIndexMap, IndexMap}
-import com.electronwill.nightconfig.core.{Config, UnmodifiableConfig}
 import com.electronwill.nightconfig.core.file.FileConfig
+import com.electronwill.nightconfig.core.{Config, UnmodifiableConfig}
 import org.mcphoton.block.BlockType
 import org.mcphoton.entity.{MobType, ObjectType}
 import org.mcphoton.item.ItemType
@@ -12,11 +12,14 @@ import org.mcphoton.server.PhotonServer.DirConfig
 import org.mcphoton.world.BiomeType
 
 /**
+ * Central registry for the game types: blocks, items, entities (mobs and "objects"), biomes.
+ *
  * @author TheElectronWill
  */
 object GameRegistry {
 	// Configs that contains "uniqueName -> id" definitions
-	private val blocksConfig = FileConfig.of((DirConfig / "blocks.toml").toJava)
+	private val blocksConfig = FileConfig.builder((DirConfig / "blocks.toml").toJava)
+									     .defaultResource("standard-blocks.toml").build()
 	private val mobsConfig = FileConfig.of((DirConfig / "entities_mobs.toml").toJava)
 	private val objectsConfig = FileConfig.of((DirConfig / "entities_objects.toml").toJava)
 	private val itemsConfig = FileConfig.of((DirConfig / "items.toml").toJava)
@@ -37,7 +40,7 @@ object GameRegistry {
 	private val biomesNameMap = new util.HashMap[String, BiomeType]
 
 	// Get ID by name
-	private[mcphoton] def blockId(name: String): Int = blocksConfig.get(name)
+	private[mcphoton] def blockId(name: String): Int = blocksConfig.get[Config](name).get("id")
 	private[mcphoton] def entityMobId(name: String): Int = mobsConfig.get(name)
 	private[mcphoton] def entityObjectId(name: String): Int = objectsConfig.get(name)
 	private[mcphoton] def itemId(name: String): Int = itemsConfig.get[Config](name).get("id")
@@ -97,9 +100,9 @@ object GameRegistry {
 											  nameMap: util.Map[String, T]): (Int, Option[Int]) = {
 		val conf: UnmodifiableConfig = config.get(name)
 		val id: Int = conf.get("id")
-		val data: String = conf.get("additionalData")
+		val data: String = conf.get("data")
 		val result =
-			if (data == "none") {
+			if (data == null || data == "none") {
 				val reg = new SingleRegistration[T](t)
 				idMap.put(id, reg)
 				(id, None)
@@ -140,13 +143,24 @@ object GameRegistry {
 																	 firstVariantData: Int) extends Registration[A] {
 		private[mcphoton] val variants = new ConcurrentIndexMap[A]
 		variants.put(firstVariantData, firstVariantType)
-		override def variant(damageData: Int): A = variants.get(damageData)
+
+		/** Returns the type corresponding to the data */
+		override def variant(data: Int): A = variants.get(data)
 	}
 
 	/**
 	 * Registration info of a simple item type that has no variants.
 	 */
 	private[mcphoton] final class SingleRegistration[A <: Type[_]](val `type`: A) extends Registration[A] {
-		override def variant(damageData: Int): A = `type`
+		/** Returns the basic type. The data doesn't matter*/
+		override def variant(data: Int): A = `type`
+	}
+
+	// --- Standard Types Registration ---
+	private[mcphoton] def autoRegister(): Unit = {
+		for (blockEntry: Config.Entry <- blocksConfig.entrySet()) {
+			val name = blockEntry.getKey
+			new BlockType(name) // The registration is done by the constructor
+		}
 	}
 }

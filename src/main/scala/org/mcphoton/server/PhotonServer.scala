@@ -2,6 +2,7 @@ package org.mcphoton.server
 
 import better.files.File
 import com.typesafe.scalalogging.StrictLogging
+import org.mcphoton.GameRegistry
 import org.mcphoton.command.{CommandSystem, StopCommand}
 import org.mcphoton.entity.mobs.Player
 import org.mcphoton.network.ProtocolLibAdapter
@@ -46,6 +47,9 @@ object PhotonServer extends StrictLogging {
 
 		logger.info("Starting the console thread")
 		ConsoleInputThread.start()
+
+		logger.info("Registering the standard types (blocks, items, ...)")
+		GameRegistry.autoRegister()
 
 		logger.info("Loading the worlds")
 		loadWorlds()
