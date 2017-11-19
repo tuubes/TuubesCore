@@ -11,5 +11,5 @@ public interface ChunkGenerator {
 	 * @param cz the chunk's z coordinate.
 	 * @return the generated ChunkColumn.
 	 */
-	ChunkColumn generate(int cx, int cz);
+	ChunkColumnImpl generate(int cx, int cz);
 }

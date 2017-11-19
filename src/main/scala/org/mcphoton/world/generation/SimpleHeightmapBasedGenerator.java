@@ -38,7 +38,7 @@ public class SimpleHeightmapBasedGenerator implements ChunkGenerator {
 	}
 
 	@Override
-	public ChunkColumn generate(int startBlockX, int startBlockZ) {
+	public ChunkColumnImpl generate(int startBlockX, int startBlockZ) {
 		byte[] biomesData = new byte[256];
 
 		int maxHeight = 150;// maximum height in this chunk
@@ -50,7 +50,7 @@ public class SimpleHeightmapBasedGenerator implements ChunkGenerator {
 				if (height > maxHeight) {
 					maxHeight = height;
 				}
-				heightmap[x][z] = height;
+				heightmap[x-startBlockX][z-startBlockZ] = height;
 			}
 		}
 		ChunkSectionImpl[] sections = new ChunkSectionImpl[16];
