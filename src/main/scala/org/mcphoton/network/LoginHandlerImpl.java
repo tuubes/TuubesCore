@@ -31,7 +31,7 @@ public class LoginHandlerImpl implements ServerLoginHandler {
 				new ServerJoinGamePacket(0, false, GameMode.SURVIVAL, 0, Difficulty.PEACEFUL, 10,
 										 WorldType.DEFAULT, false));
 		session.send(new ServerSpawnPositionPacket(new IntPosition(0, 0, 0)));
-		session.send(new ServerPlayerAbilitiesPacket(false, true, false, true, 1f, 1f));
+		session.send(new ServerPlayerAbilitiesPacket(false, true, false, true, 0.1f, 0.1f));
 		Location spawnLocation = PhotonServer.Config().spawnLocation();
 		session.send(new ServerPlayerPositionRotationPacket(spawnLocation.toVec3d(), 0f, 0f, 0));
 
