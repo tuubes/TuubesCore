@@ -21,7 +21,7 @@ dependencies {
 // Build runnable jar
 task fatJar(type: Jar) {
 	manifest {
-		attributes 'Main-Class': 'org.mcphoton.impl.server.Main'
+		attributes 'Main-Class': 'org.mcphoton.server.PhotonServer'
 	}
 	baseName = project.name + '-all'
 	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
