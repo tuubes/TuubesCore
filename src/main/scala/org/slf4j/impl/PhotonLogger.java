@@ -3,7 +3,7 @@ package org.slf4j.impl;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import org.mcphoton.messaging.Color;
+import org.mcphoton.messaging.Colors;
 import org.mcphoton.server.LogLevel;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
@@ -85,7 +85,7 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	 *
 	 * @param args the arguments, may be null
 	 */
-	private void formatAndLogArguments(LogLevel level, Color color, String msg, Object[] args) {
+	private void formatAndLogArguments(LogLevel level, Colors.V color, String msg, Object[] args) {
 		if (!USE_COLORS) {
 			formatAndLogArguments(level, msg, args);
 			return;
@@ -119,7 +119,7 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 	/**
 	 * Formats and logs a message with a Throwable.
 	 */
-	private void formatAndLogThrowable(LogLevel level, Color color, String msg, Throwable t) {
+	private void formatAndLogThrowable(LogLevel level, Colors.V color, String msg, Throwable t) {
 		if (!USE_COLORS) {
 			formatAndLogThrowable(level, msg, t);
 			return;
@@ -242,27 +242,27 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 
 	@Override
 	public void warn(String msg) {
-		formatAndLogArguments(LogLevel.WARN, Color.GOLD, msg, null);
+		formatAndLogArguments(LogLevel.WARN, Colors.Gold(), msg, null);
 	}
 
 	@Override
 	public void warn(String format, Object arg) {
-		formatAndLogArguments(LogLevel.WARN, Color.GOLD, format, new Object[] {arg});
+		formatAndLogArguments(LogLevel.WARN, Colors.Gold(), format, new Object[] {arg});
 	}
 
 	@Override
 	public void warn(String format, Object arg1, Object arg2) {
-		formatAndLogArguments(LogLevel.WARN, Color.GOLD, format, new Object[] {arg1, arg2});
+		formatAndLogArguments(LogLevel.WARN, Colors.Gold(), format, new Object[] {arg1, arg2});
 	}
 
 	@Override
 	public void warn(String format, Object... arguments) {
-		formatAndLogArguments(LogLevel.WARN, Color.GOLD, format, arguments);
+		formatAndLogArguments(LogLevel.WARN, Colors.Gold(), format, arguments);
 	}
 
 	@Override
 	public void warn(String msg, Throwable t) {
-		formatAndLogThrowable(LogLevel.WARN, Color.GOLD, msg, t);
+		formatAndLogThrowable(LogLevel.WARN, Colors.Gold(), msg, t);
 	}
 
 	@Override
@@ -272,26 +272,26 @@ public final class PhotonLogger extends MarkerIgnoringBase {
 
 	@Override
 	public void error(String msg) {
-		formatAndLogArguments(LogLevel.ERROR, Color.RED, msg, null);
+		formatAndLogArguments(LogLevel.ERROR, Colors.Red(), msg, null);
 	}
 
 	@Override
 	public void error(String format, Object arg) {
-		formatAndLogArguments(LogLevel.ERROR, Color.RED, format, new Object[] {arg});
+		formatAndLogArguments(LogLevel.ERROR, Colors.Red(), format, new Object[] {arg});
 	}
 
 	@Override
 	public void error(String format, Object arg1, Object arg2) {
-		formatAndLogArguments(LogLevel.ERROR, Color.RED, format, new Object[] {arg1, arg2});
+		formatAndLogArguments(LogLevel.ERROR, Colors.Red(), format, new Object[] {arg1, arg2});
 	}
 
 	@Override
 	public void error(String format, Object... arguments) {
-		formatAndLogArguments(LogLevel.ERROR, Color.RED, format, arguments);
+		formatAndLogArguments(LogLevel.ERROR, Colors.Red(), format, arguments);
 	}
 
 	@Override
 	public void error(String msg, Throwable t) {
-		formatAndLogThrowable(LogLevel.ERROR, Color.RED, msg, t);
+		formatAndLogThrowable(LogLevel.ERROR, Colors.Red(), msg, t);
 	}
 }

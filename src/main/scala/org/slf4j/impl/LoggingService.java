@@ -8,7 +8,8 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import org.mcphoton.messaging.Color;
+import org.mcphoton.messaging.Colors;
+import org.mcphoton.messaging.Colors.V;
 import org.mcphoton.server.PhotonServer;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
@@ -51,9 +52,9 @@ public final class LoggingService {
 		logWriter.println(line);
 	}
 
-	public static synchronized void logLine(LocalDateTime dateTime, String line, Color color) {
+	public static synchronized void logLine(LocalDateTime dateTime, String line, Colors.V color) {
 		rotateIfNeeded(dateTime);
-		consoleOut.print(color.ansi);
+		consoleOut.print(color.termCode());
 		consoleOut.print(line);
 		consoleOut.println(ANSI_RESET);
 		logWriter.println(line);
@@ -69,10 +70,10 @@ public final class LoggingService {
 		t.printStackTrace(logWriter);
 	}
 
-	public static synchronized void logThrowable(LocalDateTime dateTime, Throwable t, String message, Color color) {
+	public static synchronized void logThrowable(LocalDateTime dateTime, Throwable t, String message, Colors.V color) {
 		rotateIfNeeded(dateTime);
 
-		consoleOut.print(color.ansi);
+		consoleOut.print(color.termCode());
 		consoleOut.println(message);
 		t.printStackTrace(consoleOut);
 		consoleOut.print(ANSI_RESET);

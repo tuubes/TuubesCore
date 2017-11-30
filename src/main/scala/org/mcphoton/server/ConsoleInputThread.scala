@@ -5,22 +5,21 @@ import java.{util => ju}
 import better.files.Scanner
 import com.electronwill.utils.StringUtils
 import org.mcphoton.command.{Command, CommandSystem}
-import org.mcphoton.messaging.{ChatMessage, Messageable}
+import org.mcphoton.messaging.{ChatComponent, ChatMessageable}
 
 import scala.collection.JavaConverters._
 
 /**
  * @author TheElectronWill
  */
-object ConsoleInputThread extends Thread("console") with Messageable {
+object ConsoleInputThread extends Thread("console") with ChatMessageable {
 	@volatile
 	private var _run = true
 	private val sc = Scanner.stdin
 
 	def stopNicely(): Unit = _run = false
 
-	override def sendMessage(msg: CharSequence): Unit = println(msg)
-	override def sendMessage(msg: ChatMessage): Unit = println(msg.toConsoleString)
+	override def sendMessage(msg: ChatComponent): Unit = println(msg.toTermString)
 
 	override def run(): Unit = {
 		val parts = new ju.ArrayList[String]
