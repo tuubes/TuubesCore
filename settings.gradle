@@ -1,7 +1,3 @@
 rootProject.name = 'photon-server'
 
-include ':protocol-lib'
-project(':protocol-lib').projectDir = new File('../Photon-ProtocolLib')
-
-include ':photon-utils'
-project(':photon-utils').projectDir = new File('../Utils')
+include 'core', 'metaprog', 'protocol', 'game-content'

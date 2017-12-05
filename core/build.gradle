@@ -1,0 +1,21 @@
+version = '0.5-alpha'
+description "Server's core architecture and API"
+
+// Dependencies
+dependencies {
+	compile 'com.github.TheElectronWill:Night-Config:3.0.3'
+	compile 'com.github.TheElectronWill:Niol:1.2'
+	compile 'com.typesafe.scala-logging:scala-logging_2.12:3.7.2'
+	compile 'com.github.pathikrit:better-files_2.12:3.2.0'
+	compile 'org.fusesource.jansi:jansi:1.16'
+}
+
+// Build runnable jar
+task fatJar(type: Jar) {
+	manifest {
+		attributes 'Main-Class': 'org.mcphoton.server.PhotonServer'
+	}
+	baseName = project.name + '-full-core'
+	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+	with jar
+}
