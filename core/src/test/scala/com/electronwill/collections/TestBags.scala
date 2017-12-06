@@ -25,24 +25,17 @@ class TestBags {
 		assertEquals(0, bag.size)
 		assert(bag.isEmpty)
 
-		bag.add("a")
-		bag.add("b")
-		bag.add("c")
-		bag.add("d")
+		bag+= "a" += "b" += "c" += "d"
 		assertEquals(4, bag.size)
 
 		val result = bagOf("d", "b", "c")
-		val removed = bag.remove("a")
-		assertTrue(removed)
+		val removed = bag -= "a"
 		assertEquals(result, bag)
 
-		val it = bag.iterator()
+		val it = bag.iterator
 		while (it.hasNext) {
 			val next = it.next()
 			println(s"it.next = $next")
-			assertTrue(result.contains(next))
-			it.remove()
-			println(s"remove() -> $bag")
 		}
 		assertEquals(0, bag.size)
 		assert(bag.isEmpty)
@@ -63,21 +56,18 @@ class TestBags {
 		assertEquals(3 * count, bag.size)
 		checkInsertion(bag, count, "a", "b", "c")
 
-		val lastRemoved = new AtomicReference[String]("none")
 		val lastRead = new AtomicReference[String]("none")
 		val lastAdded: String = "i5000"
 		val removeThread = new Thread(() => {
-			val it = bag.iterator()
+			val it = bag.iterator
 			while (it.hasNext) {
 				val next = it.next()
 				assert(next != null)
-				it.remove()
 				//println(s"remove $next")
-				lastRemoved.set(next)
 			}
 		})
 		val readThread = new Thread(() => {
-			val it = bag.iterator()
+			val it = bag.iterator
 			while (it.hasNext) {
 				val next = it.next()
 				assert(next != null)
@@ -89,7 +79,6 @@ class TestBags {
 		val miscThreads = Seq(addThread, removeThread, readThread)
 		runAll(miscThreads)
 		println(s"Size after parellel removals: ${bag.size}")
-		println(s"Last removed: ${lastRemoved.get}")
 		println(s"Last added: $lastAdded")
 		println(s"Last read: ${lastRead.get}")
 
@@ -109,7 +98,7 @@ class TestBags {
 				while (i < count) {
 					val str = s"$threadName$i"
 					//println("add " + str)
-					bag.add(str)
+					bag += str
 					i += 1
 				}
 			}

@@ -1,11 +1,11 @@
-package com.electronwill.collections;
+package com.electronwill.collections
 
 /**
  * @author TheElectronWill
  */
-public interface Compactable {
+trait Compactable {
 	/**
 	 * Compacts this object to minimize its memory use.
 	 */
-	void compact();
+	def compact(): Unit
 }

@@ -15,8 +15,7 @@ import scala.reflect.ClassTag
  *
  * @author TheElectronWill
  */
-final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int = 16)
-	extends Index[A] {
+final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int = 16) extends Index[A] {
 
 	/** Contains the elements of the RecyclingIndex. */
 	private[this] var elements: Array[A] = new Array[A](initialCapacity)

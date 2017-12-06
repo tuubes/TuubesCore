@@ -1,0 +1,19 @@
+package com.electronwill
+
+import scala.reflect.ClassTag
+
+/**
+ * @author TheElectronWill
+ */
+package object collections {
+	private[collections] def grow[T: ClassTag](array: Array[T], newLength: Int): Array[T] = {
+		val newArray = new Array[T](newLength)
+		System.arraycopy(array, 0, newArray, 0, array.length)
+		newArray
+	}
+	private[collections] def shrink[T: ClassTag](array: Array[T], newLength: Int): Array[T] = {
+		val newArray = new Array[T](newLength)
+		System.arraycopy(array, 0, newArray, 0, newLength)
+		newArray
+	}
+}
