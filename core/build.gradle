@@ -8,6 +8,8 @@ dependencies {
 	compile 'com.typesafe.scala-logging:scala-logging_2.12:3.7.2'
 	compile 'com.github.pathikrit:better-files_2.12:3.2.0'
 	compile 'org.fusesource.jansi:jansi:1.16'
+	testCompile("org.junit.jupiter:junit-jupiter-api:5.0.2")
+	testRuntime("org.junit.jupiter:junit-jupiter-engine:5.0.2")
 }
 
 // Build runnable jar
