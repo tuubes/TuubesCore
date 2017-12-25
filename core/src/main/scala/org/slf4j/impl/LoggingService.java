@@ -8,9 +8,8 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import org.mcphoton.messaging.Colors;
-import org.mcphoton.messaging.Colors.V;
-import org.mcphoton.server.PhotonServer;
+import org.tuubes.messaging.Colors;
+import org.tuubes.server.PhotonServer;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;

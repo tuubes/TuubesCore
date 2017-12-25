@@ -1,5 +1,0 @@
-description 'Network protocols'
-
-dependencies {
-	compile project(':core')
-}

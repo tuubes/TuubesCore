@@ -1,5 +1,0 @@
-description 'Game content'
-
-dependencies {
-	compile project(':core')
-}
