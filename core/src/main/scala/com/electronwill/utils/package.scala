@@ -13,4 +13,7 @@ package object utils {
 		while (a > max) result -= max
 		result
 	}
+
+	trait Tagged[U]
+	type @@[+T, U] = T with Tagged[U]
 }
