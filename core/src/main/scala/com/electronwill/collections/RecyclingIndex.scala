@@ -15,7 +15,11 @@ import scala.reflect.ClassTag
  *
  * @author TheElectronWill
  */
-final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int = 16) extends Index[A] {
+final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int,
+														   initialRecyclingCapacity: Int) extends Index[A] {
+	def this(initialCapacity: Int = 16) = {
+		this(initialCapacity, initialCapacity / 4)
+	}
 
 	/** Contains the elements of the RecyclingIndex. */
 	private[this] var elements: Array[A] = new Array[A](initialCapacity)
@@ -23,7 +27,7 @@ final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int 
 	private[this] var elementCount = 0
 
 	/** Contains the IDs that have been removed and can be recycled */
-	private[this] var idsToRecycle: Array[Int] = new Array[Int](16)
+	private[this] var idsToRecycle: Array[Int] = new Array[Int](initialCapacity / 2)
 	/** The number of IDs to recycle */
 	private[this] var recycleCount = 0
 
@@ -45,18 +49,19 @@ final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int 
 		id
 	}
 
+	override def remove(id: Int): Unit = {
+		val element = elements(id)
+		if (element ne null) {
+			doRemove(id)
+		}
+	}
+
 	override def -=(id: Int): Option[A] = {
 		val element = elements(id)
 		if (element eq null) {
 			None
 		} else {
-			elementCount -= 1
-			recycleCount += 1
-			if (idsToRecycle.length < recycleCount) {
-				idsToRecycle = grow(idsToRecycle, recycleCount)
-			}
-			idsToRecycle(recycleCount - 1) = id
-			elements(id) = null
+			doRemove(id)
 			Some(element)
 		}
 	}
@@ -64,17 +69,21 @@ final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int 
 	override def -=(id: Int, expectedValue: A): Boolean = {
 		val element = elements(id)
 		if (element == expectedValue && (element ne null)) {
-			elementCount -= 1
-			recycleCount += 1
-			if (idsToRecycle.length < recycleCount) {
-				idsToRecycle = grow(idsToRecycle, recycleCount)
-			}
-			idsToRecycle(recycleCount - 1) = id
-			elements(id) = null
+			doRemove(id)
 			true
 		} else {
 			false
 		}
+	}
+
+	private def doRemove(id: Int): Unit = {
+		elementCount -= 1
+		recycleCount += 1
+		if (idsToRecycle.length < recycleCount) {
+			idsToRecycle = grow(idsToRecycle, recycleCount)
+		}
+		idsToRecycle(recycleCount - 1) = id
+		elements(id) = null
 	}
 
 	override def getOrNull(id: Int): A = {

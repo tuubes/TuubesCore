@@ -16,8 +16,11 @@ import scala.reflect.ClassTag
  *
  * @author TheElectronWill
  */
-final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int = 16)
-	extends Index[A] {
+final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int,
+																	 initialRecyclingCapacity: Int) extends Index[A] {
+	def this(initialCapacity: Int = 16) = {
+		this(initialCapacity, initialCapacity / 4)
+	}
 
 	/** Contains the elements of the RecyclingIndex. */
 	@volatile
@@ -27,7 +30,7 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapa
 	private[this] var elementCount = 0
 
 	/** Contains the IDs that have been removed and can be recycled */
-	private[this] var idsToRecycle: Array[Int] = new Array[Int](16)
+	private[this] var idsToRecycle: Array[Int] = new Array[Int](initialCapacity/2)
 
 	/** The number of IDs to recycle */
 	private[this] var recycleCount = 0
@@ -54,6 +57,16 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapa
 		}
 	}
 
+	override def remove(id: Int): Unit = {
+		elements.synchronized {
+			val elems = elements //volatile read
+			val element = elems(id)
+			if (element ne null) {
+				doRemove(id, elems)
+			}
+		}
+	}
+
 	override def -=(id: Int): Option[A] = {
 		elements.synchronized {
 			val elems = elements //volatile read
@@ -61,14 +74,7 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapa
 			if (element eq null) {
 				None
 			} else {
-				elementCount -= 1
-				recycleCount += 1
-				if (idsToRecycle.length < recycleCount) {
-					idsToRecycle = grow(idsToRecycle, recycleCount)
-				}
-				idsToRecycle(recycleCount - 1) = id
-				elems(id) = null
-				elements = elems //volatile write
+				doRemove(id, elems)
 				Some(element)
 			}
 		}
@@ -79,19 +85,24 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapa
 			val elems = elements //volatile read
 			val element = elems(id)
 			if (element == expectedValue && (element ne null)) {
-				elementCount -= 1
-				recycleCount += 1
-				if (idsToRecycle.length < recycleCount) {
-					idsToRecycle = grow(idsToRecycle, recycleCount)
-				}
-				idsToRecycle(recycleCount - 1) = id
-				elems(id) = null
-				elements = elems
+				doRemove(id, elems)
 				true
 			} else {
 				false
 			}
 		}
+	}
+
+	private def doRemove(id: Int, elems: Array[A]): Unit = {
+		elementCount -= 1
+		recycleCount += 1
+		if (idsToRecycle.length < recycleCount) {
+			val newLength = Math.min(recycleCount, idsToRecycle.length + (idsToRecycle.length >> 1))
+			idsToRecycle = grow(idsToRecycle, newLength)
+		}
+		idsToRecycle(recycleCount - 1) = id
+		elems(id) = null
+		elements = elems //volatile write
 	}
 
 	override def getOrNull(id: Int): A = {
@@ -102,18 +113,6 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapa
 		val elems = elements //volatile read
 		elems(id) = element
 		elements = elems //volatile write
-	}
-
-	private def grow[T: ClassTag](array: Array[T], minLength: Int): Array[T] = {
-		val length = array.length
-		val newLength = Math.min(minLength, length + length >> 1)
-		copyOf(array, newLength)
-	}
-
-	private def copyOf[T: ClassTag](array: Array[T], newLength: Int): Array[T] = {
-		val newArray = new Array[T](newLength)
-		System.arraycopy(array, 0, newArray, 0, Math.min(array.length, newLength))
-		newArray
 	}
 
 	override def iterator: Iterator[(Int, A)] = new Iterator[(Int, A)] {
@@ -168,10 +167,10 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapa
 			while (lastUsedId >= 0 && (elements(lastUsedId) eq null)) {
 				lastUsedId += 1
 			}
-			elements = copyOf(elements, lastUsedId)
+			elements = shrink(elements, lastUsedId)
 		}
 		if (recycleCount < idsToRecycle.length) {
-			idsToRecycle = copyOf(idsToRecycle, recycleCount)
+			idsToRecycle = shrink(idsToRecycle, recycleCount)
 		}
 	}
 }

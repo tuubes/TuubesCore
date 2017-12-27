@@ -19,7 +19,7 @@ trait Index[A] extends Iterable[(Int, A)] with Compactable {
 	def +=(element: A): Int
 
 	/**
-	 * Removes an element from the index.
+	 * Removes and returns an element from the index.
 	 *
 	 * @param id the id of the element to remove
 	 * @return an Option that contains the removed element, or None if there was no element
@@ -60,6 +60,13 @@ trait Index[A] extends Iterable[(Int, A)] with Compactable {
 	 * @return the element, or null if there is no element associated to the given id.
 	 */
 	def getOrNull(id: Int): A
+
+	/**
+	 * Removes an element from the index.
+	 *
+	 * @param id the id of the element to remove
+	 */
+	def remove(id: Int): Unit
 
 	/**
 	 * Creates an iterator over the Index's values.
