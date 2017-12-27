@@ -1,4 +1,4 @@
-version = '0.5-alpha'
+version = '0.6-alpha'
 description "The basic bricks on which everything is built"
 
 // Dependencies
