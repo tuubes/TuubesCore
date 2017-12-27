@@ -36,14 +36,21 @@ final class SimpleBag[A >: Null : ClassTag](initialCapacity: Int = 16) extends B
 		s += 1
 		this
 	}
-	override def iterator: Iterator[A] = new Iterator[A] {
+	override def iterator: MutableIterator[A] = new MutableIterator[A] {
 		private[this] var i = 0
+		private[this] val l = s
 
-		override def hasNext: Boolean = i < s
+		override def hasNext: Boolean = i < l
 		override def next(): A = {
 			val v = array(i)
 			i += 1
 			v
+		}
+		override def remove(): Unit = {
+			SimpleBag.this.remove(i)
+		}
+		override def insert(elem: A): Unit = {
+			SimpleBag.this.+=(elem)
 		}
 	}
 	override def compact(): Unit = {

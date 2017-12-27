@@ -85,7 +85,7 @@ final class ConcurrentBag[A >: Null : ClassTag](initialCapacity: Int = 16) exten
 			}
 		}
 	}
-	override def iterator: Iterator[A] = new Iterator[A] {
+	override def iterator: MutableIterator[A] = new MutableIterator[A] {
 		private[this] var i = 0
 		private[this] val (arrayView: Array[A], sView: Int) = {
 			var av: Array[A] = null
@@ -93,7 +93,7 @@ final class ConcurrentBag[A >: Null : ClassTag](initialCapacity: Int = 16) exten
 			do {
 				av = array
 				sv = s
-			} while (array != av)
+			} while (array ne av)
 			(av, sv)
 		}
 		override def hasNext: Boolean = {
@@ -103,6 +103,12 @@ final class ConcurrentBag[A >: Null : ClassTag](initialCapacity: Int = 16) exten
 			val elem = arrayView(i)
 			i += 1
 			elem
+		}
+		override def remove(): Unit = {
+			ConcurrentBag.this.remove(i)
+		}
+		override def insert(elem: A): Unit = {
+			ConcurrentBag.this.+=(elem)
 		}
 	}
 }
