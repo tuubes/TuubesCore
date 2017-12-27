@@ -1,4 +1,4 @@
-description "Open source Photon project: let's create a better server!"
+description "The Ultimate & Universal Block Engine Server"
 
 subprojects {
 	apply plugin: 'scala'

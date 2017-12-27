@@ -1,3 +1,3 @@
-rootProject.name = 'photon-server'
+rootProject.name = 'tuubes'
 
-include 'core', 'metaprog', 'protocol', 'game-content'
+include 'core', 'metaprog'

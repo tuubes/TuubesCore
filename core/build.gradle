@@ -1,5 +1,5 @@
 version = '0.5-alpha'
-description "Server's core architecture and API"
+description "The basic bricks on which everything is built"
 
 // Dependencies
 dependencies {
