@@ -1,5 +1,7 @@
 package org.tuubes.core.engine
 
+import com.electronwill.collections.RecyclingIndex
+
 /**
  * A [[GameObject]] property.
  *
@@ -7,7 +9,8 @@ package org.tuubes.core.engine
  */
 sealed abstract class Property[A](private[tuubes] val `type`: PropertyType[A],
 								  protected[this] var value: A,
-								  newlyAdded: Boolean = false) {
+								  newlyAdded: Boolean,
+								  protected val listeners: RecyclingIndex[ValueListener[A]]) {
 	protected[this] var changed = newlyAdded
 
 	/**
@@ -28,18 +31,34 @@ sealed abstract class Property[A](private[tuubes] val `type`: PropertyType[A],
 	final def hasChanged: Boolean = changed
 
 	/**
-	 * Resets the modification cycle: just after this method, hasChanged will return false.
+	 * Ends the modification cycle: notifies the listeners and resets the "hasChanged" state.
 	 */
-	def resetCycle(): Unit
+	def endCycle(): Unit
+
+	def addListener(listener: ValueListener[A]): ListeningKey[Property[A]] = {
+		new ListeningKey(listeners += listener)
+	}
+
+	def removeListener(key: ListeningKey[Property[A]]): Unit = {
+		listeners.remove(key.id)
+	}
 }
-final class SimpleProperty[A](t: SimplePropertyType[A], v: A, newlyAdded: Boolean)
-	extends Property[A](t, v, newlyAdded) {
+final class SimpleProperty[A](t: PropertyType[A],
+							  v: A,
+							  newlyAdded: Boolean = true,
+							  listeners: RecyclingIndex[ValueListener[A]] = new RecyclingIndex[ValueListener[A]])
+	extends Property[A](t, v, newlyAdded, listeners) {
 	override def set(newValue: A): Unit = {
 		value = newValue
 		changed = true
 	}
-	override def resetCycle(): Unit = {
-		changed = false
+	override def endCycle(): Unit = {
+		if (changed) {
+			for (listener <- listeners.valuesIterator) {
+				listener.onChange(value, value)
+			}
+			changed = false
+		}
 	}
 }
 /**
@@ -49,17 +68,31 @@ final class SimpleProperty[A](t: SimplePropertyType[A], v: A, newlyAdded: Boolea
  * @param v the initial value
  * @tparam A the value's type
  */
-final class MemorizedProperty[A](t: MemorizedPropertyType[A], v: A, newlyAdded: Boolean)
-	extends Property[A](t, v, newlyAdded) {
+final class MemorizedProperty[A](t: PropertyType[A],
+								 v: A,
+								 newlyAdded: Boolean = true,
+								 listeners: RecyclingIndex[ValueListener[A]] = new RecyclingIndex[ValueListener[A]])
+	extends Property[A](t, v, newlyAdded, listeners) {
+
 	private[this] var old: A = value
+
+	def this(sp: SimpleProperty[A]) = {
+		this(sp.`type`, sp.get, false, sp.listeners)
+	}
 
 	override def set(newValue: A): Unit = {
 		value = newValue
 		changed = (newValue != old)
 	}
-	override def resetCycle(): Unit = {
-		changed = false
-		old = value
+	override def endCycle(): Unit = {
+		if (changed) {
+			val oldValue = old
+			for (listener <- listeners.valuesIterator) {
+				listener.onChange(oldValue, value)
+			}
+			changed = false
+			old = value
+		}
 	}
 	/**
 	 * @return the old value

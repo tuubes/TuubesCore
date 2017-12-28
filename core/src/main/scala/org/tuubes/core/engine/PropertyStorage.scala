@@ -7,7 +7,7 @@ import scala.collection.mutable
  *
  * @author TheElectronWill
  */
-final class PropertyStorage {
+final class PropertyStorage extends Iterable[Property[_]] {
 	/**
 	 * Map ID => Property
 	 */
@@ -48,7 +48,7 @@ final class PropertyStorage {
 	 */
 	def +=[A](prop: PropertyType[A], initialValue: A): Boolean = {
 		if (!propertiesMap.contains(prop.id)) {
-			propertiesMap(prop.id) = prop.create(initialValue, true)
+			propertiesMap(prop.id) = new SimpleProperty[A](prop, initialValue)
 			true
 		} else {
 			false
@@ -65,9 +65,69 @@ final class PropertyStorage {
 	def put[A](prop: PropertyType[A], value: A): Unit = {
 		val p = propertiesMap.getOrNull(prop.id)
 		if (p eq null) {
-			propertiesMap(prop.id) = prop.create(value, true)
+			propertiesMap(prop.id) = new SimpleProperty[A](prop, value)
 		} else {
 			p.asInstanceOf[Property[A]].set(value)
 		}
+	}
+
+	/**
+	 * Adds a listener to a property.
+	 *
+	 * @param prop the PropertyType
+	 * @param l    the listener
+	 * @tparam A the property value's type
+	 * @return Some(listeningKey) if the property exists, else None
+	 */
+	def listen[A](prop: PropertyType[A], l: SimpleValueListener[A]): Option[ListeningKey[A]] = {
+		val p = propertiesMap.get(prop.id)
+		p.map(_.asInstanceOf[Property[A]].addListener((oldV, newV) => l.onChange(newV)))
+	}
+
+	/**
+	 * Adds a listener to a property, and ensure that the property is a [[MemorizedProperty]].
+	 * <p>
+	 * If you don't need to know the old value of the property, please use a
+	 * [[SimpleValueListener]] with the other `listen` method.
+	 *
+	 * @param prop the PropertyType
+	 * @param l    the listener
+	 * @tparam A the property value's type
+	 * @return Some(listeningKey) if the property exists, else None
+	 */
+	def listen[A](prop: PropertyType[A], l: ValueListener[A]): Option[ListeningKey[Property[A]]] = {
+		val p = propertiesMap.get(prop.id)
+		p match {
+			case Some(sp: SimpleProperty[A]) =>
+				// We need a MemorizedProperty but have a SimpleProperty: let's change
+				val mp = new MemorizedProperty[A](sp)
+				Some(mp.addListener(l))
+			case Some(mp: MemorizedProperty[A]) =>
+				// We have the MemorizedProperty
+				Some(mp.addListener(l))
+			case _ =>
+				// The property doesn't exist
+				None
+		}
+	}
+
+	/**
+	 * Removes a listener from a property.
+	 *
+	 * @param prop the PropertyType
+	 * @param key  the listener's key
+	 */
+	def unlisten[A](prop: PropertyType[A], key: ListeningKey[Property[A]]): Unit = {
+		val p = propertiesMap.get(prop.id)
+		p.foreach(_.asInstanceOf[Property[A]].removeListener(key))
+	}
+
+	/**
+	 * Creates an iterator over the properties.
+	 *
+	 * @return a new iterator that iterates over all the properties of this storage
+	 */
+	override def iterator: Iterator[Property[_]] = {
+		propertiesMap.valuesIterator
 	}
 }
