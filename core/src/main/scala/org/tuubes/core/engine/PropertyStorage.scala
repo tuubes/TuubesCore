@@ -77,9 +77,9 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @param prop the PropertyType
 	 * @param l    the listener
 	 * @tparam A the property value's type
-	 * @return Some(listeningKey) if the property exists, else None
+	 * @return Some(listenKey) if the property exists, else None
 	 */
-	def listen[A](prop: PropertyType[A], l: SimpleValueListener[A]): Option[ListeningKey[Property[A]]] = {
+	def listen[A](prop: PropertyType[A], l: SimpleValueListener[A]): Option[ListenKey[Property[A]]] = {
 		val p = propertiesMap.get(prop.id)
 		p.map(_.asInstanceOf[Property[A]].addListener((oldV, newV) => l.onChange(newV)))
 	}
@@ -93,9 +93,9 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @param prop the PropertyType
 	 * @param l    the listener
 	 * @tparam A the property value's type
-	 * @return Some(listeningKey) if the property exists, else None
+	 * @return Some(listenKey) if the property exists, else None
 	 */
-	def listen[A](prop: PropertyType[A], l: ValueListener[A]): Option[ListeningKey[Property[A]]] = {
+	def listen[A](prop: PropertyType[A], l: ValueListener[A]): Option[ListenKey[Property[A]]] = {
 		val p = propertiesMap.get(prop.id)
 		p match {
 			case Some(sp: SimpleProperty[A]) =>
@@ -117,11 +117,11 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @param prop the PropertyType
 	 * @param l    the listener
 	 * @tparam A the property value's type
-	 * @return Some(listeningRegistration) if the property exists, else None
+	 * @return Some(listenRegistration) if the property exists, else None
 	 */
-	def rlisten[A](prop: PropertyType[A], l: SimpleValueListener[A]): Option[ListeningRegistration[Property[A]]] = {
+	def rlisten[A](prop: PropertyType[A], l: SimpleValueListener[A]): Option[ListenRegistration[Property[A]]] = {
 		listen(prop, l).map(
-			new ListeningRegistration(_, key => unlisten(prop, key))
+			new ListenRegistration(_, key => unlisten(prop, key))
 		)
 	}
 
@@ -134,11 +134,11 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @param prop the PropertyType
 	 * @param l    the listener
 	 * @tparam A the property value's type
-	 * @return Some(listeningRegistration) if the property exists, else None
+	 * @return Some(listenRegistration) if the property exists, else None
 	 */
-	def rlisten[A](prop: PropertyType[A], l: ValueListener[A]): Option[ListeningRegistration[Property[A]]] = {
+	def rlisten[A](prop: PropertyType[A], l: ValueListener[A]): Option[ListenRegistration[Property[A]]] = {
 		listen(prop, l).map(
-			new ListeningRegistration(_, key => unlisten(prop, key))
+			new ListenRegistration(_, key => unlisten(prop, key))
 		)
 	}
 
@@ -148,7 +148,7 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @param prop the PropertyType
 	 * @param key  the listener's key
 	 */
-	def unlisten[A](prop: PropertyType[A], key: ListeningKey[Property[A]]): Unit = {
+	def unlisten[A](prop: PropertyType[A], key: ListenKey[Property[A]]): Unit = {
 		val p = propertiesMap.get(prop.id)
 		p.foreach(_.asInstanceOf[Property[A]].removeListener(key))
 	}

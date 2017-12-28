@@ -40,20 +40,20 @@ final class GameObject extends GroupedActor with Updatable {
 	 * Adds a listener to get notified after each update of this GameObject.
 	 *
 	 * @param listener the listener
-	 * @return a ListeningKey to use with [[unlistenUpdate]]
+	 * @return a ListenKey to use with [[unlistenUpdate]]
 	 */
-	def listenUpdate(listener: Runnable): ListeningKey[GameObject] = {
-		new ListeningKey(updateListeners += listener)
+	def listenUpdate(listener: Runnable): ListenKey[GameObject] = {
+		new ListenKey(updateListeners += listener)
 	}
 
 	/**
 	 * Adds a listener to get notified after each update of this GameObject.
 	 *
 	 * @param listener the listener
-	 * @return a ListeningRegistration to remove the listener
+	 * @return a ListenRegistration to remove the listener
 	 */
-	def rlistenUpdate(listener: Runnable): ListeningRegistration[GameObject] = {
-		new ListeningRegistration(listenUpdate(listener), unlistenUpdate)
+	def rlistenUpdate(listener: Runnable): ListenRegistration[GameObject] = {
+		new ListenRegistration(listenUpdate(listener), unlistenUpdate)
 	}
 
 	/**
@@ -61,7 +61,7 @@ final class GameObject extends GroupedActor with Updatable {
 	 *
 	 * @param key the listener's key
 	 */
-	def unlistenUpdate(key: ListeningKey[GameObject]): Unit = {
+	def unlistenUpdate(key: ListenKey[GameObject]): Unit = {
 		updateListeners.remove(key.id)
 	}
 }

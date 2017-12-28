@@ -35,11 +35,11 @@ sealed abstract class Property[A](private[tuubes] val `type`: PropertyType[A],
 	 */
 	def endCycle(): Unit
 
-	def addListener(listener: ValueListener[A]): ListeningKey[Property[A]] = {
-		new ListeningKey(listeners += listener)
+	def addListener(listener: ValueListener[A]): ListenKey[Property[A]] = {
+		new ListenKey(listeners += listener)
 	}
 
-	def removeListener(key: ListeningKey[Property[A]]): Unit = {
+	def removeListener(key: ListenKey[Property[A]]): Unit = {
 		listeners.remove(key.id)
 	}
 }
