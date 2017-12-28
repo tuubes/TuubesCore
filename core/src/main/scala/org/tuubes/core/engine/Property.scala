@@ -54,8 +54,9 @@ final class SimpleProperty[A](t: PropertyType[A],
 	}
 	override def endCycle(): Unit = {
 		if (changed) {
+			val newValue = value
 			for (listener <- listeners.valuesIterator) {
-				listener.onChange(value, value)
+				listener.onChange(newValue, newValue)
 			}
 			changed = false
 		}
@@ -87,11 +88,12 @@ final class MemorizedProperty[A](t: PropertyType[A],
 	override def endCycle(): Unit = {
 		if (changed) {
 			val oldValue = old
+			val newValue = value
 			for (listener <- listeners.valuesIterator) {
-				listener.onChange(oldValue, value)
+				listener.onChange(oldValue, newValue)
 			}
 			changed = false
-			old = value
+			old = newValue
 		}
 	}
 	/**
