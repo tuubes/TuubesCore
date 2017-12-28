@@ -27,8 +27,10 @@ final class GameObject(val id: GameObjectId) extends GroupedActor with Updatable
 			behavior.update(dt, this)
 		}
 		// Notifies each property change
-		for (property <- props) {
-			property.endCycle()
+		for (property <- props) { // Uses the efficient foreach (see PropertyStorage#foreach)
+			if (property.hasChanged) {
+				property.endCycle()
+			}
 		}
 		// Notifies each update listener
 		for (listener <- updateListeners.valuesIterator) {

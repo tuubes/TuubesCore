@@ -161,4 +161,8 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	override def iterator: Iterator[Property[_]] = {
 		propertiesMap.valuesIterator
 	}
+
+	override def foreach[U](f: Property[_] => U): Unit = {
+		propertiesMap.foreachValue(f) // Efficient LongMap.foreachValue
+	}
 }
