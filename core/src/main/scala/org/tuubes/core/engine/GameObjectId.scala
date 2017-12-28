@@ -1,7 +1,7 @@
 package org.tuubes.core.engine
 
 /**
- * An unique ID associated to a [[GameObject]].
+ * A unique ID associated to a [[GameObject]].
  *
  * @author TheElectronWill
  */

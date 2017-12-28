@@ -7,7 +7,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * @author TheElectronWill
  */
-final class GameObject extends GroupedActor with Updatable {
+final class GameObject(val id: GameObjectId) extends GroupedActor with Updatable {
 	private[this] val props = new PropertyStorage()
 	private[this] val behaviors = new ArrayBuffer[Behavior]
 	private[this] val updateListeners = new RecyclingIndex[Runnable]
