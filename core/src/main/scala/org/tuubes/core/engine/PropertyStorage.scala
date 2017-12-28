@@ -79,7 +79,7 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @tparam A the property value's type
 	 * @return Some(listeningKey) if the property exists, else None
 	 */
-	def listen[A](prop: PropertyType[A], l: SimpleValueListener[A]): Option[ListeningKey[A]] = {
+	def listen[A](prop: PropertyType[A], l: SimpleValueListener[A]): Option[ListeningKey[Property[A]]] = {
 		val p = propertiesMap.get(prop.id)
 		p.map(_.asInstanceOf[Property[A]].addListener((oldV, newV) => l.onChange(newV)))
 	}
@@ -109,6 +109,37 @@ final class PropertyStorage extends Iterable[Property[_]] {
 				// The property doesn't exist
 				None
 		}
+	}
+
+	/**
+	 * Adds a listener to a property.
+	 *
+	 * @param prop the PropertyType
+	 * @param l    the listener
+	 * @tparam A the property value's type
+	 * @return Some(listeningRegistration) if the property exists, else None
+	 */
+	def rlisten[A](prop: PropertyType[A], l: SimpleValueListener[A]): Option[ListeningRegistration[Property[A]]] = {
+		listen(prop, l).map(
+			new ListeningRegistration(_, key => unlisten(prop, key))
+		)
+	}
+
+	/**
+	 * Adds a listener to a property, and ensure that the property is a [[MemorizedProperty]].
+	 * <p>
+	 * If you don't need to know the old value of the property, please use a
+	 * [[SimpleValueListener]] with the other `listen` method.
+	 *
+	 * @param prop the PropertyType
+	 * @param l    the listener
+	 * @tparam A the property value's type
+	 * @return Some(listeningRegistration) if the property exists, else None
+	 */
+	def rlisten[A](prop: PropertyType[A], l: ValueListener[A]): Option[ListeningRegistration[Property[A]]] = {
+		listen(prop, l).map(
+			new ListeningRegistration(_, key => unlisten(prop, key))
+		)
 	}
 
 	/**

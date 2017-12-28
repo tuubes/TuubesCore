@@ -47,6 +47,16 @@ final class GameObject extends GroupedActor with Updatable {
 	}
 
 	/**
+	 * Adds a listener to get notified after each update of this GameObject.
+	 *
+	 * @param listener the listener
+	 * @return a ListeningRegistration to remove the listener
+	 */
+	def rlistenUpdate(listener: Runnable): ListeningRegistration[GameObject] = {
+		new ListeningRegistration(listenUpdate(listener), unlistenUpdate)
+	}
+
+	/**
 	 * Removes a listener from this GameObject.
 	 *
 	 * @param key the listener's key
