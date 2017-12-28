@@ -56,6 +56,16 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	}
 
 	/**
+	 * Removes a property from the storage.
+	 *
+	 * @param prop the PropertyType
+	 * @return true if it has been removed, false if this storage doesn't contain the property
+	 */
+	def -=(prop: PropertyType[_]): Boolean = {
+		propertiesMap.remove(prop.id).isDefined
+	}
+
+	/**
 	 * If the property exists, updates its value, else adds it to the storage.
 	 *
 	 * @param prop  the PropertyType
