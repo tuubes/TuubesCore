@@ -38,10 +38,14 @@ final class ExecutionGroup extends Runnable {
 						actor.update(dt)
 						if (actor.state == Terminated) {
 							it.remove()
-						} else if (actor.moveGroup != null) {
-							actor.state = Moving
-							it.remove()
-							actor.moveGroup += actor
+						} else {
+							val moveGroup = actor.moveGroup
+							if (moveGroup != null) {
+								actor.state = Moving
+								actor.moveGroup = null
+								it.remove()
+								moveGroup += actor
+							}
 						}
 					}
 				} catch {
