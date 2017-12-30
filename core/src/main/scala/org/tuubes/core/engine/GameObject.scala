@@ -7,7 +7,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * @author TheElectronWill
  */
-final class GameObject(val id: GameObjectId) extends GroupedActor with Updatable {
+final class GameObject(id: ActorId) extends LocalActor(id) {
 	private[this] val props = new PropertyStorage()
 	private[this] val behaviors = new ArrayBuffer[Behavior]
 	private[this] val updateListeners = new RecyclingIndex[Runnable]
@@ -15,6 +15,7 @@ final class GameObject(val id: GameObjectId) extends GroupedActor with Updatable
 	def properties: PropertyStorage = props
 
 	override protected def onMessage(msg: ActorMessage): Unit = {
+		super.onMessage(msg)
 		for (behavior <- behaviors) {
 			behavior.onMessage(msg, this)
 		}
