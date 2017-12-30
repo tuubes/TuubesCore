@@ -6,7 +6,7 @@ package org.tuubes.core.engine
  * @author TheElectronWill
  */
 final class ListenRegistration[A](private[this] var key: ListenKey[A],
-								  private[this] val fCancel: ListenKey[A] => ())
+								  private[this] val fCancel: ListenKey[A] => Unit)
 	extends Registration[A] {
 	override def cancel(): Unit = fCancel(key)
 	override def isValid: Boolean = (key ne null)
