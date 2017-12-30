@@ -13,6 +13,7 @@ abstract class LocalActor(override final val id: ActorId) extends Actor {
 
 	var state: ActorState = Created
 	var group: ExecutionGroup = _
+	var moveGroup: ExecutionGroup = _
 
 	override def !(msg: ActorMessage): Unit = {
 		if (filter(msg)) {
@@ -26,8 +27,7 @@ abstract class LocalActor(override final val id: ActorId) extends Actor {
 				group = null
 				state = Terminated
 			case MoveToGroup(newGroup) =>
-				group = newGroup
-				state = Moving
+				moveGroup = newGroup
 		}
 	}
 

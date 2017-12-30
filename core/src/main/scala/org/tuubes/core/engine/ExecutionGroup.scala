@@ -32,25 +32,32 @@ final class ExecutionGroup extends Runnable {
 				val actor = it.next()
 				try {
 					actor.processMessages()
-					actor.state match {
-						case Terminated =>
+					if (actor.state == Terminated) {
+						it.remove()
+					} else {
+						actor.update(dt)
+						if (actor.state == Terminated) {
 							it.remove()
-						case Moving =>
+						} else if (actor.moveGroup != null) {
+							actor.state = Moving
 							it.remove()
-							actor.group += actor
+							actor.moveGroup += actor
+						}
 					}
-					actor.update(dt)
 				} catch {
 					case NonFatal(e) =>
-					// TODO log
+						//TODO log
+						it.remove()
+						actor.state = Terminated
 				}
 			}
 		}
 	}
 
 	def +=(actor: LocalActor): Unit = {
-		assert(actor.state != Running && actor.group == this)
+		assert(actor.state == Created || actor.state == Moving)
 		toAdd.offer(actor)
+		actor.group = this
 		actor.state = ActorState.Running
 	}
 }
