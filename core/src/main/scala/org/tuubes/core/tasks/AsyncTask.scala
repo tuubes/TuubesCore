@@ -1,4 +1,4 @@
-package org.tuubes.runtime
+package org.tuubes.core.tasks
 
 import java.io.File
 import java.net.{HttpURLConnection, URL, URLConnection}
@@ -7,12 +7,12 @@ import java.nio.file.OpenOption
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger, AtomicReference}
 import java.util.concurrent.{ConcurrentLinkedQueue, Executor, TimeUnit}
 
-import org.tuubes.runtime.TaskStatus._
+import org.tuubes.core.tasks.TaskStatus._
+import org.tuubes.core.tasks.{VolatileArray => VArr}
 
 import scala.annotation.{tailrec, varargs}
 import scala.collection.mutable.ArrayBuffer
 import scala.util.{Failure, Success, Try}
-import org.tuubes.runtime.{VolatileArray => VArr}
 
 /**
  * An asynchronous task that can be chained with other tasks.

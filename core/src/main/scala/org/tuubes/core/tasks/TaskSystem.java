@@ -1,10 +1,9 @@
-package org.tuubes.runtime;
+package org.tuubes.core.tasks;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import org.tuubes.server.PhotonServer;
 
 /**
  * @author TheElectronWill
@@ -15,8 +14,9 @@ public final class TaskSystem {
 	static final ScheduledExecutorService executor;
 
 	static {
-		ThreadFactory factory = new CountingThreadFactory("TaskThread_");
-		executor = Executors.newScheduledThreadPool(PhotonServer.Config().threadNumber(), factory);
+		ThreadFactory factory = new CountingThreadFactory("TaskSystem-");
+		int threadNumber = Runtime.getRuntime().availableProcessors(); // TODO configure
+		executor = Executors.newScheduledThreadPool(threadNumber, factory);
 	}
 
 	public static CancellableTask execute(Runnable task) {
@@ -28,13 +28,13 @@ public final class TaskSystem {
 	}
 
 	public static DelayedTask scheduleAtFixedRate(Runnable command, long initialDelay,
-													  long period, TimeUnit unit) {
+																	 long period, TimeUnit unit) {
 		return new DelayedFuture(
 				executor.scheduleAtFixedRate(command, initialDelay, period, unit));
 	}
 
 	public static DelayedTask scheduleWithFixedDelay(Runnable command, long initialDelay,
-														 long delay, TimeUnit unit) {
+													 long delay, TimeUnit unit) {
 		return new DelayedFuture(
 				executor.scheduleWithFixedDelay(command, initialDelay, delay, unit));
 	}

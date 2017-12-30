@@ -1,4 +1,4 @@
-package org.tuubes.runtime;
+package org.tuubes.core.tasks;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ public final class IOSystem {
 	private IOSystem() {}
 
 	static final ExecutorService executor = Executors.newCachedThreadPool(
-			new CountingThreadFactory("IOThread_"));
+			new CountingThreadFactory("IOSystem-"));
 
 	/**
 	 * Executes an IOTask in the background. The submitted task is executed at some time in the

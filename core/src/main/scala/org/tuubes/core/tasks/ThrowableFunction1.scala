@@ -1,10 +1,11 @@
-package org.tuubes.runtime
+package org.tuubes.core.tasks
 
 import scala.language.implicitConversions
 
 /**
  * A function T => R that declares throwing a Throwable. The benefit over the standard
- * [[scala.Function1]] is that `ThrowableFunction1` can be used from java without try-catch.
+ * [[scala.Function1]] is that `ThrowableFunction1` can be used from java without try-catch and
+ * is a type different from [[scala.Function1]], so we can have two methods.
  *
  * @author TheElectronWill
  */
