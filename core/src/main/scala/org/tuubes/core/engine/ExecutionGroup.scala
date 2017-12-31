@@ -40,7 +40,7 @@ final class ExecutionGroup extends Runnable {
 							it.remove()
 						} else {
 							val moveGroup = actor.moveGroup
-							if (moveGroup != null) {
+							if (moveGroup != null && moveGroup != this) { // Moved to another group
 								actor.state = Moving
 								actor.moveGroup = null
 								it.remove()
