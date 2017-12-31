@@ -1,9 +1,10 @@
 package org.tuubes.core.engine
 
-import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 
 import com.electronwill.collections.SimpleBag
-import ActorState._
+import org.tuubes.core.engine.ActorState._
+import org.tuubes.core.tasks.TaskSystem
 
 import scala.util.control.NonFatal
 
@@ -14,10 +15,11 @@ import scala.util.control.NonFatal
  * @author TheElectronWill
  */
 final class ExecutionGroup extends Runnable {
+	private val toAdd = new ConcurrentLinkedQueue[LocalActor]
 	private val toUpdate = new SimpleBag[LocalActor](256)
 	private var lastTime: Double = Double.NaN
 
-	private val toAdd = new ConcurrentLinkedQueue[LocalActor]
+	private val targetDelta: Long = TimeUnit.MILLISECONDS.toNanos(100)
 
 	override def run(): Unit = {
 		if (lastTime == Double.NaN) {
@@ -62,6 +64,11 @@ final class ExecutionGroup extends Runnable {
 						actor.state = Terminated
 				}
 			}
+
+			// Schedules next run
+			val duration = System.nanoTime() - time
+			val nextDelay = targetDelta - duration
+			TaskSystem.schedule(this, nextDelay, TimeUnit.NANOSECONDS)
 		}
 	}
 
@@ -70,5 +77,9 @@ final class ExecutionGroup extends Runnable {
 		toAdd.offer(actor)
 		actor.group = this
 		actor.state = ActorState.Running
+	}
+	def start(): Unit = {
+		assert(lastTime == Double.NaN)
+		TaskSystem.execute(this)
 	}
 }
