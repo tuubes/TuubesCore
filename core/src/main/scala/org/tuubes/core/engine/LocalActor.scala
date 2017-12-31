@@ -15,9 +15,15 @@ abstract class LocalActor(override final val id: ActorId) extends Actor {
 	var group: ExecutionGroup = _
 	var moveGroup: ExecutionGroup = _
 
-	override def !(msg: ActorMessage): Unit = {
+	override def !(msg: ActorMessage)(implicit currentGroup: ExecutionGroup): Unit = {
 		if (filter(msg)) {
-			msgBox.add(msg)
+			if (currentGroup eq group) {
+				/* Fast path! Messages coming from the actor's group are processed immediately
+				   without going through the queue. */
+				onMessage(msg)
+			} else {
+				msgBox.add(msg)
+			}
 		}
 	}
 

@@ -12,7 +12,7 @@ trait Actor {
 	 *
 	 * @param msg the message
 	 */
-	def !(msg: ActorMessage): Unit
+	def !(msg: ActorMessage)(implicit currentGroup: ExecutionGroup): Unit
 
 	/**
 	 * Reacts to a received message.
