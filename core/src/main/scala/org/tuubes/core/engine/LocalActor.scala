@@ -11,9 +11,9 @@ import org.tuubes.core.engine.messages.{MoveToGroup, Terminate}
 abstract class LocalActor(override final val id: ActorId) extends Actor {
 	private[this] val msgBox = new ConcurrentLinkedQueue[ActorMessage]
 
-	var state: ActorState = Created
-	var group: ExecutionGroup = _
-	var moveGroup: ExecutionGroup = _
+	private[this] var _state: ActorState = Created
+	private[this] var _group: ExecutionGroup = _
+	private[engine] var moveGroup: ExecutionGroup = _
 
 	override def !(msg: ActorMessage)(implicit currentGroup: ExecutionGroup): Unit = {
 		if (filter(msg)) {
@@ -50,4 +50,10 @@ abstract class LocalActor(override final val id: ActorId) extends Actor {
 	override protected def filter(msg: ActorMessage): Boolean = {
 		state != Terminated
 	}
+
+	def state: ActorState = _state
+	private[engine] def state_=(s: ActorState): Unit = _state = s
+
+	def group: ExecutionGroup = _group
+	private[engine] def group_=(g: ExecutionGroup): Unit = _group = g
 }
