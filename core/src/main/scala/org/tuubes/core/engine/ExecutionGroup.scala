@@ -27,6 +27,13 @@ final class ExecutionGroup extends Runnable {
 			val dt = time - lastTime
 			lastTime = time
 
+			// Takes the new actors
+			var polled = toAdd.poll()
+			while (polled != null) {
+				toUpdate += polled
+				polled = toAdd.poll()
+			}
+
 			val it = toUpdate.iterator
 			while (it.hasNext) {
 				val actor = it.next()
