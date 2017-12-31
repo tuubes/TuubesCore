@@ -47,5 +47,7 @@ abstract class LocalActor(override final val id: ActorId) extends Actor {
 
 	def update(dt: Double): Unit
 
+	override protected def filter(msg: ActorMessage): Boolean = {
+		state != Terminated
 	}
 }
