@@ -25,6 +25,7 @@ final class ExecutionGroup extends Runnable {
 		if (lastTime == Double.NaN) {
 			lastTime = System.nanoTime()
 		} else {
+			// Calculates delta time
 			val time = System.nanoTime()
 			val dt = time - lastTime
 			lastTime = time
@@ -36,18 +37,19 @@ final class ExecutionGroup extends Runnable {
 				polled = toAdd.poll()
 			}
 
+			// Runs the updates
 			val it = toUpdate.iterator
 			while (it.hasNext) {
 				val actor = it.next()
-				try {
+				try { // Resists to actors' errors
 					actor.processMessages()
-					if (actor.state == Terminated) {
+					if (actor.state == Terminated) { // Actor terminated because of a message
 						it.remove()
 					} else {
 						actor.update(dt)
-						if (actor.state == Terminated) {
+						if (actor.state == Terminated) { // Actor terminated during the update
 							it.remove()
-						} else {
+						} else { // Actor not terminated... but maybe moved?
 							val moveGroup = actor.moveGroup
 							if (moveGroup != null && moveGroup != this) { // Moved to another group
 								actor.state = Moving
@@ -69,15 +71,26 @@ final class ExecutionGroup extends Runnable {
 			val duration = System.nanoTime() - time
 			val nextDelay = targetDelta - duration
 			TaskSystem.schedule(this, nextDelay, TimeUnit.NANOSECONDS)
+			// If nextDelay < 0 the ExecutorService uses a delay of 0
 		}
 	}
 
+	/**
+	 * Adds an actor to this group. The actor must be in [[Created]] or [[Moving]] state.
+	 *
+	 * @param actor the actor to add
+	 */
 	def +=(actor: LocalActor): Unit = {
 		assert(actor.state == Created || actor.state == Moving)
 		toAdd.offer(actor)
 		actor.group = this
 		actor.state = ActorState.Running
 	}
+
+	/**
+	 * Schedules the first run of this ExecutionGroup. The group will then re-schedule itself
+	 * automatically.
+	 */
 	def start(): Unit = {
 		assert(lastTime == Double.NaN)
 		TaskSystem.execute(this)
