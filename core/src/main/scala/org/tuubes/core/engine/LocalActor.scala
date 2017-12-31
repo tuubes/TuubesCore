@@ -47,11 +47,5 @@ abstract class LocalActor(override final val id: ActorId) extends Actor {
 
 	def update(dt: Double): Unit
 
-	def start(execGroup: ExecutionGroup): Unit = {
-		assert(state == Created)
-		if (execGroup != null) {
-			group = execGroup
-			execGroup += this
-		}
 	}
 }
