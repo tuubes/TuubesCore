@@ -5,7 +5,7 @@
 
 This repository contains the essential bricks of the [Tuubes project](http://tuubes.org), which aims to create an open-source scalable server for voxel games.
 
-TuubesCore is independent from any game. Game-dependent content like block types and creatures are/will be implemented in others repositories.
+TuubesCore is independent from any game. Game-dependent content like block types and creatures are/will be implemented in other repositories.
 
 ## How to contribute
 Contributors are always welcome. But please note that the [foundations](https://github.com/tuubes/TuubesCore/projects/4) aren't complete yet, therefore a lot of things are currently changing.
