@@ -18,7 +18,7 @@ For more information please read [the contributing guidelines](CONTRIBUTING.md).
 ### Branches
 - **master**: stable releases only
 - **develop**: base branch for unstable development
-- **scala-rewrite**: contains the ongoing work to rewrite the project in [the Scala programming language](http://docs.scala-lang.org), and by following the [Actor Model](https://en.wikipedia.org/wiki/Actor_model) for easier concurrency.
+- **scala-rewrite**: contains the ongoing work to rewrite the project in [the Scala programming language](http://docs.scala-lang.org) and to follow the [Actor Model](https://en.wikipedia.org/wiki/Actor_model) for easier concurrency.
 
 ### Modules
 - **core**: most of the source code
