@@ -16,4 +16,8 @@ package object collections {
 		System.arraycopy(array, 0, newArray, 0, newLength)
 		newArray
 	}
+	private[collections] def growAmortize[T: ClassTag](array: Array[T], minLength: Int): Array[T] = {
+		val l = array.length
+		grow(array, Math.max(minLength, l + l >> 1))
+	}
 }
