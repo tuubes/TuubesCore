@@ -38,7 +38,7 @@ final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int,
 		val id: Int =
 			if (recycleCount == 0) {
 				if (elements.length < elementCount) {
-					elements = grow(elements, elementCount)
+					elements = growAmortize(elements, elementCount)
 				}
 				elementCount
 			} else {
@@ -80,7 +80,7 @@ final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int,
 		elementCount -= 1
 		recycleCount += 1
 		if (idsToRecycle.length < recycleCount) {
-			idsToRecycle = grow(idsToRecycle, recycleCount)
+			idsToRecycle = growAmortize(idsToRecycle, recycleCount)
 		}
 		idsToRecycle(recycleCount - 1) = id
 		elements(id) = null
@@ -94,6 +94,7 @@ final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int,
 		elements(id) = element
 	}
 
+	/*
 	private def grow[T: ClassTag](array: Array[T], minLength: Int): Array[T] = {
 		val length = array.length
 		val newLength = Math.min(minLength, length + length >> 1)
@@ -105,6 +106,7 @@ final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int,
 		System.arraycopy(array, 0, newArray, 0, Math.min(array.length, newLength))
 		newArray
 	}
+	*/
 
 	override def iterator: Iterator[(Int, A)] = new Iterator[(Int, A)] {
 		// Iterates over (key,elem)
@@ -157,10 +159,10 @@ final class RecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapacity: Int,
 			while (lastUsedId >= 0 && (elements(lastUsedId) eq null)) {
 				lastUsedId += 1
 			}
-			elements = copyOf(elements, lastUsedId)
+			elements = shrink(elements, lastUsedId)
 		}
 		if (recycleCount < idsToRecycle.length) {
-			idsToRecycle = copyOf(idsToRecycle, recycleCount)
+			idsToRecycle = shrink(idsToRecycle, recycleCount)
 		}
 	}
 }

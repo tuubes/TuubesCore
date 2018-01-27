@@ -30,7 +30,7 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapa
 	private[this] var elementCount = 0
 
 	/** Contains the IDs that have been removed and can be recycled */
-	private[this] var idsToRecycle: Array[Int] = new Array[Int](initialCapacity/2)
+	private[this] var idsToRecycle: Array[Int] = new Array[Int](initialCapacity / 2)
 
 	/** The number of IDs to recycle */
 	private[this] var recycleCount = 0
@@ -44,7 +44,7 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapa
 			val id: Int =
 				if (recycleCount == 0) {
 					if (elems.length < elementCount) {
-						elems = grow(elems, elementCount)
+						elems = growAmortize(elems, elementCount)
 					}
 					elementCount
 				} else {
@@ -97,8 +97,7 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef : ClassTag](initialCapa
 		elementCount -= 1
 		recycleCount += 1
 		if (idsToRecycle.length < recycleCount) {
-			val newLength = Math.min(recycleCount, idsToRecycle.length + (idsToRecycle.length >> 1))
-			idsToRecycle = grow(idsToRecycle, newLength)
+			idsToRecycle = growAmortize(idsToRecycle, recycleCount)
 		}
 		idsToRecycle(recycleCount - 1) = id
 		elems(id) = null
