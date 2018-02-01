@@ -1,7 +1,6 @@
 package org.tuubes.core.blocks
 
 import com.electronwill.utils.Vec3i
-import org.tuubes.block.BlockType
 import org.tuubes.core.engine.{Actor, ActorMessage}
 
 /**

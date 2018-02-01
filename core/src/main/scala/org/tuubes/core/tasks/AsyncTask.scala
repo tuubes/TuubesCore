@@ -613,7 +613,7 @@ object AsyncTask {
 
 	/** Optimized method that recursively marks the given tasks as ROOT_SUBMITTED. */
 	@tailrec
-	private[runtime]
+	private[tasks]
 	def markRootSubmitted(tasks: TraversableOnce[AsyncTask[_, _]]): Unit = {
 		val subTasks = new ArrayBuffer[AsyncTask[_, _]]
 		for (task <- tasks) {
@@ -623,7 +623,7 @@ object AsyncTask {
 		markRootSubmitted(subTasks)
 	}
 
-	private[runtime]
+	private[tasks]
 	def successConvergenceN[A](action: AsyncTask[Try[VArr[A]], _ <: Any], count: Int): A => Unit = {
 		// Counts the number of successes
 		val successCounter = new AtomicInteger()
@@ -645,7 +645,7 @@ object AsyncTask {
 		}
 	}
 
-	private[runtime]
+	private[tasks]
 	def successConvergence1[A](action: AsyncTask[Try[A], A]): A => Unit = {
 		// Becomes true when the first task is completed:
 		val completed = new AtomicBoolean()
@@ -658,7 +658,7 @@ object AsyncTask {
 		}
 	}
 
-	private[runtime]
+	private[tasks]
 	def failureConvergenceN[A](action: AsyncTask[Try[VArr[A]], _ <: Any],
 							   failureTolerance: Int): (Any, Throwable) => Unit = {
 		// Counts the number of tolered failures before the `action` fails
@@ -673,7 +673,7 @@ object AsyncTask {
 		}
 	}
 
-	private[runtime]
+	private[tasks]
 	def failureConvergence1[A](action: AsyncTask[Try[A], A],
 							   failureTolerance: Int): (Any, Throwable) => Unit = {
 		// Counts the number of tolered failures before the `action` fails

@@ -1,6 +1,5 @@
 package org.tuubes.core.blocks
 
-import org.tuubes.block.BlockType
 import org.tuubes.core.engine.{ListenKey, ValueListener}
 
 /**
