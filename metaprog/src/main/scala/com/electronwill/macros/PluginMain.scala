@@ -7,7 +7,7 @@ import scala.reflect.macros.whitebox
 
 /**
  * Generates a companion object of type PluginInfosCompanion with getters for the plugin's
- * informations: name, version, requiredDependencies, optionalDependencies.
+ * informations: name, version, requiredDeps, optionalDeps.
  * <p>
  * This companion is required to load the plugins in the correct order without problems. It is
  * not correct to create an instance of the plugin and then get the informations, because the
@@ -21,7 +21,7 @@ class PluginMain extends StaticAnnotation {
 }
 
 object PluginMain {
-	final val Values = Seq("name", "version", "requiredDependencies", "optionalDependencies")
+	final val Values = Seq("name", "version", "requiredDeps", "optionalDeps")
 
 	def impl(c: whitebox.Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
 		import c.universe._
@@ -30,8 +30,9 @@ object PluginMain {
 		def createResult(cls: ClassDef, optionalCompanion: Option[ModuleDef]): c.Expr[Any] = {
 			val q"class ${clsName: TypeName} extends {..$e} with ..$clsParents {..$clsBody}" = cls
 			val (newClsBody, getters) = extractValues(clsName, clsBody.asInstanceOf[Seq[Tree]], Values: _*)
-			/* If the companion exists, adds the getters to it. Otherwise, create it with the
-			getters. */
+			/* If the companion exists, adds the getters to it.
+			   Otherwise, creates it with the getters.
+			   Also, ensures that the companion inherits from PluginInfosCompanion */
 			val companion = optionalCompanion.map { comp =>
 				val q"object $obj extends {..$e} with ..$parents { ..$companionBody }" = comp
 				val newParents = ensureImplementPIC(parents.asInstanceOf[Seq[Tree]])
@@ -54,9 +55,9 @@ object PluginMain {
 		def ensureImplementPIC(parents: Seq[Tree]): Seq[Tree] = {
 			if (parents.exists(p => p.isInstanceOf[Ident]
 				&& p.asInstanceOf[Ident].name.decodedName == picTypeName)) {
-				parents
+				parents // PluginInfosCompanion is a parent class
 			} else {
-				parents :+ Ident(picTypeName)
+				parents :+ Ident(picTypeName) // Adds PluginInfosCompanion as a parent class
 			}
 		}
 
