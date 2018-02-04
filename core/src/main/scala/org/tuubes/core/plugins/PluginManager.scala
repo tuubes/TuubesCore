@@ -21,15 +21,3 @@ trait PluginManager[P <: Plugin] extends Iterable[P] {
 
 	override def iterator: Iterator[P] = plugins.valuesIterator
 }
-
-object PluginManager {
-	/**
-	 * @return the PluginManager for the given world
-	 */
-	def apply(w: World): PluginManager[Plugin] = w.pluginManager
-
-	/**
-	 * @return the global plugin system
-	 */
-	def global: PluginManager[Plugin] = GlobalPluginSystem
-}

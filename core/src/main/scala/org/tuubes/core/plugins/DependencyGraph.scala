@@ -6,9 +6,9 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * @author TheElectronWill
  */
-final class DependencyGraph {
+final class DependencyGraph(e: mutable.Buffer[String] = new ArrayBuffer[String]) {
 	/** The errors that occured during build or resolve */
-	private[this] val errors = new ArrayBuffer[String]
+	private[this] val errors = e
 
 	/** The registered nodes */
 	private[this] val dataMap = new mutable.HashMap[String, Node] // node.data.name -> node
@@ -27,13 +27,15 @@ final class DependencyGraph {
 					false
 			}
 		}
+
 		def checkDependency(node: Node, dep: String, optional: Boolean): Unit = {
 			if (!node.isValid) {
 				return
 			}
 			val req = DependencyRequirement(dep, optional)
 			dataMap.get(req.name) match {
-				case Some(providedNode) if providedNode.isValid && isCompatible(providedNode, req, dep) =>
+				case Some(providedNode) if providedNode
+										   .isValid && isCompatible(providedNode, req, dep) =>
 					link(node, providedNode, optional)
 				case Some(providedNode) if providedNode.isValid =>
 					errors += s"Plugin '${node.data.name}' requires '$dep' but the available " +
@@ -46,6 +48,7 @@ final class DependencyGraph {
 					}
 			}
 		}
+
 		for ((_, node) <- dataMap; data = node.data
 			 if data.requiredDeps.nonEmpty || data.optionalDeps.nonEmpty) {
 			data.requiredDeps.foreach(dep => checkDependency(node, dep, optional = false))
@@ -163,94 +166,91 @@ final class DependencyGraph {
 		}
 		node.softDependents.foreach(_.softDependencies -= node)
 	}
-
-	/** A Node in the graph. Each node is linked to its dependencies and dependents */
-	private[plugin] final class Node(val data: PluginInfos) {
-		/** The nodes that this node depends on */
-		val hardDependencies = new ArrayBuffer[Node]
-
-		/** The nodes that this node "softly" depends on, that is, this node can work without
-		 * them. */
-		val softDependencies = new ArrayBuffer[Node]
-
-		/** The nodes that depend on this node */
-		val hardDependents = new ArrayBuffer[Node]
-
-		/** The nodes that "softly" depend on this node, that is, this node isn't strictly
-		 * required for them to work. */
-		val softDependents = new ArrayBuffer[Node]
-
-		// Hard and soft dependents need to be separated, otherwise an invalidated dependency
-		// would prevent its soft dependents to load.
-
-		/** The dependencies that has been resolved */
-		val resolvedDependencies = new ArrayBuffer[Node]
-
-		/** The ClassLoader for the plugin (without its dependencies) */
-		val singleClassLoader: OpenURLClassLoader = {
-			data.urlClassLoader
-		}
-
-		/** The ClassLoader for the plugin and its dependencies */
-		lazy val fullClassLoader: ClassLoader = {
-			if (resolvedDependencies.isEmpty) {
-				singleClassLoader
-			} else {
-				/* Builds the dependency chain: each dependency is associated with a number that
-				   shows how far it is from this node (in the graph). Only the farthest occurence
-				   of each dependency (ie the most negative number) is kept.
-
-				   The more a given node is far, the more it has dependents nodes between itself
-				   and this node, and the sooner it must be loaded. */
-				val dependencyMap = new mutable.HashMap[Node, Int]
-				buildDependencyChain(dependencyMap, 0)
-
-				/* Gets the nodes, sorted by ascending distance number. Because the farthest node
-				   is associated with the most negative number, sortedDeps is in the right order
-				   to build the ClassLoader chain with a for loop. */
-				val sortedDeps = dependencyMap.toList.sortBy(_._2).map(_._1) //Keys sorted by value
-				var parentLoader: ClassLoader = classOf[DependencyGraph].getClassLoader
-				for (dependency <- sortedDeps) {
-					parentLoader = new DelegateClassLoader(dependency.singleClassLoader, parentLoader)
-				}
-				new DelegateClassLoader(singleClassLoader, parentLoader)
-			}
-		}
-
-		/** Recursively builds the dependency chain of this node, without duplicates */
-		private def buildDependencyChain(map: mutable.Map[Node, Int], startPos: Int): Int = {
-			var pos = startPos
-			for (dependency <- resolvedDependencies) {
-				map.put(dependency, pos)
-				pos = dependency.buildDependencyChain(map, pos - 1)
-			}
-			pos
-		}
-
-		/** False if the node has unresolvable dependencies */
-		def isValid: Boolean = valid
-		def markInvalid(): Unit = valid = false
-		private[this] var valid = true
-
-		/** True if the node has been checked for circular dependencies */
-		def isChecked: Boolean = checked
-		def markChecked(): Unit = checked = true
-		private[this] var checked = false
-
-		override def toString: String = s"Node(${data.name}, " +
-			s"hardDependencies = ${hardDependencies.map(_.data.name)}, " +
-			s"softDependencies = ${softDependencies.map(_.data.name)}, " +
-			s"hardDependents = ${hardDependents.map(_.data.name)}, " +
-			s"softDependents = ${softDependents.map(_.data.name)})"
-	}
-
-	/** A resolved items: all its dependencies are available. */
-	final class Resolved(val infos: PluginInfos, val loader: ClassLoader) {
-		def this(node: Node) = this(node.data, node.fullClassLoader)
-
-		override def toString = s"Resolved($infos, $loader)"
-	}
-
-	/** Contains the result of `#resolve()` */
-	final class Solution(val resolvedItems: Seq[Resolved], val errors: Seq[String]) {}
 }
+/** A Node in the graph. Each node is linked to its dependencies and dependents */
+final class Node(val data: PluginInfos) {
+	/** The nodes that this node depends on */
+	val hardDependencies = new ArrayBuffer[Node]
+
+	/** The nodes that this node "softly" depends on, that is, this node can work without
+	 * them. */
+	val softDependencies = new ArrayBuffer[Node]
+
+	/** The nodes that depend on this node */
+	val hardDependents = new ArrayBuffer[Node]
+
+	/** The nodes that "softly" depend on this node, that is, this node isn't strictly
+	 * required for them to work. */
+	val softDependents = new ArrayBuffer[Node]
+
+	// Hard and soft dependents need to be separated, otherwise an invalidated dependency
+	// would prevent its soft dependents to load.
+
+	/** The dependencies that has been resolved */
+	val resolvedDependencies = new ArrayBuffer[Node]
+
+	/** The ClassLoader for the plugin (without its dependencies) */
+	val singleClassLoader: OpenURLClassLoader = {
+		data.urlClassLoader
+	}
+
+	/** The ClassLoader for the plugin and its dependencies */
+	lazy val fullClassLoader: ClassLoader = {
+		if (resolvedDependencies.isEmpty) {
+			singleClassLoader
+		} else {
+			/* Builds the dependency chain: each dependency is associated with a number that
+			   shows how far it is from this node (in the graph). Only the farthest occurence
+			   of each dependency (ie the most negative number) is kept.
+
+			   The farther a given node is, the more it has dependents nodes between itself
+			   and this node, and the sooner it must be loaded. */
+			val dependencyMap = new mutable.HashMap[Node, Int]
+			buildDependencyChain(dependencyMap, 0)
+
+			/* Gets the nodes, sorted by ascending distance number. Because the farthest node
+			   is associated with the most negative number, sortedDeps is in the right order
+			   to build the ClassLoader chain with a for loop. */
+			val sortedDeps = dependencyMap.toList.sortBy(_._2).map(_._1) //Keys sorted by value
+			var parentLoader: ClassLoader = classOf[DependencyGraph].getClassLoader
+			for (dependency <- sortedDeps) {
+				parentLoader = new DelegateClassLoader(dependency.singleClassLoader, parentLoader)
+			}
+			new DelegateClassLoader(singleClassLoader, parentLoader)
+		}
+	}
+
+	/** Recursively builds the dependency chain of this node, without duplicates */
+	private def buildDependencyChain(map: mutable.Map[Node, Int], startPos: Int): Int = {
+		var pos = startPos
+		for (dependency <- resolvedDependencies) {
+			map.put(dependency, pos)
+			pos = dependency.buildDependencyChain(map, pos - 1)
+		}
+		pos
+	}
+
+	/** False if the node has unresolvable dependencies */
+	def isValid: Boolean = valid
+	def markInvalid(): Unit = valid = false
+	private[this] var valid = true
+
+	/** True if the node has been checked for circular dependencies */
+	def isChecked: Boolean = checked
+	def markChecked(): Unit = checked = true
+	private[this] var checked = false
+
+	override def toString: String = s"Node(${data.name}, " +
+		s"hardDependencies = ${hardDependencies.map(_.data.name)}, " +
+		s"softDependencies = ${softDependencies.map(_.data.name)}, " +
+		s"hardDependents = ${hardDependents.map(_.data.name)}, " +
+		s"softDependents = ${softDependents.map(_.data.name)})"
+}
+
+/** A resolved items: all its dependencies are available. */
+final case class Resolved(node: Node, fullLoader: ClassLoader) {
+	def this(node: Node) = this(node, node.fullClassLoader)
+}
+
+/** Contains the result of `#resolve()` */
+final class Solution(val resolvedItems: Seq[Resolved], val errors: Seq[String]) {}
