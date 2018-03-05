@@ -24,6 +24,21 @@ For more information please read [the contributing guidelines](CONTRIBUTING.md).
 - **core**: most of the source code
 - **metaprog**: scala macros used by the core
 
+## Docker
+
+We supply a basic docker image, simply clone and cd to this repo and perform in your terminal :
+```bash
+$> docker build -t tuubes-minecraft .
+$> docker run -P tuubes-minecraft
+```
+-P publish all the exposed ports (default 25565), you can supply your own port with ``-p 25564:25565``.
+
+The default jvm properties are ``-Xmx1024M -Xms1024M``, you can also change them with the -e tag :
+
+```bash
+$> docker run -P -e JVM_OPTS='-Xmx1024M -Xms1024M' tuubes-minecraft
+```
+
 ## Current state
 * Next milestone: [Awesome Architecture](https://github.com/tuubes/TuubesCore/milestone/3)
 * Ongoing github project: [Foundations](https://github.com/tuubes/TuubesCore/projects/4)
