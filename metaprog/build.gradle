@@ -5,9 +5,8 @@ configurations {
 }
 
 dependencies {
-	compile 'org.scala-lang:scala-reflect:2.12.4'
-	scalaCompilerPlugin "org.scalamacros:paradise_2.12.4:2.1.1"
-	testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0'
+	compile 'org.scala-lang:scala-reflect:2.12.5'
+	scalaCompilerPlugin "org.scalamacros:paradise_2.12.5:2.1.1"
 }
 
 tasks.withType(ScalaCompile) {
