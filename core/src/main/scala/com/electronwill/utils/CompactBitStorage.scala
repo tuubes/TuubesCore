@@ -5,7 +5,7 @@ package com.electronwill.utils
  */
 object CompactStorage {
 	def apply(bitsPerValue: Int, size: Int): CompactStorage = {
-		assert(bitsPerValue > 0 && bitsPerValue < 32, "it is required that 0 < bitsPerValue < 32")
+		require(bitsPerValue > 0 && bitsPerValue < 32, "it is required that 0 < bitsPerValue < 32")
 		val byteSize = Math.ceil(bitsPerValue * size / 8).toInt
 		bitsPerValue match {
 			case 4 => new CompactStorage4(size, byteSize)
