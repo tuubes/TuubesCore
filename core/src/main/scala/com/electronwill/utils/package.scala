@@ -4,8 +4,10 @@ package com.electronwill
  * @author TheElectronWill
  */
 package object utils {
-	private[utils] final val Pi2: Float = math.Pi.toFloat * 2f
-	private[utils] final val PiHalf: Float = math.Pi.toFloat * 0.5f
+	final val Pi2: Float = math.Pi.toFloat * 2f
+	final val PiHalf: Float = math.Pi.toFloat * 0.5f
+	final val InvPi2: Float = 1f / Pi2
+	final val InvPiHalf: Float = 1f / PiHalf
 
 	private[utils] def normalize(a: Float, min: Float, max: Float): Float = {
 		var result = a
