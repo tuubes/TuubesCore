@@ -1,10 +1,10 @@
 version = '0.6-alpha'
-description "The basic bricks on which everything is built"
+description = 'The basic bricks on which everything is built'
 
 // Dependencies
 dependencies {
 	compile 'com.github.TheElectronWill:Night-Config:3.0.4'
-	compile 'com.github.TheElectronWill:Niol:1.3'
+	compile 'com.github.TheElectronWill:Niol:1.4'
 	compile 'com.typesafe.scala-logging:scala-logging_2.12:3.8.0'
 	compile 'com.github.pathikrit:better-files_2.12:3.4.0'
 	compile 'org.fusesource.jansi:jansi:1.17'
