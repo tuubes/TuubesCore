@@ -6,7 +6,7 @@ package org.tuubes.core
  *
  * @author TheElectronWill
  */
-abstract class Type[T <: Type[T]] protected(val uniqueName: String) {
+abstract class Type[T <: Type[T]](val uniqueName: String, reg: TypeRegistry[T]) {
 	/**
 	 * Checks if this type is the same as or a variant of some other type.
 	 * <p>
@@ -27,5 +27,5 @@ abstract class Type[T <: Type[T]] protected(val uniqueName: String) {
 	 *
 	 * @return the type's internal unique id.
 	 */
-	private[tuubes] val internalId: Int
+	private[tuubes] val internalId: Int = reg.register(this.asInstanceOf[T])
 }
