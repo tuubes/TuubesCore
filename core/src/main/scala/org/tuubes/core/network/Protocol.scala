@@ -17,6 +17,16 @@ trait Protocol {
 	//TODO more methods
 
 	/**
+	 * Registers a packet to this protocol
+	 */
+	def registerPacket(packet: PacketObj): Unit
+
+	/**
+	 * Reads a packet from the given NiolInput.
+	 */
+	def readPacket(in: NiolInput): Packet
+
+	/**
 	 * A bijection of block ids.
 	 * [internal -> external] (direct) and [external -> internal] (inverse).
 	 */
