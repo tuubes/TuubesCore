@@ -10,7 +10,7 @@ import com.electronwill.collections.RecyclingIndex
 sealed abstract class Property[A](private[tuubes] val `type`: PropertyType[A],
 								  protected[this] var value: A,
 								  newlyAdded: Boolean,
-								  protected val listeners: RecyclingIndex[ValueListener[A]]) {
+								  private[tuubes] val listeners: RecyclingIndex[ValueListener[A]]) {
 	protected[this] var changed = newlyAdded
 
 	/**

@@ -8,6 +8,6 @@ import org.tuubes.core.engine.{Actor, ActorMessage}
  */
 trait Area extends Actor {
 	override protected def filter(msg: ActorMessage): Boolean = {
-		super.filter(msg) && (msg.isInstanceOf[AreaMessage] || msg.isInstanceOf[EngineMessage])
+		msg.isInstanceOf[AreaMessage] || msg.isInstanceOf[EngineMessage]
 	}
 }

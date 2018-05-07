@@ -1,4 +1,4 @@
-package org.tuubes
+package org.tuubes.core
 
 import better.files.File
 import org.slf4j.LoggerFactory

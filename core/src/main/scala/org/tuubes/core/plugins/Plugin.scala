@@ -4,7 +4,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 import better.files.File
 import com.typesafe.scalalogging.Logger
-import org.tuubes.core
+import org.tuubes.core.TuubesServer
 import org.tuubes.core.engine.World
 
 import scala.collection.JavaConverters._
@@ -20,7 +20,7 @@ trait Plugin {
 	val version: String
 	val requiredDeps: Iterable[String] = Nil
 	val optionalDeps: Iterable[String] = Nil
-	final lazy val directory: File = core.DirPlugins / name
+	final lazy val directory: File = TuubesServer.DirPlugins / name
 	final lazy val logger = Logger(name)
 
 	/**

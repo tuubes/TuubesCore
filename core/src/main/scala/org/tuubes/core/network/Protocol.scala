@@ -1,6 +1,8 @@
 package org.tuubes.core.network
 
 import com.electronwill.utils.IntBijection
+import com.electronwill.niol.NiolInput
+
 import org.tuubes.core.blocks.BlockType
 import org.tuubes.core.engine.GameObject
 import org.tuubes.core.entities.EntityType
@@ -19,7 +21,7 @@ trait Protocol {
 	/**
 	 * Registers a packet to this protocol
 	 */
-	def registerPacket(packet: PacketObj): Unit
+	def registerPacket(packet: PacketObj[_]): Unit
 
 	/**
 	 * Reads a packet from the given NiolInput.

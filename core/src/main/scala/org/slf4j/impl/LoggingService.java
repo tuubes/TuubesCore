@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import org.tuubes.messaging.Colors;
-import org.tuubes.server.PhotonServer;
+import org.tuubes.core.TuubesServer;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
@@ -32,7 +32,7 @@ public final class LoggingService {
 			.toFormatter();
 
 	private static final String ANSI_RESET = "\u001B[0m";// ansi code for resetting the color of the console
-	private static final File LOGS_DIR = PhotonServer.DirLogs().toJava();
+	private static final File LOGS_DIR = TuubesServer.DirLogs().toJava();
 
 	static {
 		if (!LOGS_DIR.isDirectory()) {

@@ -1,15 +1,15 @@
 package com.electronwill.collections
 
-import java.util.concurrent.atomic.AtomicReference
-
 import org.junit.jupiter.api.Assertions._
 import org.junit.jupiter.api.Test
+
+import java.util.concurrent.atomic.AtomicReference
+import scala.reflect.ClassTag
 
 /**
  * @author TheElectronWill
  */
 class TestBags {
-
 	@Test
 	def testSimpleBag(): Unit = {
 		test(new SimpleBag[String])
@@ -41,9 +41,9 @@ class TestBags {
 		assert(bag.isEmpty)
 	}
 
-	private def bagOf[E](elements: E*): Bag[E] = {
+	private def bagOf[E >: Null : ClassTag](elements: E*): Bag[E] = {
 		val bag = new SimpleBag[E]
-		elements.foreach(bag.add)
+		elements.foreach(bag.+=)
 		bag
 	}
 

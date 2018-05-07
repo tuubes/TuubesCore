@@ -6,7 +6,7 @@ package org.tuubes.core
  *
  * @author TheElectronWill
  */
-abstract class Type[T <: Type[T]](val uniqueName: String, reg: TypeRegistry[T]) {
+abstract class Type[T >: Null <: Type[T]](val uniqueName: String, reg: TypeRegistry[T]) {
 	/**
 	 * Checks if this type is the same as or a variant of some other type.
 	 * <p>
