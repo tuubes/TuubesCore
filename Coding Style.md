@@ -5,7 +5,7 @@
 - Indentation: 2 spaces
 
 ## Scala
-Tuubes uses [scalafmt](https://scalameta.org/scalafmt/) to check and format the code. We mostly follow the [official Scala style guide](https://scalameta.org/scalafmt/).
+Tuubes uses [scalafmt](https://scalameta.org/scalafmt/) to check and format the code. We mostly follow the [official Scala style guide](https://docs.scala-lang.org/style/).
 
 To run **scalafmt**, open a Terminal in the `TuubesCore` directory and run:
 1. `./gradlew checkScalafmt` to check the code
