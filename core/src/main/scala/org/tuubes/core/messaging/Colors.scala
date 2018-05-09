@@ -4,7 +4,8 @@ package org.tuubes.messaging
  * @author TheElectronWill
  */
 object Colors extends Enumeration {
-  final case class V protected(name: String, code: String, termCode: String) extends super.Val(name) {}
+  final case class V protected (name: String, code: String, termCode: String)
+      extends super.Val(name) {}
   type Color = V
   val Black = V("black", "§0", "\u001B[2m\u001B[30m")
   val Blue = V("blue", "§9", "\u001B[34m")

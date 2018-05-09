@@ -10,14 +10,15 @@ import scala.language.implicitConversions
  * @author TheElectronWill
  */
 trait ThrowableFunction2[-T1, -T2, +R] {
-	/**
+
+  /**
 	 * @throws Throwable if an error occurs
 	 */
-	@throws[Throwable]
-	def apply(v1: T1, v2: T2): R
+  @throws[Throwable]
+  def apply(v1: T1, v2: T2): R
 }
 object ThrowableFunction2 {
-	implicit def fromFunction2[T1, T2, R](f: (T1, T2) => R): ThrowableFunction2[T1, T2, R] = f.apply _
+  implicit def fromFunction2[T1, T2, R](f: (T1, T2) => R): ThrowableFunction2[T1, T2, R] = f.apply _
 
-	implicit def toFunction2[T1, T2, R](tf: ThrowableFunction2[T1, T2, R]): (T1, T2) => R = tf.apply
+  implicit def toFunction2[T1, T2, R](tf: ThrowableFunction2[T1, T2, R]): (T1, T2) => R = tf.apply
 }

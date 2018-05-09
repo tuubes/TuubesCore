@@ -4,6 +4,6 @@ package org.tuubes.core.engine
  * @author TheElectronWill
  */
 trait Registration[A] {
-	def cancel(): Unit
-	def isValid: Boolean
+  def cancel(): Unit
+  def isValid: Boolean
 }

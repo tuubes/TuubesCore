@@ -8,13 +8,13 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author TheElectronWill
  */
 final class IndexRegistration(private[this] val i: Index[_], private[this] val id: Int) {
-	private[this] val valid = new AtomicBoolean(true)
+  private[this] val valid = new AtomicBoolean(true)
 
-	def cancel(): Unit = {
-		if (valid.compareAndSet(true, false)) {
-			i -= id
-		}
-	}
+  def cancel(): Unit = {
+    if (valid.compareAndSet(true, false)) {
+      i -= id
+    }
+  }
 
-	def isValid: Boolean = valid.get()
+  def isValid: Boolean = valid.get()
 }

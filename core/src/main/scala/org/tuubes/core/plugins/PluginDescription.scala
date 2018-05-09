@@ -9,8 +9,8 @@ package org.tuubes.core.plugins
  * @author TheElectronWill
  */
 trait PluginDescription {
-	val name: String
-	val version: String
-	val optionalDeps: Seq[String]
-	val requiredDeps: Seq[String]
+  val name: String
+  val version: String
+  val optionalDeps: Seq[String]
+  val requiredDeps: Seq[String]
 }

@@ -9,14 +9,14 @@ import scala.collection.mutable
  * @author TheElectronWill
  */
 trait Bag[A] extends mutable.Iterable[A] with Compactable with PartialFunction[Int, A] {
-	def apply(i: Int): A
-	def remove(i: Int): Unit
-	def -=(elem: A): this.type
-	def +=(elem: A): this.type
-	def clear(): Unit
-	def contains(elem: A): Boolean = find(_ == elem).isDefined
-	def iterator: MutableIterator[A]
+  def apply(i: Int): A
+  def remove(i: Int): Unit
+  def -=(elem: A): this.type
+  def +=(elem: A): this.type
+  def clear(): Unit
+  def contains(elem: A): Boolean = find(_ == elem).isDefined
+  def iterator: MutableIterator[A]
 
-	override final def hasDefiniteSize = true
-	override final def isDefinedAt(i: Int): Boolean = i < size && i >= 0
+  override final def hasDefiniteSize = true
+  override final def isDefinedAt(i: Int): Boolean = i < size && i >= 0
 }

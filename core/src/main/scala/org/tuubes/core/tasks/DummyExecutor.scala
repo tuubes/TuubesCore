@@ -8,5 +8,5 @@ import java.util.concurrent.Executor
  * @author TheElectronWill
  */
 object DummyExecutor extends Executor {
-	override def execute(command: Runnable): Unit = command.run()
+  override def execute(command: Runnable): Unit = command.run()
 }

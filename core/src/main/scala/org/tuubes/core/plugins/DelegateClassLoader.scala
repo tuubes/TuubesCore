@@ -6,9 +6,9 @@ package org.tuubes.core.plugins
  *
  * @author TheElectronWill
  */
-final class DelegateClassLoader(val delegate: OpenURLClassLoader, val parent: ClassLoader) extends
-	ClassLoader(parent) {
-	override def findClass(name: String): Class[_] = delegate.findClass(name)
+final class DelegateClassLoader(val delegate: OpenURLClassLoader, val parent: ClassLoader)
+    extends ClassLoader(parent) {
+  override def findClass(name: String): Class[_] = delegate.findClass(name)
 
-	override def toString = s"DelegateCL($delegate) <- $parent"
+  override def toString = s"DelegateCL($delegate) <- $parent"
 }

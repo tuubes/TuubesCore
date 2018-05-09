@@ -9,31 +9,31 @@ import org.tuubes.core.plugins.{Plugin, PluginDescription}
  * and values come from the parent trait.
  */
 class ScalaPlugin extends Plugin {
-	override val description = ScalaPlugin
+  override val description = ScalaPlugin
 
-	override def onLoad() = {
-		logger.info("Plugin loaded!")
-	}
+  override def onLoad() = {
+    logger.info("Plugin loaded!")
+  }
 
-	override def onUnload() = {
-		logger.info("Plugin unloaded!")
-	}
+  override def onUnload() = {
+    logger.info("Plugin unloaded!")
+  }
 
-	override def onEnable(world: World) = {
-		logger.info(s"Plugin enabled in world $world")
-	}
+  override def onEnable(world: World) = {
+    logger.info(s"Plugin enabled in world $world")
+  }
 
-	override def onDisable(world: World) = {
-		logger.info(s"Plugin disabled in world $world")
-	}
+  override def onDisable(world: World) = {
+    logger.info(s"Plugin disabled in world $world")
+  }
 }
 
 /**
  * Companion object that extends PluginDescription. This is necessary for Tuubes to load the plugin.
  */
 object ScalaPlugin extends PluginDescription {
-	override val name = "ElectronWill's Example"
-	override val version = "1.0.0"
-	override val optionalDeps = Seq("OtherPluginA", "OtherPluginB")
-	override val requiredDeps = Nil
+  override val name = "ElectronWill's Example"
+  override val version = "1.0.0"
+  override val optionalDeps = Seq("OtherPluginA", "OtherPluginB")
+  override val requiredDeps = Nil
 }

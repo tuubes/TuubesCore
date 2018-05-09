@@ -5,6 +5,4 @@ package org.tuubes.core.engine
  *
  * @author TheElectronWill
  */
-trait ActorMessage {
-
-}
+trait ActorMessage {}
