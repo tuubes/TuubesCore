@@ -46,7 +46,9 @@ object PluginInfos {
 			new PluginInfos(companion, pluginClassName, classLoader, file)
 		} catch {
 			case e: Exception =>
-				throw new PluginLoadingException("Unable to load the PluginInfosCompanion", e)
+				throw new PluginLoadingException(
+					"Unable to load the plugin description, please check that the plugin's main" +
+					"class has a companion object extending PluginDescription", e)
 		}
 	}
 
@@ -73,6 +75,7 @@ object PluginInfos {
 				}
 			}
 		}
-		Failure(new PluginLoadingException("No plugin class found"))
+		val msg = "No plugin class found, please check that the jar file contains one class that extends Plugin"
+		Failure(new PluginLoadingException(msg))
 	}
 }
