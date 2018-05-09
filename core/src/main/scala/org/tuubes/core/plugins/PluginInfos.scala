@@ -12,19 +12,20 @@ import scala.util.{Failure, Success, Try}
  */
 final class PluginInfos(val name: String, val version: String, val requiredDeps: Seq[String],
 						val optionalDeps: Seq[String], val pluginClassName: String,
-						val urlClassLoader: OpenURLClassLoader) {
-	def this(c: PluginInfosCompanion, className: String, cl: OpenURLClassLoader) = {
-		this(c.Name, c.Version, c.RequiredDeps, c.OptionalDeps, className, cl)
+						val urlClassLoader: OpenURLClassLoader, val file: File) {
+	def this(c: PluginInfosCompanion, className: String, cl: OpenURLClassLoader, f: File) = {
+		this(c.Name, c.Version, c.RequiredDeps, c.OptionalDeps, className, cl, f)
 	}
 
-	override def toString =
+	override def toString: String =
 		s"PluginInfos(" +
 		s"name=$name, " +
 		s"version=$version, " +
 		s"requiredDeps=$requiredDeps, " +
 		s"optionalDeps=$optionalDeps, " +
 		s"pluginClassName=$pluginClassName, " +
-		s"urlClassLoader=$urlClassLoader)"
+		s"urlClassLoader=$urlClassLoader," +
+		s"file=$file)"
 }
 
 object PluginInfos {
@@ -32,17 +33,17 @@ object PluginInfos {
 		val url = file.url
 		val classLoader = new OpenURLClassLoader(url, classOf[PluginInfos].getClassLoader)
 		val pluginClass: Try[Class[_ <: Plugin]] = loadPluginClass(file, classLoader)
-		pluginClass.map(extractInfos(_, classLoader))
+		pluginClass.map(extractInfos(_, classLoader, file))
 	}
 
-	private def extractInfos(pluginClass: Class[_ <: Plugin], classLoader: OpenURLClassLoader): PluginInfos = {
+	private def extractInfos(pluginClass: Class[_ <: Plugin], classLoader: OpenURLClassLoader, file: File): PluginInfos = {
 		// Gets the plugin's informations from its companion object:
 		try {
 			val pluginClassName = pluginClass.getCanonicalName
 			val companionClass = classLoader.findClass(pluginClassName + "$")
 			val companionField = companionClass.getField("$MODULE")
 			val companion = companionField.get(null).asInstanceOf[PluginInfosCompanion]
-			new PluginInfos(companion, pluginClassName, classLoader)
+			new PluginInfos(companion, pluginClassName, classLoader, file)
 		} catch {
 			case e: Exception =>
 				throw new PluginLoadingException("Unable to load the PluginInfosCompanion", e)
