@@ -16,23 +16,27 @@ import scala.collection.mutable
  * @author TheElectronWill
  */
 trait Plugin {
-	val name: String
-	val version: String
-	val requiredDeps: Iterable[String] = Nil
-	val optionalDeps: Iterable[String] = Nil
-	final lazy val directory: File = TuubesServer.DirPlugins / name
-	final lazy val logger = Logger(name)
+	/**
+	 * The plugin's description object
+	 */
+	val description: PluginDescription
+	final def name: String = description.name
+	final def version: String = description.version
 
 	/**
 	 * The plugin's state, which follows this cycle:
 	 * LOADED -> onLoad() -> ENABLED -> ... -> onUnload() -> DISABLED
 	 */
-	@volatile private[plugins] final var state = PluginState.LOADED
-
-	/** @return true if the plugin is enabled */
-	def isEnabled: Boolean = (state == PluginState.ENABLED)
+	@volatile
+	private[plugins] final var state = PluginState.LOADED
 
 	private[plugins] final val worldsBuffer: mutable.Buffer[World] = new CopyOnWriteArrayList[World].asScala
+
+	final lazy val directory: File = TuubesServer.DirPlugins / name
+	final lazy val logger = Logger(name)
+
+	/** @return true if the plugin is enabled */
+	def isEnabled: Boolean = state == PluginState.ENABLED
 
 	/** @return the worlds where the plugin is enabled */
 	final def worlds: Iterable[World] = worldsBuffer
