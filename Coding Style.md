@@ -1,22 +1,22 @@
 ## General
 - Encoding: UTF-8
-- Line ending: LF
+- Line ending: LF (Unix)
 - Line length: 100 characters
-- Indentation: with tabs (1 tab should be displayed as 4 spaces)
+- Indentation: 2 spaces
 
-## Spaces
-Put a space where it's useful, ie after a comma, around keywords, etc.
+## Scala
+Tuubes uses [scalafmt](https://scalameta.org/scalafmt/) to check and format the code. We mostly follow the [official Scala style guide](https://scalameta.org/scalafmt/).
 
-- No space when casting: ```(int)value```
-- No trailing space at the end of a line.
+To run **scalafmt**, open a Terminal in the `TuubesCore` directory and run:
+1. `./gradlew checkScalafmt` to check the code
+2. `./gradlew scalafmt` to reformat the code
 
-## Empty lines
-- No empty line at the end of a file.
-- No empty line after the declaration of a class/interface/etc.
+## Java
+Scalafmt doesn't work with Java source files, please format your code carefully, with the [Google's Java style](https://google.github.io/styleguide/javaguide.html).
 
-## Everything else
+## Config files
+- [scalafmt configuration](.scalafmt.conf)
+- [editorconfig file](.editorconfig)
 - [IntelliJ formatter settings](CodingStyle.xml)
-- [Editorconfig file](.editorconfig)
-- Learn from the code that is already there.
-- For Scala code: follow http://docs.scala-lang.org/style/
-- For Java code: follow http://cr.openjdk.java.net/~alundblad/styleguide/index-v6.html
+
+The scalafmt configuration takes over everything else and scalafmt should be the primary formatting tool. The other files are provided to help you but they don't reflect the exact code style.
