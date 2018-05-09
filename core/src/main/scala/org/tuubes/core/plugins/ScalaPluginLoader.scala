@@ -1,6 +1,6 @@
 package org.tuubes.core.plugins
 
-import better.files.File
+import better.files.{File, Files}
 
 import scala.collection.mutable
 import scala.util.control.NonFatal
@@ -17,7 +17,7 @@ final class ScalaPluginLoader extends PluginLoader {
 
 	override def plugin(name: String): Option[Plugin] = loaded.get(name).map(_.plugin)
 
-	override def load(files: File*): Int = {
+	override def load(files: Files): Int = {
 		def parentFailed(dependent: Node, parent: String, errors: mutable.ArrayBuffer[String]): Unit = {
 			dependent.markInvalid()
 			val name = dependent.data.name
@@ -28,13 +28,15 @@ final class ScalaPluginLoader extends PluginLoader {
 		val errors = new mutable.ArrayBuffer[String]
 		val graph = new DependencyGraph(errors)
 		// Inspect the files and detect plugin infos
+		var fileCount = 0
 		for (file: File <- files) {
+			fileCount += 1
 			PluginInfos.inspect(file) match {
 				case Success(infos) => graph.register(infos)
 				case Failure(error) => errors += s"Invalid plugin file '$file' - $error"
 			}
 		}
-		if (errors.length == files.length) {
+		if (errors.length == fileCount) {
 			0 // All the inspections have failed
 		} else {
 			this.synchronized {
