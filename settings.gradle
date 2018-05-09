@@ -1,3 +1,5 @@
 rootProject.name = 'tuubes-core'
 
-include 'core', 'metaprog'
+include 'core'
+include 'metaprog'
+include 'examples'
