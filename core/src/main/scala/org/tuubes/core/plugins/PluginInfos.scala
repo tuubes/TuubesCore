@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 final class PluginInfos(val name: String, val version: String, val requiredDeps: Seq[String],
 						val optionalDeps: Seq[String], val pluginClassName: String,
 						val urlClassLoader: OpenURLClassLoader, val file: File) {
-	def this(c: PluginInfosCompanion, className: String, cl: OpenURLClassLoader, f: File) = {
+	def this(c: PluginDescription, className: String, cl: OpenURLClassLoader, f: File) = {
 		this(c.Name, c.Version, c.RequiredDeps, c.OptionalDeps, className, cl, f)
 	}
 
@@ -42,7 +42,7 @@ object PluginInfos {
 			val pluginClassName = pluginClass.getCanonicalName
 			val companionClass = classLoader.findClass(pluginClassName + "$")
 			val companionField = companionClass.getField("$MODULE")
-			val companion = companionField.get(null).asInstanceOf[PluginInfosCompanion]
+			val companion = companionField.get(null).asInstanceOf[PluginDescription]
 			new PluginInfos(companion, pluginClassName, classLoader, file)
 		} catch {
 			case e: Exception =>
