@@ -39,14 +39,20 @@ final class ArrayMap[@specialized(Int) A: ClassTag](initialCapacity: Int,
   }
 
   override def -=(key: Int): this.type = {
-    doRemove(key)
+    if (key < elements.length) {
+      doRemove(key)
+    }
     this
   }
 
   override def remove(key: Int): Option[A] = {
-    val previousValue = elements(key)
-    doRemove(key)
-    if (nullValue == previousValue) None else Some(previousValue)
+    val previousValue = apply(key)
+    if (previousValue == nullValue) {
+      None
+    } else {
+      doRemove(key)
+      Some(previousValue)
+    }
   }
 
   def -=(key: Int, expectedValue: Int): this.type = {
@@ -55,7 +61,7 @@ final class ArrayMap[@specialized(Int) A: ClassTag](initialCapacity: Int,
   }
 
   def remove(key: Int, expectedValue: Int): Boolean = {
-    val previousValue = elements(key)
+    val previousValue = apply(key)
     if (previousValue == expectedValue) {
       doRemove(key)
       true
@@ -70,12 +76,16 @@ final class ArrayMap[@specialized(Int) A: ClassTag](initialCapacity: Int,
   }
 
   override def get(key: Int): Option[A] = {
-    val v = elements(key)
-    if (nullValue == v) None else Some(v)
+    if (key >= elements.length) {
+      None
+    } else {
+      val v = elements(key)
+      if (nullValue == v) None else Some(v)
+    }
   }
 
   override def apply(key: Int): A = {
-    elements(key)
+    if (key >= elements.length) nullValue else elements(key)
   }
 
   override def iterator: Iterator[(Int, A)] = new Iterator[(Int, A)] {
