@@ -4,6 +4,7 @@ import com.electronwill.niol.NiolOutput
 
 /** A network packet that can be written */
 trait Packet {
-  def id: Int
+  final def id: Int = obj.id
+  def obj: PacketObj[this.type]
   def write(out: NiolOutput): Unit
 }
