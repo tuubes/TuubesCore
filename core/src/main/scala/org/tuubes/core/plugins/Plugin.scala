@@ -4,7 +4,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 import better.files.File
 import com.typesafe.scalalogging.Logger
-import org.tuubes.core.{TuubesServer, World}
+import org.tuubes.core.{TuubesServer, LocalWorld}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -30,8 +30,8 @@ trait Plugin {
   @volatile
   private[plugins] final var state = PluginState.LOADED
 
-  private[plugins] final val worldsBuffer: mutable.Buffer[World] =
-    new CopyOnWriteArrayList[World].asScala
+  private[plugins] final val worldsBuffer: mutable.Buffer[LocalWorld] =
+    new CopyOnWriteArrayList[LocalWorld].asScala
 
   final lazy val directory: File = TuubesServer.DirPlugins / name
   final lazy val logger = Logger(name)
@@ -40,7 +40,7 @@ trait Plugin {
   def isEnabled: Boolean = state == PluginState.ENABLED
 
   /** @return the worlds where the plugin is enabled */
-  final def worlds: Iterable[World] = worldsBuffer
+  final def worlds: Iterable[LocalWorld] = worldsBuffer
 
   /**
 	 * Called just after the plugin is loaded, before it is enabled in the worlds.
@@ -55,10 +55,10 @@ trait Plugin {
   /**
 	 * Called when the plugin is enabled in a world.
 	 */
-  def onEnable(world: World): Unit
+  def onEnable(world: LocalWorld): Unit
 
   /**
 	 * Called when the plugin is disabled in a world.
 	 */
-  def onDisable(world: World): Unit
+  def onDisable(world: LocalWorld): Unit
 }

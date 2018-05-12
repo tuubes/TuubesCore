@@ -1,6 +1,6 @@
 package com.electronwill.examples
 
-import org.tuubes.core.World
+import org.tuubes.core.LocalWorld
 import org.tuubes.core.plugins.{Plugin, PluginDescription}
 
 /**
@@ -19,11 +19,11 @@ class ScalaPlugin extends Plugin {
     logger.info("Plugin unloaded!")
   }
 
-  override def onEnable(world: World) = {
+  override def onEnable(world: LocalWorld) = {
     logger.info(s"Plugin enabled in world $world")
   }
 
-  override def onDisable(world: World) = {
+  override def onDisable(world: LocalWorld) = {
     logger.info(s"Plugin disabled in world $world")
   }
 }

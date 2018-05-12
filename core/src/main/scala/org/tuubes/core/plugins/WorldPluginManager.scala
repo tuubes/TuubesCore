@@ -1,6 +1,6 @@
 package org.tuubes.core.plugins
 
-import org.tuubes.core.World
+import org.tuubes.core.LocalWorld
 
 import scala.collection.mutable
 
@@ -9,7 +9,7 @@ import scala.collection.mutable
  *
  * @param world the managed world
  */
-class WorldPluginManager(val world: World) {
+class WorldPluginManager(val world: LocalWorld) {
   protected val enabled = new mutable.AnyRefMap[String, Plugin]()
 
   def plugins: Iterable[Plugin] = enabled.values
