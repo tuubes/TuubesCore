@@ -21,7 +21,7 @@ trait Protocol[C <: ClientAttach] {
   /**
 	 * Registers a packet to this protocol
 	 */
-  def registerPacket(packet: PacketObj[_, C]): Unit
+  def registerPacket(packet: PacketObj[C, Packet[C]]): Unit
 
   /**
 	 * Reads a packet from the given NiolInput.
