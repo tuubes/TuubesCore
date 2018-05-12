@@ -12,4 +12,7 @@ trait Packet {
 
   /** Writes this packet to the given output */
   def write(out: NiolOutput): Unit
+
+  /** Handles the packet - TODO: handler list, Observable, etc. */
+   def handle(): Unit = ()
 }
