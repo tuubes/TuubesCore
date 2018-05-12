@@ -9,7 +9,7 @@ trait Packet[C <: ClientAttach] {
   final def id: Int = obj.id
 
   /** The packet object (usually a companion object of the packet class) */
-  def obj: PacketObj[C, _ <: this.type]
+  def obj: PacketObj[C, _ >: this.type]
 
   /** Writes this packet to the given output */
   def write(out: NiolOutput): Unit
