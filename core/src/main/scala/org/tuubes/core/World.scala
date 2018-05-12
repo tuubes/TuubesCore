@@ -1,10 +1,13 @@
-package org.tuubes.core.engine
+package org.tuubes.core
 
 import org.tuubes.core.blocks.Area
+import org.tuubes.core.engine.Actor
 
 /**
  * @author TheElectronWill
  */
-trait World extends Actor {
+class World {
   def blocks: Area
+
+
 }

@@ -4,8 +4,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 import better.files.File
 import com.typesafe.scalalogging.Logger
-import org.tuubes.core.TuubesServer
-import org.tuubes.core.engine.World
+import org.tuubes.core.{TuubesServer, World}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable

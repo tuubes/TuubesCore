@@ -1,6 +1,6 @@
 package org.tuubes.core.plugins
 
-import org.tuubes.core.engine.World
+import org.tuubes.core.World
 
 import scala.collection.mutable
 

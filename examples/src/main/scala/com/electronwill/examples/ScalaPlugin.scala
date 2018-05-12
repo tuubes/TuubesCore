@@ -1,6 +1,6 @@
 package com.electronwill.examples
 
-import org.tuubes.core.engine.World
+import org.tuubes.core.World
 import org.tuubes.core.plugins.{Plugin, PluginDescription}
 
 /**
