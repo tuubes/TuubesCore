@@ -2,6 +2,7 @@ package org.tuubes.core.network
 
 import com.electronwill.niol.NiolInput
 import com.electronwill.niol.network.tcp.ClientAttach
+import org.tuubes.core.TuubesServer
 
 /** Trait for packet companion objects */
 trait PacketObj[C <: ClientAttach, P <: Packet[C]] {
@@ -12,5 +13,7 @@ trait PacketObj[C <: ClientAttach, P <: Packet[C]] {
   def read(in: NiolInput): P
 
   /** Handles the packet - TODO: handler list, Observable, etc. */
-  def handle(packet: P, client: C): Unit = ()
+  def handle(packet: P, client: C): Unit = {
+    TuubesServer.logger.debug(s"Received packet ${packet.getClass}")
+  }
 }

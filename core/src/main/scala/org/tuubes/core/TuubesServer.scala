@@ -3,6 +3,7 @@ package org.tuubes.core
 import better.files.File
 import org.fusesource.jansi.AnsiConsole
 import org.slf4j.LoggerFactory
+import org.slf4j.impl.{LogLevel, PhotonLogger}
 import org.tuubes.core.network.NetworkSystem
 import org.tuubes.core.plugins.ScalaPluginLoader
 
@@ -25,6 +26,7 @@ object TuubesServer {
   def main(args: Array[String]): Unit = {
     logger.info("Tuubes core loading...")
     logger.warn("WARNING: This is an unreleased version of TuubesCore, potentially unstable")
+    PhotonLogger.setLevel(LogLevel.DEBUG)
 
     AnsiConsole.systemInstall()
     // TODO read configuration(s?)
