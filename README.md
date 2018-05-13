@@ -1,33 +1,47 @@
-[![](https://img.shields.io/badge/next%20version-0.5.0-yellow.svg)](https://github.com/mcphoton/Photon-Server/projects/1)
-[![](https://img.shields.io/badge/progress-60%25-yellow.svg)](https://github.com/mcphoton/Photon-Server/projects/1)
+# ![project logo](TuubesCore_logo.png)
+
+[![](https://img.shields.io/badge/next%20version-0.6-green.svg)](https://github.com/mcphoton/Photon-Server/milestone/2)
 [![](https://img.shields.io/badge/discord-join%20chat!-7289DA.svg)](https://discord.gg/vWYembz)
 
-From-scratch, extensible and multithreaded minecraft server.
+This repository contains the essential bricks of the [Tuubes project](http://tuubes.org), which aims to create an open-source scalable server for voxel games.
 
-## How to build
-Photon uses [gradle](http://gradle.org) to manage its dependencies. Building the project is very easy:
-
-1. Install the Java 8 SDK (aka JDK 8) if you don't already have it.
-2. Put the [Photon Protocol library](https://github.com/mcphoton/Photon-ProtocolLib) in the same directory as the Photon Server project folder. 
-3. In the Photon Server project's directory, run this command: `./gradlew build`
-
-**Note:** The Photon-API repository is now useless and won't be updated anymore. The API is now
-part of this repository.
+TuubesCore is independent from any game. Game-dependent content like block types and creatures are/will be implemented in other repositories.
 
 ## How to contribute
-You can fork this project and send me pull requests :)
-* To contribute to the Photon implementation, you must first understand the Photon API. ~~Please read [the API wiki](https://github.com/mcphoton/Photon-API/wiki) to know about the project's guidelines and architecture.~~ The wiki isn't exactly up-to-date, and since major changes are coming it won't be updated in a near future.
-* Please respect [the coding style](https://github.com/mcphoton/Photon-Server/blob/develop/Coding%20Style.md).
-* Good java skills are required.
+Contributors are always welcome. But please note that the [foundations](https://github.com/tuubes/TuubesCore/projects/4) aren't complete yet, therefore a lot of things are currently changing.
 
-## Branches
-The *develop* branch contains the latest **in development** version of the Photon server. It's probably unstable and may not work at all. More stable releases can be found in the *master* branch.
+To contribute to the code, fork the repository, modify what you want, and send a [pull request](https://help.github.com/articles/about-pull-requests/). New ideas and issues can be reported as [github issues](https://github.com/mcphoton/Photon-Server/issues).
 
-## Current status
-The Photon server **isn't ready** yet. As of release "0.4.0" you can connect to it, but you can't do anything in the world (well, actually there's no real world: the map is completely empty).
+For more information please read [the contributing guidelines](CONTRIBUTING.md).
 
-The progress of the project can be found [here](https://github.com/mcphoton/Photon-Server/projects/1).
+## Project structure
+### Branches
+- **master**: stable releases only
+- **develop**: base branch for unstable development
+- **scala-rewrite**: contains the ongoing work to rewrite the project in [the Scala programming language](http://docs.scala-lang.org) and to follow the [Actor Model](https://en.wikipedia.org/wiki/Actor_model) for easier concurrency.
 
-## License
-- Module api: LGPLv3
-- Module impl and everything else: AGPLv3
+### Modules
+- **core**: most of the source code
+- **metaprog**: scala macros used by the core
+
+## Docker
+
+We supply a basic docker image, simply clone and cd to this repo and perform in your terminal :
+```bash
+$> docker build -t tuubes-minecraft .
+$> docker run -P tuubes-minecraft
+```
+-P publish all the exposed ports (default 25565), you can supply your own port with ``-p 25564:25565``.
+
+The default jvm properties are ``-Xmx1024M -Xms1024M``, you can also change them with the -e tag :
+
+```bash
+$> docker run -P -e JVM_OPTS='-Xmx1024M -Xms1024M' tuubes-minecraft
+```
+
+## Current state
+* Next milestone: [Awesome Architecture](https://github.com/tuubes/TuubesCore/milestone/3)
+* Ongoing github project: [Foundations](https://github.com/tuubes/TuubesCore/projects/4)
+* Screenshot of the last release (0.5-alpha):
+
+![ingame screenshot](ingame-screenshot.png)

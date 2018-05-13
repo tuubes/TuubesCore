@@ -1,0 +1,22 @@
+plugins {
+	id "cz.alenkacz.gradle.scalafmt" version "1.6.0"
+}
+
+String scalafmtConfig = new File(".scalafmt.conf").absolutePath
+
+subprojects {
+	apply plugin: 'scala'
+	apply plugin: 'scalafmt'
+	repositories {
+		mavenCentral()
+		maven { url 'https://jitpack.io' }
+	}
+	dependencies {
+		compile 'org.scala-lang:scala-library:2.12.6'
+		testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+		testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+	}
+	scalafmt {
+		configFilePath = scalafmtConfig
+	}
+}

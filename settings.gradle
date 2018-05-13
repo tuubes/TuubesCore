@@ -1,6 +1,5 @@
-rootProject.name = 'Photon-Server'
-include ':api'
-include ':impl'
+rootProject.name = 'tuubes-core'
 
-include ':protocol-lib'
-project(':protocol-lib').projectDir = new File('../Photon-ProtocolLib')
+include 'core'
+include 'metaprog'
+include 'examples'

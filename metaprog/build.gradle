@@ -1,0 +1,16 @@
+description 'Metaprogramming with Scala macros'
+
+configurations {
+	scalaCompilerPlugin //scalaCompilerPlugin allows to enable arbitrary compiler plugins
+}
+
+dependencies {
+	compile 'org.scala-lang:scala-reflect:2.12.5'
+	scalaCompilerPlugin "org.scalamacros:paradise_2.12.5:2.1.1"
+}
+
+tasks.withType(ScalaCompile) {
+	scalaCompileOptions.additionalParameters = [
+		"-Xplugin:" + configurations.scalaCompilerPlugin.asPath
+	]
+}

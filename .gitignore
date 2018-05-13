@@ -1,6 +1,7 @@
 # Build files
 bin/
 build/
+out/
 
 # Directory where the server is launched and tested
 run/
@@ -20,3 +21,6 @@ nbproject
 # IntelliJ files
 *.iml
 .idea
+
+# Mac OS DS_STORE
+.DS_STORE
