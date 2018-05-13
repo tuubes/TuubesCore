@@ -6,6 +6,8 @@ import scala.collection.mutable
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
+import org.tuubes.core.TuubesServer.logger
+
 /**
  * @author TheElectronWill
  */
@@ -31,24 +33,34 @@ final class ScalaPluginLoader extends PluginLoader {
     // Inspect the files and detect plugin infos
     var fileCount = 0
     for (file: File <- files) {
+      logger.debug(s"Inspecting plugin file $file")
       fileCount += 1
       PluginInfos.inspect(file) match {
-        case Success(infos) => graph.register(infos)
-        case Failure(error) => errors += s"Invalid plugin file '$file' - $error"
+        case Success(infos) =>
+          logger.debug("Inspection successfull")
+          graph.register(infos)
+        case Failure(error) =>
+          logger.debug("Inspection failed!")
+          logger.error(s"Invalid plugin file $file", error)
+          errors += ""
       }
     }
     if (errors.length == fileCount) {
+      logger.error(s"Found ${errors.length} error(s), no plugin could be loaded.")
       0 // All the inspections have failed
     } else {
       this.synchronized {
         // Registers the currently loaded plugins, so they can be used as dependencies by the new plugins
+        logger.debug("Registering plugin data to the dependency graph")
         loaded.values.map(_.infos).foreach(graph.register)
 
         // Dependency resolution: find the optimal loading order and detect potential errors
+        logger.debug("Building and resolving the graph")
         graph.build()
         val resolved = graph.resolve().resolvedItems
 
         // Loading: create an instance of each plugin, in the right order
+        logger.debug("Creating an instance of each plugin")
         val loadOrder = new mutable.ArrayBuffer[LoadedNode](resolved.size)
         for (r <- resolved; node = r.node if r.node.isValid) {
           val infos = node.data
@@ -63,7 +75,7 @@ final class ScalaPluginLoader extends PluginLoader {
             // The plugin failed to load, therefore all its hard dependents fail.
             case NonFatal(e) =>
               e.printStackTrace()
-              errors += s"Cannot create an instance of '$name:${infos.version}' - $e"
+              logger.error(s"Cannot create an instance of '$name:${infos.version}'", e)
               node.hardDependents.foreach(parentFailed(_, name, errors))
           }
         }
@@ -74,14 +86,22 @@ final class ScalaPluginLoader extends PluginLoader {
         for (node <- loadOrder) {
           val plugin = node.plugin
           if (plugin.state == PluginState.LOADED) {
+            logger.debug(s"Calling onLoad() of ${node.infos.name}")
             plugin.onLoad()
             plugin.state = PluginState.ENABLED
           }
         }
 
-        // TODO enable the plugins in their worlds
+        // TODO enable the plugins in their worlds */
+        val el = errors.length
+        val ll = loadOrder.length
+        if (el != 0) {
+          logger.error(s"Found $el dependency error(s), only $el out of ${el + ll} plugins could be loaded")
+          errors.foreach(logger.error)
+        }
 
         // Updates the unloadOrder
+        logger.debug("Storing data for the ScalaPluginLoader")
         unloadOrder = loadOrder.reverse
 
         // Returns the number of loaded plugins
