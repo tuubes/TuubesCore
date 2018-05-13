@@ -25,7 +25,7 @@ final class ArrayMap[@specialized(Int) A: ClassTag](initialCapacity: Int,
   }
 
   override def put(key: Int, value: A): Option[A] = {
-    val previousValue = elements(key)
+    val previousValue = apply(key)
     update(key, value)
     if (nullValue == previousValue) None else Some(previousValue)
   }
@@ -33,7 +33,7 @@ final class ArrayMap[@specialized(Int) A: ClassTag](initialCapacity: Int,
   override def update(key: Int, value: A): Unit = {
     elementCount += 1
     if (elements.length < key) {
-      elements = growAmortize(elements, key)
+      elements = growAmortize(elements, key + 1)
     }
     elements(key) = value
   }
