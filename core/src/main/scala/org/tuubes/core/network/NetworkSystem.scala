@@ -21,7 +21,7 @@ object NetworkSystem {
   /** Starts the network system */
   def start() = {
     logger.info("Starting the network system...")
-    selector.start("Tuubes:Niol-TCP")
+    selector.start("niol-tcp")
   }
 
   /** Stops the network system */

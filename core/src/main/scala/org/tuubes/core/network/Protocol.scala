@@ -21,12 +21,13 @@ trait Protocol[C <: ClientAttach] {
   /**
 	 * Registers a packet to this protocol
 	 */
-  def registerPacket[A <: Packet[C]](packet: PacketObj[C, A]): Unit
+  def registerPacket[A <: Packet](packet: PacketObj[C, A]): Unit
 
   /**
-	 * Reads a packet from the given NiolInput.
+	 * Reads the packet type from the given NiolInput.
+   * To read the packet's data that follows the header, use [[PacketObj.read(in)]]
 	 */
-  def readPacket(in: NiolInput): Packet[C]
+  def detectPacket[A <: Packet](in: NiolInput): PacketObj[C, A]
 
   /**
 	 * A bijection of block ids.
