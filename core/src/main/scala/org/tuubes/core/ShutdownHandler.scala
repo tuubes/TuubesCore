@@ -5,6 +5,7 @@ import org.tuubes.core.network.NetworkSystem
 
 object ShutdownHandler extends Runnable {
   override def run(): Unit = {
+    logger.info("Time to sleep!")
     logger.info("Unloading the plugins...")
     PluginLoader.unloadAll()
 

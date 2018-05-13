@@ -39,7 +39,7 @@ object TuubesServer {
     logger.info("Connecting to the world...")
     NetworkSystem.start()
 
-    Runtime.getRuntime.addShutdownHook(new Thread(ShutdownHandler))
+    Runtime.getRuntime.addShutdownHook(new Thread(ShutdownHandler, "shutdown"))
     logger.info(s"Tuubes $Version is ready!")
   }
 }
