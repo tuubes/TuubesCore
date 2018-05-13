@@ -17,9 +17,9 @@ dependencies {
 // Build runnable jar
 task fatJar(type: Jar) {
 	manifest {
-		attributes 'Implementation-Title': rootProject.name, 'Implementation-Version': version, 'Main-Class': 'org.tuubes.core.TuubesServer'
+		attributes 'Implementation-Title': rootProject.name,'Implementation-Version': version, 'Main-Class': 'org.tuubes.core.TuubesServer'
 	}
-	baseName = rootProject.name + '-full-core'
+	baseName = 'TuubesCore-' + version
 	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
 	with jar
 }
