@@ -9,7 +9,7 @@ object ShutdownHandler extends Runnable {
     logger.info("Unloading the plugins...")
     PluginLoader.unloadAll()
 
-    logger.info("Stopping the NetworkSystem...")
+    logger.info("Stopping the server...")
     NetworkSystem.stop()
 
     logger.info(s"Tuubes $Version shuts down.")
