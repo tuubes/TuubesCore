@@ -24,6 +24,7 @@ object TuubesServer {
   val PluginLoader = new ScalaPluginLoader
 
   def main(args: Array[String]): Unit = {
+    Seq(DirConfig, DirPlugins, DirWorlds, DirLogs).foreach(_.createDirectories())
     logger.info("Tuubes core loading...")
     logger.warn("WARNING: This is an unreleased version of TuubesCore, potentially unstable")
     PhotonLogger.setLevel(LogLevel.DEBUG)
