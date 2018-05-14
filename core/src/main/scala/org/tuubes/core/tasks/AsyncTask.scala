@@ -407,10 +407,10 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	 */
   private final def run(previousResult: A): Unit = {
     _status.set(STARTED)
-    _result = function(previousResult)
-    _result match {
-      case Success(_) => handleSuccess _
-      case Failure(_) => handleFailure _
+    val result = function(previousResult)
+    result match {
+      case s: Success[B] => handleSuccess(s)
+      case f: Failure[B] => handleFailure(previousResult, f)
     }
   }
 
