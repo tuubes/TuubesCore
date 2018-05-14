@@ -1,4 +1,4 @@
-package org.tuubes.core
+package org.tuubes.core.worlds
 
 import org.tuubes.core.blocks.Area
 

@@ -1,7 +1,7 @@
 package com.electronwill.examples
 
-import org.tuubes.core.LocalWorld
 import org.tuubes.core.plugins.{Plugin, PluginDescription}
+import org.tuubes.core.worlds.LocalWorld
 
 /**
  * An example of plugin class.
