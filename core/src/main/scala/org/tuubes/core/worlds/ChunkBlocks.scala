@@ -111,10 +111,27 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
     out.putShort(storage.bitsPerValue)
     out.putInt(storage.byteSize)
     out.putBytes(storage.bytes)
-  }
-
-  def writeBytes(out: NiolOutput): Unit = {
-    out.putBytes(storage.bytes)
+    // Write the palette, if any
+    if (palette ne null) {
+      out.putShort(palette.size)
+      for (i <- 0 until palette.size) {
+        out.putVarint(palette(i).internalId)
+      }
+    } else {
+      out.putShort(0)
+    }
+    // Write the layers
+    for (i <- 0 until 16) {
+      val oneLayer = oneTypeLayers(i)
+      if (oneLayer ne null) {
+        out.putByte(0)
+        out.putVarint(oneLayer.internalId)
+      } else {
+        val complexLayer = complexLayers(i)
+        out.putByte(complexLayer.bitsPerValue)
+        out.putBytes(complexLayer.bytes)
+      }
+    }
   }
 }
 
@@ -123,10 +140,29 @@ object ChunkBlocks {
   val MaxPaletteSize = 256
 
   def read(in: NiolInput): ChunkBlocks = {
-    val bitsPerValue = in.getShort()
-    val byteSize = in.getInt()
-    val bytes = in.getBytes(byteSize)
-    val storage = CompactStorage(bitsPerValue, bytes)
-    new ChunkBlocks(storage)
+    // Read the palette, if any
+    val paletteSize = in.getShort()
+    val palette = if (paletteSize == 0) null else new SimpleBag[BlockType](paletteSize)
+    if (palette ne null) {
+      for (i <- 0 until paletteSize) {
+        val internalId = in.getVarint()
+        palette += BlockType.getOrNull(internalId)
+      }
+    }
+    // Read the layers
+    val oneTypeLayers = new Array[BlockType](16)
+    val complexLayers = new Array[CompactStorage](16)
+    for (i <- 0 until 16) {
+      val bitsPerValue = in.getByte()
+      if (bitsPerValue == 0) {
+        val internalId = in.getVarint()
+        oneTypeLayers(i) = BlockType.getOrNull(internalId)
+      } else {
+        val arraySize = CompactStorage.byteSize(bitsPerValue, 256)
+        val array = in.getBytes(arraySize)
+        complexLayers(i) = CompactStorage(bitsPerValue, array)
+      }
+    }
+    new ChunkBlocks(oneTypeLayers, complexLayers, palette)
   }
 }
