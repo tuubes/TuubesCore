@@ -8,6 +8,7 @@ import org.tuubes.core.blocks.BlockType
 final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
                         private val complexLayers: Array[CompactStorage],
                         private var palette: Bag[BlockType]) {
+  /** Gets a block */
   def apply(x: Int, y: Int, z: Int): BlockType = {
     val oneType = oneTypeLayers(y)
     if (oneType ne null) {
@@ -23,6 +24,7 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
     }
   }
 
+  /** Sets a block */
   def update(x: Int, y: Int, z: Int, value: BlockType): Unit = {
     val oneType = oneTypeLayers(y)
     if (oneType ne null) {
@@ -48,6 +50,11 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
     }
   }
 
+  /**
+   * Computes the id that must be used to insert this block into the chunk.
+   * This method takes care of adding the block to the palette if needed. Also, it may remove the
+   * palette in favor of the internalIds, if the palette's size exceeds the maximum value.
+   */
   private def blockInsertionId(value: BlockType): Int = {
     // The block id, either its internalId or its id in the palette.
     if (palette eq null) {
@@ -82,6 +89,7 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
     }
   }
 
+  /** Sets a block in the given layer, expanding the layer if needed */
   private def set(layer: CompactStorage, x: Int, z: Int, blockId: Int): Unit = {
     val diff = blockId >> layer.bitsPerValue // Bits that can't be handled by the current layer
     if (diff == 0) {
@@ -95,6 +103,7 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
     }
   }
 
+  /** Converts a layer's ids to internal ids, by copying them into a new storage. */
   private def convertToInternalIds(layer: CompactStorage): CompactStorage = {
     val newLayer = CompactStorage(16, 256)
     var i = 0
@@ -107,6 +116,7 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
     newLayer
   }
 
+  /** Writes a chunk that can be read by [[ChunkBlocks.read]]. The format is specific to Tuubes. */
   def write(out: NiolOutput): Unit = {
     out.putShort(storage.bitsPerValue)
     out.putInt(storage.byteSize)
@@ -134,17 +144,25 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
     }
   }
 }
-
+/** Companion object for ChunkBlocks */
 object ChunkBlocks {
+  /** The number of bits per block of the new layers */
   val InitialBitsPerBlock = 4
+  /**
+   * The maximum size of the ID palette (which maps chunk ids to real BlockTypes).
+   * If the palette gets bigger it is removed and the internal ids are used instead of the
+   * palette's ids.
+   */
   val MaxPaletteSize = 256
 
+  /** Reads a chunk, as written by [[ChunkBlocks.write]]. The format is specific to Tuubes. */
   def read(in: NiolInput): ChunkBlocks = {
     // Read the palette, if any
     val paletteSize = in.getShort()
     val palette = if (paletteSize == 0) null else new SimpleBag[BlockType](paletteSize)
     if (palette ne null) {
       for (i <- 0 until paletteSize) {
+        // Palette entry: paletteId = entry's position in the bag, internalId = entry's value
         val internalId = in.getVarint()
         palette += BlockType.getOrNull(internalId)
       }
@@ -155,9 +173,11 @@ object ChunkBlocks {
     for (i <- 0 until 16) {
       val bitsPerValue = in.getByte()
       if (bitsPerValue == 0) {
+        // One-type layer => read its only type
         val internalId = in.getVarint()
         oneTypeLayers(i) = BlockType.getOrNull(internalId)
       } else {
+        // Complex layer => read each value
         val arraySize = CompactStorage.byteSize(bitsPerValue, 256)
         val array = in.getBytes(arraySize)
         complexLayers(i) = CompactStorage(bitsPerValue, array)
