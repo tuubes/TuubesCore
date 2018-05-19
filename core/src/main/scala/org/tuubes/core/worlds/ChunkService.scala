@@ -1,0 +1,36 @@
+package org.tuubes.core.worlds
+
+/**
+ * A service that provides Chunk objects for one world.
+ */
+trait ChunkService {
+  /**
+   * Requests a chunk of 16x16x16 blocks. If the chunk doesn't exist it will be created.
+   *
+   * @param cx: chunk X coordinate
+   * @param cy: chunk Y coordinate
+   * @param cz: chunk Z coordinate
+   * @param callback: the function to call when the chunk is available
+   */
+  def requestCreate(cx: Int, cy: Int, cz: Int, callback: Chunk => ()): Unit
+
+  /**
+   * Requests a chunk of 16x16x16 blocks. If the chunk doesn't exist then you'll get None.
+   *
+   * @param cx: chunk X coordinate
+   * @param cy: chunk Y coordinate
+   * @param cz: chunk Z coordinate
+   * @param callback: the function to call when the result is available
+   */
+  def requestExisting(cx: Int, cy: Int, cz: Int, callback: Option[Chunk] => ()): Unit
+
+  /**
+   * Tests if a chunk exists.
+   *
+   * @param cx: chunk X coordinate
+   * @param cy: chunk Y coordinate
+   * @param cz: chunk Z coordinate
+   * @param callback: the function to call when the chunk is available
+   */
+  def testExists(cx: Int, cy: Int, cz: Int, callback: Boolean => ()): Unit
+}
