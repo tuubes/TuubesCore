@@ -31,6 +31,33 @@ sealed abstract class CompactStorage(final val size: Int, final val bytes: Array
 
   def apply(idx: Int): Int
   def update(idx: Int, value: Int): Unit
+
+  final def fill(value: Int): Unit = {
+      var i = 0
+      while (i < size) {
+        this(i) = value
+        i += 1
+      }
+  }
+  final def replace(value: Int, replacement: Int): Unit = {
+    var i = 0
+    while (i < size) {
+      val v = this(i)
+      if (v == value) {
+        this(i) = replacement
+      }
+      i += 1
+    }
+  }
+  final def expand(increasePerValue: Int): CompactStorage = {
+    val newStorage = CompactStorage(storage.bitsPerValue + increasePerValue, size)
+    var i = 0
+    while (i < size) {
+      newStorage(i) = storage(i)
+      i += 1
+    }
+    newStorage
+  }
 }
 
 final class CompactStorageN private[utils] (val bitsPerValue: Int, s: Int, b: Array[Byte])
