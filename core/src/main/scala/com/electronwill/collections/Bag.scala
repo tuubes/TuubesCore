@@ -14,8 +14,9 @@ trait Bag[A] extends mutable.Iterable[A] with Compactable with PartialFunction[I
   def -=(elem: A): this.type
   def +=(elem: A): this.type
   def clear(): Unit
-  def contains(elem: A): Boolean = find(_ == elem).isDefined
+  def contains(elem: A): Boolean = indexOf(elem) != -1
   def iterator: MutableIterator[A]
+  def indexOf(elem: A): Int
 
   override final def hasDefiniteSize = true
   override final def isDefinedAt(i: Int): Boolean = i < size && i >= 0

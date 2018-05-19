@@ -17,7 +17,6 @@ final class SimpleBag[A >: Null: ClassTag](initialCapacity: Int = 16) extends Ba
     array(s) = null
     s -= 1
   }
-
   override def -=(elem: A): SimpleBag.this.type = {
     var i = 0
     while (i < s && array(i) != elem) {
@@ -35,6 +34,13 @@ final class SimpleBag[A >: Null: ClassTag](initialCapacity: Int = 16) extends Ba
     array(s) = elem
     s += 1
     this
+  }
+  override def indexOf(elem: A): Int = {
+    var i = 0
+    while (i < s && array(i) != elem) {
+      i += 1
+    }
+    if (i == s) -1 else i
   }
   override def iterator: MutableIterator[A] = new MutableIterator[A] {
     private[this] var i = 0
