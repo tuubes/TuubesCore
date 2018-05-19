@@ -30,7 +30,7 @@ trait ChunkService {
    * @param cx: chunk X coordinate
    * @param cy: chunk Y coordinate
    * @param cz: chunk Z coordinate
-   * @param callback: the function to call when the chunk is available
+   * @param callback: the function to call when the result is available
    */
   def testExists(cx: Int, cy: Int, cz: Int, callback: Boolean => ()): Unit
 }
