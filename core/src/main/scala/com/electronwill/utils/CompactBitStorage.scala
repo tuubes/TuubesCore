@@ -6,8 +6,8 @@ package com.electronwill.utils
 object CompactStorage {
   def apply(bitsPerValue: Int, size: Int): CompactStorage = {
     require(bitsPerValue > 0 && bitsPerValue < 32, "it is required that 0 < bitsPerValue < 32")
-    val byteSize = Math.ceil(bitsPerValue * size / 8).toInt
-    val byteArray = new Array[Byte](byteSize)
+    val arraySize = byteSize(bitsPerValue, size)
+    val byteArray = new Array[Byte](arraySize)
     bitsPerValue match {
       case 4  => new CompactStorage4(size, byteArray)
       case 8  => new CompactStorage8(size, byteArray)
@@ -23,6 +23,9 @@ object CompactStorage {
       case 16 => new CompactStorage16(size, byteArray)
       case _  => new CompactStorageN(bitsPerValue, size, byteArray)
     }
+  }
+  def byteSize(bitsPerValue: Int, numberOfValues: Int): Int = {
+    Math.ceil(bitsPerValue * numberOfValues / 8).toInt
   }
 }
 sealed abstract class CompactStorage(final val size: Int, final val bytes: Array[Byte]) {
