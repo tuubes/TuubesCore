@@ -59,6 +59,13 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
         loadedChunks(key) = chunk
         loadingChunks.remove(key)
       }
+      case ColumnGenerated(cx, cz, column) => {
+        val key = key(cx, cz)
+        for (cy <- 0 until MaxVerticalChunks) {
+          loadedChunks(key(cx, cy, cz)) = column(cy)
+        }
+        generatingChunks.remove(key)
+      }
     }
   }
 
@@ -114,6 +121,8 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
     (cy << 60) | ((cx & 0x7FFFFFFF) << 29) | (cz & 0x7FFFFFFF)
   }
 
+  private def key(cx: Int, cz: Int): Long = cx.toLong << 32 | cz & 0xFFFFFFFFl
+
   private def file(cx: Int, cy: Int, cz: Int): File = chunksDir / s"$cx,$cy,$cz.chunk"
 
   private def asyncLoad(file: File, callback: Chunk => Unit, key: Long): Unit = {
@@ -132,12 +141,12 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
   }
 
   private def asyncGen(cx: Int, cz: Int): Unit = {
-    val xzKey = cx.toLong << 32 | cz & 0xFFFFFFFFl
+    val xzKey = key(cx, cz)
     if (!generatingChunks.contains(xzKey)) {
       generatingChunks.add(xzKey)
       TaskSystem.execute(() => {
         val column = w.chunkGenerator.generateColumn(cz, cz)
-        handleLater(ColumnLoaded(cx, cz, column))
+        handleLater(ColumnGenerated(cx, cz, column))
       })
     }
   }
