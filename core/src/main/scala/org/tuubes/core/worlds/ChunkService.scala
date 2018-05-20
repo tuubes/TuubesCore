@@ -1,7 +1,9 @@
 package org.tuubes.core.worlds
 
+import org.tuubes.core.engine.ExecutionGroup
+
 /**
- * A service that provides Chunk objects for one world.
+ * Asynchronously provides Chunk objects for one world.
  */
 trait ChunkService {
   /**
@@ -12,7 +14,8 @@ trait ChunkService {
    * @param cz: chunk Z coordinate
    * @param callback: the function to call when the chunk is available
    */
-  def requestCreate(cx: Int, cy: Int, cz: Int, callback: Chunk => ()): Unit
+  def requestCreate(cx: Int, cy: Int, cz: Int, callback: Chunk => ())
+                   (implicit currentGroup: ExecutionGroup): Unit
 
   /**
    * Requests a chunk of 16x16x16 blocks. If the chunk doesn't exist then you'll get None.
@@ -22,7 +25,8 @@ trait ChunkService {
    * @param cz: chunk Z coordinate
    * @param callback: the function to call when the result is available
    */
-  def requestExisting(cx: Int, cy: Int, cz: Int, callback: Option[Chunk] => ()): Unit
+  def requestExisting(cx: Int, cy: Int, cz: Int, callback: Option[Chunk] => ())
+                     (implicit currentGroup: ExecutionGroup): Unit
 
   /**
    * Tests if a chunk exists.
@@ -32,5 +36,6 @@ trait ChunkService {
    * @param cz: chunk Z coordinate
    * @param callback: the function to call when the result is available
    */
-  def testExists(cx: Int, cy: Int, cz: Int, callback: Boolean => ()): Unit
+  def testExists(cx: Int, cy: Int, cz: Int, callback: Boolean => ())
+                (implicit currentGroup: ExecutionGroup): Unit
 }
