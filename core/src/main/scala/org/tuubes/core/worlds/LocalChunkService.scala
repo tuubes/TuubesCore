@@ -118,7 +118,11 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
   }
 
   private def key(cx: Int, cy: Int, cz: Int): Long = {
-    (cy << 60) | ((cx & 0x7FFFFFFF) << 29) | (cz & 0x7FFFFFFF)
+    // From MSB to LSB:
+    // 4 bits for cy
+    // 30 bits for cx
+    // 30 bits for cz
+    (cy.toLong << 60) | ((cx & 0x3FFFFFFFl) << 30) | (cz & 0x3FFFFFFFl)
   }
 
   private def key(cx: Int, cz: Int): Long = cx.toLong << 32 | cz & 0xFFFFFFFFl
