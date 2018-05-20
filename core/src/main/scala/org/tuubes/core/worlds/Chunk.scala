@@ -16,10 +16,11 @@ import scala.collection.mutable
  * game world and/or if they need to be sent to the clients). This is useful to send the objects
  * to the game client and to detect object/object and object/block collisions.
  */
-final class Chunk {
-  val blocks = ChunkBlocks.empty
-  val blockObjects = new ChunkBlockObjects(1)
-  private[tuubes] val objects = new mutable.ArrayBuffer[GameObject] // for collisions and other interactions
+final class Chunk(val blocks: ChunkBlocks = ChunkBlocks.empty,
+                  val blockObjects: ChunkBlockObjects = new ChunkBlockObjects(1)) {
+
+  // for collisions and other interactions
+  private[tuubes] val objects = new mutable.ArrayBuffer[GameObject](2)
 
   val objectItr: Iterable[GameObject] = objects
   val objectCount: Int = objects.size
