@@ -3,39 +3,38 @@ package org.tuubes.core.worlds
 import org.tuubes.core.engine.ExecutionGroup
 
 /**
- * Asynchronously provides Chunk objects for one world.
+ * Asynchronously provides ChunkColumn objects for one world.
  */
 trait ChunkService {
   /**
-   * Requests a chunk of 16x16x16 blocks. If the chunk doesn't exist it will be created.
+   * Requests a chunk column of `MaxVerticalChunks` chunks.
+   * If the column doesn't exist it will be created.
    *
-   * @param cx: chunk X coordinate
-   * @param cy: chunk Y coordinate
-   * @param cz: chunk Z coordinate
-   * @param callback: the function to call when the chunk is available
+   * @param cx       : column X coordinate
+   * @param cz       : column Z coordinate
+   * @param callback : the function to call when the column is available
    */
-  def requestCreate(cx: Int, cy: Int, cz: Int, callback: Chunk => Unit)
+  def requestCreate(cx: Int, cz: Int, callback: ChunkColumn => Unit)
                    (implicit currentGroup: ExecutionGroup): Unit
 
   /**
-   * Requests a chunk of 16x16x16 blocks. If the chunk doesn't exist then you'll get None.
+   * Requests a chunk column of `MaxVerticalChunks` chunks.
+   * If the column doesn't exist then you'll get None.
    *
-   * @param cx: chunk X coordinate
-   * @param cy: chunk Y coordinate
-   * @param cz: chunk Z coordinate
-   * @param callback: the function to call when the result is available
+   * @param cx       : column X coordinate
+   * @param cz       : column Z coordinate
+   * @param callback : the function to call when the result is available
    */
-  def requestExisting(cx: Int, cy: Int, cz: Int, callback: Option[Chunk] => Unit)
-                     (implicit currentGroup: ExecutionGroup): Unit
+  def requestExisting(cx: Int, cz: Int, callback: Option[ChunkColumn] => Unit)
+                      (implicit currentGroup: ExecutionGroup): Unit
 
   /**
-   * Tests if a chunk exists.
+   * Tests if a chunk column exists.
    *
-   * @param cx: chunk X coordinate
-   * @param cy: chunk Y coordinate
-   * @param cz: chunk Z coordinate
-   * @param callback: the function to call when the result is available
+   * @param cx       : column X coordinate
+   * @param cz       : column Z coordinate
+   * @param callback : the function to call when the result is available
    */
-  def testExists(cx: Int, cy: Int, cz: Int, callback: Boolean => Unit)
+  def testExists(cx: Int, cz: Int, callback: Boolean => Unit)
                 (implicit currentGroup: ExecutionGroup): Unit
 }

@@ -3,6 +3,7 @@ package org.tuubes.core.worlds
 import java.nio.file.StandardOpenOption
 
 import better.files.File
+import com.electronwill.collections.{Bag, SimpleBag}
 import com.electronwill.niol.io.ChannelInput
 import org.tuubes.core.TuubesServer
 import org.tuubes.core.engine.{ActorMessage, ExecutionGroup, LocalActor}
@@ -10,69 +11,64 @@ import org.tuubes.core.tasks.{IOSystem, TaskSystem}
 
 import scala.collection.mutable
 
-/** Serves chunks from local files */
-final class LocalChunkService(private val w: LocalWorld) extends LocalActor with ChunkService {
-  private val loadedChunks = new mutable.LongMap[Chunk]()
-  private val loadingChunks = new mutable.HashSet[Long]()
-  private val generatingChunks = new mutable.HashSet[Long]()
-  private val chunksDir = w.directory / "chunks"
+/**
+ * Asynchronously servers chunk columns from local files.
+ *
+ * @param world the world that this service takes care of
+ */
+final class LocalChunkService(private val world: LocalWorld) extends LocalActor with ChunkService {
+  /** The currently loaded chunk columns */
+  private val loadedColumns = new mutable.LongMap[ChunkColumn]()
 
-  // --- ChunkService methods ---
-  override def requestCreate(cx: Int, cy: Int, cz: Int, callback: Chunk => Unit)
-                            (implicit currentGroup: ExecutionGroup): Unit = {
-    if (currentGroup eq group) {
-      processReqCreate(cx, cy, cz, callback) // avoids creating a message in that case
-    } else {
-      handleLater(RequestCreate(cx, cy, cz, callback))
-    }
+  /** Chunks that are being loaded asynchronously */
+  private val loading = new mutable.LongMap[Bag[ChunkColumn => Unit]]()
+
+  /** Chunks that are being generated asynchronously */
+  private val generating = new mutable.LongMap[Bag[ChunkColumn => Unit]]()
+
+  /** The directory that stores the chunks data */
+  private val chunksDir = world.directory / "chunks"
+
+  /** Packs 2 ints into 1 long. */
+  private def key(cx: Int, cz: Int): Long = {
+    cx.toLong << 32 | cz & 0xFFFFFFFFl
   }
 
-  override def requestExisting(cx: Int, cy: Int, cz: Int, callback: Option[Chunk] => Unit)
-                              (implicit currentGroup: ExecutionGroup): Unit = {
-    if (currentGroup eq group) {
-      processReqExisting(cz, cy, cz, callback) // avoids creating a message in that case
-    } else {
-      handleLater(RequestExisting(cz, cy, cz, callback))
-    }
-  }
-
-
-  override def testExists(cx: Int, cy: Int, cz: Int, callback: Boolean => Unit)
-                         (implicit currentGroup: ExecutionGroup): Unit = {
-    if (currentGroup eq group) {
-      processTestExists(cz, cy, cz, callback) // avoids creating a message in that case
-    } else {
-      handleLater(TestExists(cz, cy, cz, callback))
-    }
+  /** The chunk column file */
+  private def file(cx: Int, cz: Int): File = {
+    chunksDir / s"$cx,$cz.chunkcol"
   }
 
   // --- Actor ---
-  override def update(dt: Double): Unit = {} // TODO clean old chunks? autosave?
+  override protected def filter(msg: ActorMessage): Boolean = {
+    super.filter(msg) && msg.isInstanceOf[ChunkServiceMessage]
+  }
+
+  override def update(dt: Double): Unit = {
+    // TODO clean old chunks? autosave?
+  }
 
   override protected def onMessage(msg: ActorMessage): Unit = {
     super.onMessage(msg)
     msg match {
-      case RequestCreate(cx, cy, cz, callback) => processReqCreate(cx, cy, cz, callback)
-      case RequestExisting(cx, cy, cz, callback) => processReqExisting(cx, cy, cz, callback)
-      case TestExists(cx, cy, cz, callback) => processTestExists(cx, cy, cz, callback)
-      case ChunkLoaded(key, chunk) => {
-        loadedChunks(key) = chunk
-        loadingChunks.remove(key)
+      case RequestCreate(cx, cz, callback) => processReqCreate(cx, cz, callback)
+      case RequestExisting(cx, cz, callback) => processReqExisting(cx, cz, callback)
+      case TestExists(cx, cz, callback) => processTestExists(cx, cz, callback)
+      case LoadComplete(key, column) => {
+        loadedColumns(key) = column
+        loading.remove(key).foreach(_.foreach(_ (column))) // remove the callbacks bag and call them
       }
-      case ColumnGenerated(cx, cz, column) => {
-        val key = key(cx, cz)
-        for (cy <- 0 until MaxVerticalChunks) {
-          loadedChunks(key(cx, cy, cz)) = column(cy)
-        }
-        generatingChunks.remove(key)
+      case GenerationComplete(key, column) => {
+        loadedColumns(key) = column
+        generating.remove(key).foreach(_.foreach(_ (column))) // remove the callbacks bag and call them
       }
     }
   }
 
   // --- Actual processing ---
-  private def processReqCreate(cx: Int, cy: Int, cz: Int, callback: Chunk => Unit): Unit = {
-    val xyzKey = key(cx, cy, cz)
-    val loaded = loadedChunks.get(xyzKey)
+  private def processReqCreate(cx: Int, cz: Int, callback: ChunkColumn => Unit): Unit = {
+    val columnKey = key(cx, cz)
+    val loaded = loadedColumns.get(columnKey)
     loaded match {
       case Some(chunk) => {
         // The chunk is loaded => callback now
@@ -80,28 +76,28 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
       }
       case None => {
         // The chunk isn't loaded
-        val chunkFile = file(cx, cy, cz)
+        val chunkFile = file(cx, cz)
         if (chunkFile.exists) {
           // Loads the chunk if it's not already being loaded
-          asyncLoad(chunkFile, callback, xyzKey)
+          asyncLoad(chunkFile, callback, columnKey)
         } else {
           // Generates the chunk if it's not already being generated
-          asyncGen(cx, cz) // TODO callback
+          asyncGen(cx, cz, callback, columnKey)
         }
       }
     }
   }
 
-  private def processReqExisting(cx: Int, cy: Int, cz: Int, callback: Option[Chunk] => Unit): Unit = {
-    val xyzKey = key(cx, cy, cz)
-    val loaded = loadedChunks.get(xyzKey)
+  private def processReqExisting(cx: Int, cz: Int, callback: Option[ChunkColumn] => Unit): Unit = {
+    val columnKey = key(cx, cz)
+    val loaded = loadedColumns.get(columnKey)
     loaded match {
       case s: Some[Chunk] => callback(s)
       case None => {
-        val chunkFile = file(cx, cy, cz)
+        val chunkFile = file(cx, cz)
         if (chunkFile.exists) {
           // Loads the chunk if it's not already being loaded
-          asyncLoad(chunkFile, chunk => callback(Some(chunk)), xyzKey)
+          asyncLoad(chunkFile, chunk => callback(Some(chunk)), columnKey)
         } else {
           callback(None)
         }
@@ -109,49 +105,79 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
     }
   }
 
-  private def processTestExists(cx: Int, cy: Int, cz: Int, callback: Boolean => Unit): Unit = {
-    val loaded = loadedChunks.get(key(cz, cy, cz))
+  private def processTestExists(cx: Int, cz: Int, callback: Boolean => Unit): Unit = {
+    val loaded = loadedColumns.get(key(cx, cz))
     loaded match {
       case Some(_) => callback(true)
-      case None => callback(file(cx, cy, cz).exists)
+      case None => callback(file(cx, cz).exists)
     }
   }
 
-  private def key(cx: Int, cy: Int, cz: Int): Long = {
-    // From MSB to LSB:
-    // 4 bits for cy
-    // 30 bits for cx
-    // 30 bits for cz
-    (cy.toLong << 60) | ((cx & 0x3FFFFFFFl) << 30) | (cz & 0x3FFFFFFFl)
-  }
-
-  private def key(cx: Int, cz: Int): Long = cx.toLong << 32 | cz & 0xFFFFFFFFl
-
-  private def file(cx: Int, cy: Int, cz: Int): File = chunksDir / s"$cx,$cy,$cz.chunk"
-
-  private def asyncLoad(file: File, callback: Chunk => Unit, key: Long): Unit = {
-    if (!loadingChunks.contains(key)) {
-      loadingChunks.add(key)
-      IOSystem.execute(() => {
-        for (channel <- file.fileChannel(Seq(StandardOpenOption.READ))) {
-          val input = new ChannelInput(channel)
-          val blocks = ChunkBlocks.read(input)
-          val chunk = new Chunk(blocks)
-          handleLater(ChunkLoaded(key, chunk))
-          callback(chunk)
-        }
-      }, TuubesServer.logger.error(s"Unable to read chunk from $file", _))
+  private def asyncLoad(file: File, callback: ChunkColumn => Unit, key: Long): Unit = {
+    loading.get(key) match {
+      case Some(bag) => bag += callback // registers the callback
+      case None => {
+        // Create a list of callbacks and registers the callback
+        val newBag = new SimpleBag[ChunkColumn => Unit](1)
+        newBag += callback
+        // Marks the chunk column as "loading"
+        loading(key) = newBag
+        // Loads the chunk column
+        IOSystem.execute(() => {
+          for (channel <- file.fileChannel(Seq(StandardOpenOption.READ))) {
+            val input = new ChannelInput(channel)
+            val column = ChunkColumn.read(input)
+            handleLater(LoadComplete(key, column))
+          }
+        }, TuubesServer.logger.error(s"Unable to read chunk from $file", _))
+      }
     }
   }
 
-  private def asyncGen(cx: Int, cz: Int): Unit = {
-    val xzKey = key(cx, cz)
-    if (!generatingChunks.contains(xzKey)) {
-      generatingChunks.add(xzKey)
-      TaskSystem.execute(() => {
-        val column = w.chunkGenerator.generateColumn(cz, cz)
-        handleLater(ColumnGenerated(cx, cz, column))
-      })
+  private def asyncGen(cx: Int, cz: Int, callback: ChunkColumn => Unit, key: Long): Unit = {
+    generating.get(key) match {
+      case Some(bag) => bag += callback // registers the callback
+      case None => {
+        // Create a list of callbacks and registers the callback
+        val newBag = new SimpleBag[ChunkColumn => Unit](1)
+        newBag += callback
+        // Marks the chunk column as "generating"
+        generating(key) = newBag
+        // Generates the chunk column
+        TaskSystem.execute(() => {
+          val column = world.chunkGenerator.generate(cz, cz)
+          handleLater(GenerationComplete(key, column))
+        })
+      }
+    }
+  }
+
+  // --- ChunkService methods ---
+  override def requestCreate(cx: Int, cz: Int, callback: ChunkColumn => Unit)
+                            (implicit currentGroup: ExecutionGroup): Unit = {
+    if (currentGroup eq group) {
+      processReqCreate(cx, cz, callback) // avoids creating a message in that case
+    } else {
+      handleLater(RequestCreate(cx, cz, callback))
+    }
+  }
+
+  override def requestExisting(cx: Int, cz: Int, callback: Option[ChunkColumn] => Unit)
+                              (implicit currentGroup: ExecutionGroup): Unit = {
+    if (currentGroup eq group) {
+      processReqExisting(cx, cz, callback) // avoids creating a message in that case
+    } else {
+      handleLater(RequestExisting(cx, cz, callback))
+    }
+  }
+
+
+  override def testExists(cx: Int, cz: Int, callback: Boolean => Unit)
+                         (implicit currentGroup: ExecutionGroup): Unit = {
+    if (currentGroup eq group) {
+      processTestExists(cx, cz, callback) // avoids creating a message in that case
+    } else {
+      handleLater(TestExists(cx, cz, callback))
     }
   }
 }

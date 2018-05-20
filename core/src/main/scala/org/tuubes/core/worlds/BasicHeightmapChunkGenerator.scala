@@ -17,8 +17,8 @@ class BasicHeightmapChunkGenerator extends ChunkGenerator {
   private val sandBlock = BlockType("sand").get
   private val waterBlock = BlockType("water").get
 
-  override def generateColumn(cx: Int, cz: Int): Array[Chunk] = {
-    val column = Array.fill(16) {new Chunk()}
+  override def generate(cx: Int, cz: Int): ChunkColumn = {
+    val chunks = Array.fill(16) {new Chunk()}
     for (x <- 0 to 15) {
       val blockX = cx * 16 + x
       val noiseX = blockX * noiseFactor
@@ -28,10 +28,11 @@ class BasicHeightmapChunkGenerator extends ChunkGenerator {
         val noiseValue = noise.generate(noiseX, noiseZ) // in range [-1,1]
         val normalized = (noiseValue + 1.0) / 2.0 // in range [0,1]
         val height = (normalized * (maxHeight - minHeight) + minHeight).toInt // in range [minHeight, maxHeight]
-        gen(x, z, height, column)
+        gen(x, z, height, chunks)
       }
     }
-    column
+    val biomes = Array.fill(256) {BiomeType.getOrNull(0)}
+    new ChunkColumn(chunks, biomes)
   }
 
   private def gen(x: Int, z: Int, height: Int, chunks: Array[Chunk]): Unit = {

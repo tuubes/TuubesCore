@@ -2,5 +2,5 @@ package org.tuubes.core.worlds
 
 /** Generates chunks */
 trait ChunkGenerator {
-  def generateColumn(cx: Int, cz: Int): ChunkColumn
+  def generate(cx: Int, cz: Int): ChunkColumn
 }
