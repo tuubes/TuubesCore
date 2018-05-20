@@ -1,8 +1,10 @@
 package org.tuubes.core.worlds
 
+import com.electronwill.collections.{Bag, SimpleBag}
 import com.electronwill.niol.{NiolInput, NiolOutput}
 import com.electronwill.utils.CompactStorage
 import org.tuubes.core.blocks.BlockType
+import ChunkBlocks.{InitialBitsPerBlock, MaxPaletteSize}
 
 /** 16*16*16 blocks */
 final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
@@ -17,7 +19,7 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
       val layer = complexLayers(y)
       val id = layer(x * 16 + z)
       if (palette ne null) {
-        palette.get(id)
+        palette(id)
       } else {
         BlockType.getOrNull(id)
       }
@@ -38,8 +40,8 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
           val newId = blockInsertionId(value)
           val layer = CompactStorage(InitialBitsPerBlock, 256) // new layer of 16x16 = 256 values
           layer.fill(oldId) // initializes the whole layer with the old blockType
-          complexLayers(i) = layer
-          oneTypeLayers(i) = null
+          complexLayers(y) = layer
+          oneTypeLayers(y) = null
           set(layer, x, z, newId) // modifies the specified block
         }
       }
@@ -109,7 +111,7 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
     var i = 0
     while (i < 256) {
       val paletteId = layer(i)
-      val internalId = palette.get(paletteId).internalId
+      val internalId = palette(paletteId).internalId
       newLayer(i) = internalId
       i += 1
     }
@@ -118,9 +120,6 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
 
   /** Writes a chunk that can be read by [[ChunkBlocks.read]]. The format is specific to Tuubes. */
   def write(out: NiolOutput): Unit = {
-    out.putShort(storage.bitsPerValue)
-    out.putInt(storage.byteSize)
-    out.putBytes(storage.bytes)
     // Write the palette, if any
     if (palette ne null) {
       out.putShort(palette.size)
@@ -184,5 +183,12 @@ object ChunkBlocks {
       }
     }
     new ChunkBlocks(oneTypeLayers, complexLayers, palette)
+  }
+
+  def empty: ChunkBlocks = {
+    val air = BlockType.getOrNull(0)
+    val oneTypeLayers = Array.fill(16)(air)
+    val complexLayers = new Array[CompactStorage](16)
+    new ChunkBlocks(oneTypeLayers, complexLayers, new SimpleBag[BlockType](4))
   }
 }
