@@ -4,4 +4,5 @@ package org.tuubes.core.worlds
 trait World {
   def name: String
   def chunkProvider: ChunkService
+  def chunkGenerator: ChunkGenerator
 }
