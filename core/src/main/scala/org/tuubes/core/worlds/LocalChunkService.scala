@@ -4,8 +4,9 @@ import java.nio.file.StandardOpenOption
 
 import better.files.File
 import com.electronwill.niol.io.ChannelInput
+import org.tuubes.core.TuubesServer
 import org.tuubes.core.engine.{ActorMessage, ExecutionGroup, LocalActor}
-import org.tuubes.core.tasks.AsyncTask
+import org.tuubes.core.tasks.{IOSystem, TaskSystem}
 
 import scala.collection.mutable
 
@@ -13,6 +14,7 @@ import scala.collection.mutable
 final class LocalChunkService(private val w: LocalWorld) extends LocalActor with ChunkService {
   private val loadedChunks = new mutable.LongMap[Chunk]()
   private val loadingChunks = new mutable.HashSet[Long]()
+  private val generatingChunks = new mutable.HashSet[Long]()
   private val chunksDir = w.directory / "chunks"
 
   // --- ChunkService methods ---
@@ -65,13 +67,19 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
     val xyzKey = key(cx, cy, cz)
     val loaded = loadedChunks.get(xyzKey)
     loaded match {
-      case Some(chunk) => callback(chunk)
+      case Some(chunk) => {
+        // The chunk is loaded => callback now
+        callback(chunk)
+      }
       case None => {
+        // The chunk isn't loaded
         val chunkFile = file(cx, cy, cz)
-        if (chunkFile.exists && !loadingChunks.contains(xyzKey)) {
-          load(chunkFile, callback, xyzKey)
+        if (chunkFile.exists) {
+          // Loads the chunk if it's not already being loaded
+          asyncLoad(chunkFile, callback, xyzKey)
         } else {
-          // TODO generate the chunk, async
+          // Generates the chunk if it's not already being generated
+          asyncGen(cx, cz) // TODO callback
         }
       }
     }
@@ -84,8 +92,9 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
       case s: Some[Chunk] => callback(s)
       case None => {
         val chunkFile = file(cx, cy, cz)
-        if (chunkFile.exists && !loadingChunks.contains(xyzKey)) {
-          load(chunkFile, chunk => callback(Some(chunk)), xyzKey)
+        if (chunkFile.exists) {
+          // Loads the chunk if it's not already being loaded
+          asyncLoad(chunkFile, chunk => callback(Some(chunk)), xyzKey)
         } else {
           callback(None)
         }
@@ -107,17 +116,29 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
 
   private def file(cx: Int, cy: Int, cz: Int): File = chunksDir / s"$cx,$cy,$cz.chunk"
 
-  private def load(file: File, callback: Chunk => Unit, key: Long): Unit = {
-    loadingChunks.add(key)
-    AsyncTask.io(() => {
-      for (channel <- file.fileChannel(Seq(StandardOpenOption.READ))) {
-        val input = new ChannelInput(channel)
-        val blocks = ChunkBlocks.read(input)
-        val chunk = new Chunk(blocks)
-        handleLater(ChunkLoaded(key, chunk))
-        callback(chunk)
-      }
-      null
-    }).start()
+  private def asyncLoad(file: File, callback: Chunk => Unit, key: Long): Unit = {
+    if (!loadingChunks.contains(key)) {
+      loadingChunks.add(key)
+      IOSystem.execute(() => {
+        for (channel <- file.fileChannel(Seq(StandardOpenOption.READ))) {
+          val input = new ChannelInput(channel)
+          val blocks = ChunkBlocks.read(input)
+          val chunk = new Chunk(blocks)
+          handleLater(ChunkLoaded(key, chunk))
+          callback(chunk)
+        }
+      }, TuubesServer.logger.error(s"Unable to read chunk from $file", _))
+    }
+  }
+
+  private def asyncGen(cx: Int, cz: Int): Unit = {
+    val xzKey = cx.toLong << 32 | cz & 0xFFFFFFFFl
+    if (!generatingChunks.contains(xzKey)) {
+      generatingChunks.add(xzKey)
+      TaskSystem.execute(() => {
+        val column = w.chunkGenerator.generateColumn(cz, cz)
+        handleLater(ColumnLoaded(cx, cz, column))
+      })
+    }
   }
 }
