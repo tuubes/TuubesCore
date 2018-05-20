@@ -31,19 +31,14 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
     val oneType = oneTypeLayers(y)
     if (oneType ne null) {
       if (oneType ne value) {
-        if (oneType.internalId == 0) {
-          // This layer is currenly empty (full of air) => simply change its type
-          oneTypeLayers(y) = value
-        } else {
-          // Replace the one-type layer by a complex layer
-          val oldId = blockInsertionId(oneType)
-          val newId = blockInsertionId(value)
-          val layer = CompactStorage(InitialBitsPerBlock, 256) // new layer of 16x16 = 256 values
-          layer.fill(oldId) // initializes the whole layer with the old blockType
-          complexLayers(y) = layer
-          oneTypeLayers(y) = null
-          set(layer, x, z, newId) // modifies the specified block
-        }
+        // Replace the one-type layer by a complex layer
+        val oldId = blockInsertionId(oneType)
+        val newId = blockInsertionId(value)
+        val layer = CompactStorage(InitialBitsPerBlock, 256) // new layer of 16x16 = 256 values
+        layer.fill(oldId) // initializes the whole layer with the old blockType
+        complexLayers(y) = layer
+        oneTypeLayers(y) = null
+        set(layer, x, z, newId) // modifies the specified block
       }
     } else {
       val id = blockInsertionId(value)
@@ -143,6 +138,7 @@ final class ChunkBlocks(private val oneTypeLayers: Array[BlockType],
     }
   }
 }
+
 /** Companion object for ChunkBlocks */
 object ChunkBlocks {
   /** The number of bits per block of the new layers */
