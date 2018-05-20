@@ -53,10 +53,10 @@ sealed abstract class CompactStorage(final val size: Int, final val bytes: Array
     }
   }
   final def expand(increasePerValue: Int): CompactStorage = {
-    val newStorage = CompactStorage(storage.bitsPerValue + increasePerValue, size)
+    val newStorage = CompactStorage(bitsPerValue + increasePerValue, size)
     var i = 0
     while (i < size) {
-      newStorage(i) = storage(i)
+      newStorage(i) = this(i)
       i += 1
     }
     newStorage
