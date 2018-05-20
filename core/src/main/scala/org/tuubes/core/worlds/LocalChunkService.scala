@@ -54,8 +54,8 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
   }
 
   // --- Actual processing ---
-  private def processReqCreate(cx: Int, cy: Int, cz: Int, callback: Chunk => ()): Unit = {
     val loaded = loadedChunks.get(key(cz, cy, cz))
+  private def processReqCreate(cx: Int, cy: Int, cz: Int, callback: Chunk => Unit): Unit = {
     loaded match {
       case Some(chunk) => callback(chunk)
       case None => {
@@ -69,8 +69,7 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
     }
   }
 
-  private def processReqExisting(cx: Int, cy: Int, cz: Int, callback: Option[Chunk] => ()): Unit = {
-    val loaded = loadedChunks.get(key(cz, cy, cz))
+  private def processReqExisting(cx: Int, cy: Int, cz: Int, callback: Option[Chunk] => Unit): Unit = {
     loaded match {
       case s: Some[Chunk] => callback(s)
       case None => {
@@ -84,7 +83,7 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
     }
   }
 
-  private def processTestExists(cx: Int, cy: Int, cz: Int, callback: Boolean => ()): Unit = {
+  private def processTestExists(cx: Int, cy: Int, cz: Int, callback: Boolean => Unit): Unit = {
     val loaded = loadedChunks.get(key(cz, cy, cz))
     loaded match {
       case Some(_) => callback(true)
@@ -98,7 +97,6 @@ final class LocalChunkService(private val w: LocalWorld) extends LocalActor with
 
   private def file(cx: Int, cy: Int, cz: Int): File = chunksDir / s"$cx,$cy,$cz.chunk"
 
-  private def load(file: File, callback: Chunk => ()): Unit = {
-
+  private def load(file: File, callback: Chunk => Unit, key: Long): Unit = {
   }
 }

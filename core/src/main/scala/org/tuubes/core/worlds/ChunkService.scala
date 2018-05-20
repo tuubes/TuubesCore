@@ -14,7 +14,7 @@ trait ChunkService {
    * @param cz: chunk Z coordinate
    * @param callback: the function to call when the chunk is available
    */
-  def requestCreate(cx: Int, cy: Int, cz: Int, callback: Chunk => ())
+  def requestCreate(cx: Int, cy: Int, cz: Int, callback: Chunk => Unit)
                    (implicit currentGroup: ExecutionGroup): Unit
 
   /**
@@ -25,7 +25,7 @@ trait ChunkService {
    * @param cz: chunk Z coordinate
    * @param callback: the function to call when the result is available
    */
-  def requestExisting(cx: Int, cy: Int, cz: Int, callback: Option[Chunk] => ())
+  def requestExisting(cx: Int, cy: Int, cz: Int, callback: Option[Chunk] => Unit)
                      (implicit currentGroup: ExecutionGroup): Unit
 
   /**
@@ -36,6 +36,6 @@ trait ChunkService {
    * @param cz: chunk Z coordinate
    * @param callback: the function to call when the result is available
    */
-  def testExists(cx: Int, cy: Int, cz: Int, callback: Boolean => ())
+  def testExists(cx: Int, cy: Int, cz: Int, callback: Boolean => Unit)
                 (implicit currentGroup: ExecutionGroup): Unit
 }
