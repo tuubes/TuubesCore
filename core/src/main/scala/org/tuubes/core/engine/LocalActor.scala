@@ -22,10 +22,12 @@ abstract class LocalActor(override final val id: ActorId) extends Actor {
 				   without going through the queue. */
         onMessage(msg)
       } else {
-        msgBox.add(msg)
+        handleLater(msg)
       }
     }
   }
+
+  protected[this] def handleLater(msg: ActorMessage): Unit = msgBox.add(msg)
 
   override protected def onMessage(msg: ActorMessage): Unit = {
     msg match {
