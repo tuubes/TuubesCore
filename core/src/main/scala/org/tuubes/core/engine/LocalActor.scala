@@ -8,7 +8,7 @@ import org.tuubes.core.engine.messages.{MoveToGroup, Terminate}
 /**
  * @author TheElectronWill
  */
-abstract class LocalActor(override final val id: ActorId) extends Actor {
+abstract class LocalActor extends Actor {
   private[this] val msgBox = new ConcurrentLinkedQueue[ActorMessage]
 
   private[this] var _state: ActorState = Created

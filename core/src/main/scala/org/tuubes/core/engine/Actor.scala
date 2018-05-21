@@ -31,11 +31,4 @@ trait Actor {
 	 * @return true if the message can be sent, false to ignore the message
 	 */
   protected def filter(msg: ActorMessage): Boolean
-
-  /**
-	 * Gets the ID that uniquely identifies this actor.
-	 *
-	 * @return the actor's unique id
-	 */
-  def id: ActorId
 }

@@ -55,7 +55,7 @@ final class ExecutionGroup extends Runnable {
                 actor.state = Moving
                 actor.moveGroup = null
                 it.remove()
-                moveGroup += actor
+                moveGroup.add(actor)
               }
             }
           }
@@ -80,7 +80,7 @@ final class ExecutionGroup extends Runnable {
 	 *
 	 * @param actor the actor to add
 	 */
-  def +=(actor: LocalActor): Unit = {
+  def add(actor: LocalActor): Unit = {
     assert(actor.state == Created || actor.state == Moving)
     toAdd.offer(actor)
     actor.group = this
