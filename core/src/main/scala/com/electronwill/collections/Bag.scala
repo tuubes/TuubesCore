@@ -15,8 +15,9 @@ abstract class Bag[A] extends mutable.Iterable[A] with Compactable {
   def +=(elem: A): this.type
   def ++=(array: Array[A], offset: Int, length: Int): this.type
   def clear(): Unit
-  def contains(elem: A): Boolean = find(_ == elem).isDefined
+  def contains(elem: A): Boolean = indexOf(elem) != -1
   def iterator: MutableIterator[A]
+  def indexOf(elem: A): Int
 
   override final def hasDefiniteSize = true
 }

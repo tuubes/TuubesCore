@@ -1,6 +1,6 @@
 package org.tuubes.core.plugins
 
-import org.tuubes.core.LocalWorld
+import org.tuubes.core.worlds.LocalWorld
 
 import scala.collection.mutable
 

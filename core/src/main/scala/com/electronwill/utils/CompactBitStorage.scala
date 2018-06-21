@@ -6,27 +6,65 @@ package com.electronwill.utils
 object CompactStorage {
   def apply(bitsPerValue: Int, size: Int): CompactStorage = {
     require(bitsPerValue > 0 && bitsPerValue < 32, "it is required that 0 < bitsPerValue < 32")
-    val byteSize = Math.ceil(bitsPerValue * size / 8).toInt
+    val arraySize = byteSize(bitsPerValue, size)
+    val byteArray = new Array[Byte](arraySize)
     bitsPerValue match {
-      case 4  => new CompactStorage4(size, byteSize)
-      case 8  => new CompactStorage8(size, byteSize)
-      case 16 => new CompactStorage16(size, byteSize)
-      case _  => new CompactStorageN(bitsPerValue, size, byteSize)
+      case 4  => new CompactStorage4(size, byteArray)
+      case 8  => new CompactStorage8(size, byteArray)
+      case 16 => new CompactStorage16(size, byteArray)
+      case _  => new CompactStorageN(bitsPerValue, size, byteArray)
     }
   }
+  def apply(bitsPerValue: Int, byteArray: Array[Byte]): CompactStorage = {
+    val size = byteArray.length * 8 / bitsPerValue
+    bitsPerValue match {
+      case 4  => new CompactStorage4(size, byteArray)
+      case 8  => new CompactStorage8(size, byteArray)
+      case 16 => new CompactStorage16(size, byteArray)
+      case _  => new CompactStorageN(bitsPerValue, size, byteArray)
+    }
+  }
+  def byteSize(bitsPerValue: Int, numberOfValues: Int): Int = {
+    Math.ceil(bitsPerValue * numberOfValues / 8).toInt
+  }
 }
-sealed abstract class CompactStorage(final val size: Int, bs: Int) {
-  final val bytes = new Array[Byte](bs)
-
+sealed abstract class CompactStorage(final val size: Int, final val bytes: Array[Byte]) {
   final def byteSize: Int = bytes.length
   def bitsPerValue: Int
 
   def apply(idx: Int): Int
   def update(idx: Int, value: Int): Unit
+
+  final def fill(value: Int): Unit = {
+      var i = 0
+      while (i < size) {
+        this(i) = value
+        i += 1
+      }
+  }
+  final def replace(value: Int, replacement: Int): Unit = {
+    var i = 0
+    while (i < size) {
+      val v = this(i)
+      if (v == value) {
+        this(i) = replacement
+      }
+      i += 1
+    }
+  }
+  final def expand(increasePerValue: Int): CompactStorage = {
+    val newStorage = CompactStorage(bitsPerValue + increasePerValue, size)
+    var i = 0
+    while (i < size) {
+      newStorage(i) = this(i)
+      i += 1
+    }
+    newStorage
+  }
 }
 
-final class CompactStorageN private[utils] (val bitsPerValue: Int, s: Int, bs: Int)
-    extends CompactStorage(s, bs) {
+final class CompactStorageN private[utils] (val bitsPerValue: Int, s: Int, b: Array[Byte])
+    extends CompactStorage(s, b) {
   override def apply(idx: Int): Int = {
     var value = 0
     var i = 0
@@ -58,7 +96,7 @@ final class CompactStorageN private[utils] (val bitsPerValue: Int, s: Int, bs: I
   }
 }
 
-final class CompactStorage4 private[utils] (s: Int, bs: Int) extends CompactStorage(s, bs) {
+final class CompactStorage4 private[utils] (s: Int, b: Array[Byte]) extends CompactStorage(s, b) {
   override def bitsPerValue: Int = 4
   override def apply(idx: Int): Int = {
     val byteIdx = idx >> 1 // (>> 1) divides by 2
@@ -78,7 +116,7 @@ final class CompactStorage4 private[utils] (s: Int, bs: Int) extends CompactStor
   }
 }
 
-final class CompactStorage8 private[utils] (s: Int, bs: Int) extends CompactStorage(s, bs) {
+final class CompactStorage8 private[utils] (s: Int, b: Array[Byte]) extends CompactStorage(s, b) {
   override def bitsPerValue: Int = 8
   override def apply(idx: Int): Int = {
     bytes(idx)
@@ -88,7 +126,7 @@ final class CompactStorage8 private[utils] (s: Int, bs: Int) extends CompactStor
   }
 }
 
-final class CompactStorage16 private[utils] (s: Int, bs: Int) extends CompactStorage(s, bs) {
+final class CompactStorage16 private[utils] (s: Int, b: Array[Byte]) extends CompactStorage(s, b) {
   override def bitsPerValue: Int = 16
   override def apply(idx: Int): Int = {
     val firstIdx = idx << 1 // (<< 1) multiplies by 2

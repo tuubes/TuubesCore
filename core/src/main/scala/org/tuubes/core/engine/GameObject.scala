@@ -1,18 +1,26 @@
 package org.tuubes.core.engine
 
 import com.electronwill.collections.RecyclingIndex
+import org.tuubes.core.worlds.LocalWorld
 
 import scala.collection.mutable.ArrayBuffer
 
 /**
  * @author TheElectronWill
  */
-final class GameObject(id: ActorId) extends LocalActor(id) {
+final class GameObject extends LocalActor {
   private[this] val props = new PropertyStorage()
   private[this] val behaviors = new ArrayBuffer[Behavior]
   private[this] val updateListeners = new RecyclingIndex[Runnable]
+  private[this] var _world: LocalWorld = _
+  private[this] var _id: Int = _
 
   def properties: PropertyStorage = props
+  def world: LocalWorld = _world
+  def id: Int = _id
+
+  private[tuubes] def world_=(w: LocalWorld) = _world = w
+  private[tuubes] def id_=(id: Int) = _id = id
 
   override protected def onMessage(msg: ActorMessage): Unit = {
     super.onMessage(msg)

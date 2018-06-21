@@ -12,6 +12,7 @@ import org.tuubes.core.tasks.{VolatileArray => VArr}
 
 import scala.annotation.{tailrec, varargs}
 import scala.collection.mutable.ArrayBuffer
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -36,7 +37,7 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
   def result: Option[Try[B]] = Option(_result)
 
   /**
-	 * Completes this task with the given result.
+	 * Completes this task with the given result, as a `Success`.
 	 *
 	 * @param result the result
 	 */
@@ -218,6 +219,58 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
   def thenStart(tasks: AsyncTask[_, _]*): this.type = {
     addNext(_ => { tasks.foreach(_.start()); null }, DummyExecutor)
     this
+  }
+
+  /**
+   * After this task, call the given function and wait for the callback.
+   *
+   * @param callbackCall the function to call
+   * @tparam C the result type
+   * @return the newly created child task
+   */
+  def thenCallback[C](callbackCall: (Try[C] => Unit) => Any): AsyncTask[Try[C], C] = {
+    val task = new ChildTask[Try[C], C](root, identity, DummyExecutor)
+    this.addNext(b => {callbackCall(task.submit); null}, DummyExecutor)
+    task
+  }
+
+  /**
+   * After this task, calls the given function and wait for the callback.
+   *
+   * @param callbackCall the function to call
+   * @tparam C the result type
+   * @return the newly created child task
+   */
+  def thenCallback[C](callbackCall: ThrowableFunction1[(C => Unit), Any]): AsyncTask[C, C] = {
+    val task = new ChildTask[C, C](root, Success(_), DummyExecutor)
+    this.addNext(b => {callbackCall(task.submit); null}, DummyExecutor)
+    task
+  }
+
+  /**
+   * After this task, calls the given function with the task's result and wait for the callback.
+   *
+   * @param callbackCall the function to call
+   * @tparam C the result type
+   * @return the newly created child task
+   */
+  def thenCallback[C](callbackCall: (B, (Try[C] => Unit)) => Any): AsyncTask[Try[C], C] = {
+    val task = new ChildTask[Try[C], C](root, identity, DummyExecutor)
+    this.addNext(b => {callbackCall(b, task.submit); null}, DummyExecutor)
+    task
+  }
+
+  /**
+   * After this task, calls the given function with the task's result and wait for the callback.
+   *
+   * @param callbackCall the function to call
+   * @tparam C the result type
+   * @return the newly created child task
+   */
+  def thenCallback[C](callbackCall: ThrowableFunction2[B, (C => Unit), Any]): AsyncTask[C, C] = {
+    val task = new ChildTask[C, C](root, Success(_), DummyExecutor)
+    this.addNext(b => {callbackCall(b, task.submit); null}, DummyExecutor)
+    task
   }
 
   /**
@@ -407,10 +460,10 @@ abstract class AsyncTask[A, B](private[this] val function: A => Try[B],
 	 */
   private final def run(previousResult: A): Unit = {
     _status.set(STARTED)
-    _result = function(previousResult)
-    _result match {
-      case Success(_) => handleSuccess _
-      case Failure(_) => handleFailure _
+    val result = function(previousResult)
+    result match {
+      case s: Success[B] => handleSuccess(s)
+      case f: Failure[B] => handleFailure(previousResult, f)
     }
   }
 
@@ -499,6 +552,28 @@ object AsyncTask {
 	 */
   def compute[R](f: () => Try[R]): AsyncTask[Unit, R] = {
     new RootTask[R](wrap(f), TaskSystem.executor)
+  }
+
+  /**
+   * Creates a new task that is called back by a function.
+   *
+   * @param callbackCall the function that calls back
+   * @tparam R the result type
+   * @return the task, unstarted
+   */
+  def callback[R](callbackCall: (Try[R] => Unit) => Any): AsyncTask[Try[R], R] = {
+    new CalledRootTask[R](callbackCall)
+  }
+
+  /**
+   * Creates a new task that is called back by a function.
+   *
+   * @param callbackCall the function that calls back
+   * @tparam R the result type
+   * @return the task, unstarted
+   */
+  def callback[R](callbackCall: ThrowableFunction1[(R => Unit), Any]): AsyncTask[Try[R], R] = {
+    new CalledRootTask2[R](callbackCall)
   }
 
   /** Wraps a function in a Try to catch all the non-fatal exceptions */
@@ -639,8 +714,7 @@ object AsyncTask {
     // the `action` task with a Success when the enough tasks are completed.
     a =>
       {
-        val currentCount = successCounter
-          .incrementAndGet() // each thread gets a different count
+        val currentCount = successCounter.incrementAndGet() // each thread gets a different count
         if (currentCount <= count) {
           resultArray(currentCount - 1) = a // volatile update with the unique currentCount
           if (currentCount == count) {
@@ -752,6 +826,10 @@ private final class AwaitingRootTask[R, T](private[this] val tasks: AsyncTask[_,
     }
   }
 }
+
+/**
+ * A root task that runs after the given delay.
+ */
 private final class DelayedRootTask[B](private[this] val delay: Long,
                                        private[this] val unit: TimeUnit,
                                        f: () => Try[B],
@@ -763,6 +841,46 @@ private final class DelayedRootTask[B](private[this] val delay: Long,
     if (casStatus(CREATED, SUBMITTED)) {
       AsyncTask.markRootSubmitted(nextTasksIterator())
       TaskSystem.schedule(() => submit(()), delay, unit)
+    }
+  }
+}
+
+/**
+ * A root task that is triggered by an external async callback.
+ */
+private final class CalledRootTask[B](private[this] val callback: (Try[B] => Unit) => Any)
+    extends AsyncTask[Try[B], B](identity, DummyExecutor) {
+
+  protected[this] val root = this
+
+  override def start(): Unit = {
+    if (casStatus(CREATED, SUBMITTED)) {
+      AsyncTask.markRootSubmitted(nextTasksIterator())
+      try {
+        callback(submit)
+      } catch {
+        case NonFatal(e) => submit(Failure(e))
+      }
+    }
+  }
+}
+
+/**
+ * A root task that is triggered by an external async callback.
+ */
+private final class CalledRootTask2[B](private[this] val callback: (B => Unit) => Any)
+  extends AsyncTask[Try[B], B](identity, DummyExecutor) {
+
+  protected[this] val root = this
+
+  override def start(): Unit = {
+    if (casStatus(CREATED, SUBMITTED)) {
+      AsyncTask.markRootSubmitted(nextTasksIterator())
+      try {
+        callback(b => submit(Success(b)))
+      } catch {
+        case NonFatal(e) => submit(Failure(e))
+      }
     }
   }
 }

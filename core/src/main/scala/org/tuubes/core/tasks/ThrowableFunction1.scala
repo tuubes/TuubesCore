@@ -18,9 +18,7 @@ trait ThrowableFunction1[-T, +R] {
   def apply(v1: T): R
 }
 object ThrowableFunction1 {
-  implicit def fromFunction1[T, R](f: T => R): ThrowableFunction1[T, R] =
-    f.apply(_)
+  implicit def fromFunction1[T, R](f: T => R): ThrowableFunction1[T, R] = f.apply(_)
 
-  implicit def toFunction1[T, R](tf: ThrowableFunction1[T, R]): (T) => R =
-    tf.apply
+  implicit def toFunction1[T, R](tf: ThrowableFunction1[T, R]): (T) => R = tf.apply
 }
