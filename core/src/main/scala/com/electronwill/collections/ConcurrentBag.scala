@@ -11,13 +11,6 @@ final class ConcurrentBag[A >: Null <: AnyRef: ClassTag](initialCapacity: Int = 
   @volatile
   private[this] var array = new Array[A](initialCapacity)
 
-  override def applyOrElse[A1 <: Int, B1 >: A](i: A1, default: A1 => B1): B1 = {
-    if (i >= 0 && i < s) {
-      array(i)
-    } else {
-      default(i)
-    }
-  }
   override def apply(i: Int): A = {
     if (i >= 0 && i < s) {
       array(i)

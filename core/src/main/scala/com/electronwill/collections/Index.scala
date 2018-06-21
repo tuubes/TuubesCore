@@ -9,7 +9,7 @@ package com.electronwill.collections
  *
  * @author TheElectronWill
  */
-trait Index[A] extends Iterable[(Int, A)] with Compactable {
+abstract class Index[A] extends Iterable[(Int, A)] with Compactable {
 
   /**
 	 * Adds an element to the index and returns its ID.

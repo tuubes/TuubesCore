@@ -8,7 +8,7 @@ import scala.collection.mutable
  *
  * @author TheElectronWill
  */
-trait Bag[A] extends mutable.Iterable[A] with Compactable with PartialFunction[Int, A] {
+abstract class Bag[A] extends mutable.Iterable[A] with Compactable {
   def apply(i: Int): A
   def remove(i: Int): Unit
   def -=(elem: A): this.type
@@ -19,5 +19,4 @@ trait Bag[A] extends mutable.Iterable[A] with Compactable with PartialFunction[I
   def iterator: MutableIterator[A]
 
   override final def hasDefiniteSize = true
-  override final def isDefinedAt(i: Int): Boolean = i < size && i >= 0
 }
