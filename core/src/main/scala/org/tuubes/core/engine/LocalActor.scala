@@ -8,32 +8,24 @@ import org.tuubes.core.engine.messages.{MoveToGroup, Terminate}
 /**
  * @author TheElectronWill
  */
-abstract class LocalActor(override final val id: ActorId) extends Actor {
-  private[this] val msgBox = new ConcurrentLinkedQueue[ActorMessage]
-
+abstract class LocalActor(override final val id: ActorId = ActorId.next()) extends Actor {
+  protected[this] val msgBox = new ConcurrentLinkedQueue[ActorMessage]
   private[this] var _state: ActorState = Created
-  private[this] var _group: ExecutionGroup = _
-  private[engine] var moveGroup: ExecutionGroup = _
 
   override def !(msg: ActorMessage)(implicit currentGroup: ExecutionGroup): Unit = {
     if (filter(msg)) {
-      if (currentGroup eq group) {
-        /* Fast path! Messages coming from the actor's group are processed immediately
-				   without going through the queue. */
-        onMessage(msg)
-      } else {
-        msgBox.add(msg)
-      }
+      msgBox.add(msg)
     }
   }
 
-  override protected def onMessage(msg: ActorMessage): Unit = {
+  /**
+   * Reacts to a received message.
+   *
+   * @param msg the received message
+   */
+  protected def onMessage(msg: ActorMessage): Unit = {
     msg match {
-      case Terminate =>
-        group = null
-        state = Terminated
-      case MoveToGroup(newGroup) =>
-        moveGroup = newGroup
+      case Terminate => terminate()
     }
   }
 
@@ -47,13 +39,23 @@ abstract class LocalActor(override final val id: ActorId) extends Actor {
 
   def update(dt: Double): Unit
 
-  override protected def filter(msg: ActorMessage): Boolean = {
+  protected[this] def terminate(): Unit = {
+    state = Terminated
+  }
+
+  /**
+   * Filters a message before it is sent to this actor. Returns true if and only if the message
+   * can be sent, false if it must be ignored. An ignored message will never be processed by
+   * the  [[onMessage()]] method.
+   *
+   * @param msg the message that is going to be sent
+   * @return true if the message can be sent, false to ignore the message
+   */
+  protected def filter(msg: ActorMessage): Boolean = {
     state != Terminated
   }
 
   def state: ActorState = _state
-  private[engine] def state_=(s: ActorState): Unit = _state = s
 
-  def group: ExecutionGroup = _group
-  private[engine] def group_=(g: ExecutionGroup): Unit = _group = g
+  private[engine] def state_=(s: ActorState): Unit = _state = s
 }
