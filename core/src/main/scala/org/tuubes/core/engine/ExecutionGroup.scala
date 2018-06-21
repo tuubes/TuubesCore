@@ -193,7 +193,6 @@ object ExecutionGroup {
   val NbMovingStats: Int = ???
   val MaxUpdateTime0: Long = ???
   val MinUpdateTime0: Long = ???
-  val MaxMergeTotalTime: Long = ???
   val IncreaseFactor: Double = ???
   val MaxIncreaseCount: Int = ???
   val MaxGroupCount: Int = ???
