@@ -53,6 +53,16 @@ final class ConcurrentBag[A >: Null: ClassTag](initialCapacity: Int = 16) extend
     }
     this
   }
+  override def ++=(arr: Array[A], offset: Int, length: Int): this.type = {
+    this.synchronized {
+      val newS = s + length
+      if (newS >= array.length) {
+        array = grow(array, math.max(newS, s + (s >> 1)))
+      }
+      System.arraycopy(arr, offset, array, s, length)
+    }
+    this
+  }
   override def -=(elem: A): ConcurrentBag.this.type = {
     this.synchronized {
       val length = s

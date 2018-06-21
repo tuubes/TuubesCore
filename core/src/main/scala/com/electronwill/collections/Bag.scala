@@ -13,6 +13,7 @@ trait Bag[A] extends mutable.Iterable[A] with Compactable with PartialFunction[I
   def remove(i: Int): Unit
   def -=(elem: A): this.type
   def +=(elem: A): this.type
+  def ++=(array: Array[A], offset: Int, length: Int): this.type
   def clear(): Unit
   def contains(elem: A): Boolean = find(_ == elem).isDefined
   def iterator: MutableIterator[A]

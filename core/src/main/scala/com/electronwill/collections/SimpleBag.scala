@@ -6,8 +6,8 @@ import scala.reflect.ClassTag
  * @author TheElectronWill
  */
 final class SimpleBag[A >: Null: ClassTag](initialCapacity: Int = 16) extends Bag[A] {
-  private[this] var array = new Array[A](initialCapacity)
-  private[this] var s: Int = 0
+  private var array = new Array[A](initialCapacity)
+  private var s: Int = 0
 
   override def size: Int = s
   override def apply(i: Int): A = array(i)
@@ -36,6 +36,18 @@ final class SimpleBag[A >: Null: ClassTag](initialCapacity: Int = 16) extends Ba
     s += 1
     this
   }
+  override def ++=(arr: Array[A], offset: Int, length: Int): this.type = {
+    val newS = s + length
+    if (newS >= array.length) {
+      array = grow(array, math.max(newS, s + (s >> 1)))
+    }
+    System.arraycopy(arr, offset, array, s, length)
+    this
+  }
+  def ++=(bag: SimpleBag[A], offset: Int): this.type = ++=(bag.array, offset, bag.s - offset)
+
+  def ++=(bag: SimpleBag[A]): this.type = ++=(bag.array, 0, bag.s)
+
   override def iterator: MutableIterator[A] = new MutableIterator[A] {
     private[this] var i = 0
     private[this] val l = s
@@ -53,6 +65,16 @@ final class SimpleBag[A >: Null: ClassTag](initialCapacity: Int = 16) extends Ba
       SimpleBag.this.+=(elem)
     }
   }
+
+  override def foreach[U](f: A => U): Unit = {
+    val l = s
+    var i = 0
+    while (i < l) {
+      f(array(i))
+      i += 1
+    }
+  }
+
   override def compact(): Unit = {
     if (array.length > s) {
       array = shrink(array, s)

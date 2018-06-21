@@ -42,7 +42,7 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](initialCapac
   override def +=(element: A): Int = {
     elements.synchronized {
       elementCount += 1
-      var elems = elements //volatile read, var because it may be replaced by a bigger array
+      var elems = elements //volatile read; var because it may be replaced by a bigger array
       val id: Int =
         if (recycleCount == 0) {
           if (elems.length < elementCount) {
@@ -56,6 +56,28 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](initialCapac
       elems(id) = element
       elements = elems //volatile write
       id
+    }
+  }
+
+
+  override def +=(f: Int => A): A = {
+    elements.synchronized {
+      elementCount += 1
+      var elems = elements //volatile read; var because it may be replaced by a bigger array
+      val id: Int =
+        if (recycleCount == 0) {
+          if (elems.length < elementCount) {
+            elems = growAmortize(elems, elementCount)
+          }
+          elementCount
+        } else {
+          recycleCount -= 1
+          idsToRecycle(recycleCount)
+        }
+      val elem = f(id)
+      elems(id) = elem
+      elements = elems //volatile write
+      elem
     }
   }
 

@@ -39,18 +39,29 @@ final class RecyclingIndex[A >: Null <: AnyRef: ClassTag](initialCapacity: Int,
 
   override def +=(element: A): Int = {
     elementCount += 1
-    val id: Int =
-      if (recycleCount == 0) {
-        if (elements.length < elementCount) {
-          elements = growAmortize(elements, elementCount)
-        }
-        elementCount
-      } else {
-        recycleCount -= 1
-        idsToRecycle(recycleCount)
-      }
+    val id = nextId()
     elements(id) = element
     id
+  }
+
+  override def +=(f: Int => A): A = {
+    elementCount += 1
+    val id = nextId()
+    val elem = f(id)
+    elements(id) = elem
+    elem
+  }
+
+  private def nextId(): Int = {
+    if (recycleCount == 0) {
+      if (elements.length < elementCount) {
+        elements = growAmortize(elements, elementCount)
+      }
+      elementCount
+    } else {
+      recycleCount -= 1
+      idsToRecycle(recycleCount)
+    }
   }
 
   override def remove(id: Int): Unit = {

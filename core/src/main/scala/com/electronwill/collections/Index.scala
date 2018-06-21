@@ -20,6 +20,14 @@ trait Index[A] extends Iterable[(Int, A)] with Compactable {
   def +=(element: A): Int
 
   /**
+   * Constructs an element with its ID and adds it to the index.
+   *
+   * @param f the function that creates an element with an ID
+   * @return the the newly created element
+   */
+  def +=(f: Int => A): A
+
+  /**
 	 * Removes and returns an element from the index.
 	 *
 	 * @param id the id of the element to remove
