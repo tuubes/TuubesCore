@@ -5,9 +5,9 @@ import scala.reflect.ClassTag
 /**
  * @author TheElectronWill
  */
-final class SimpleBag[A >: Null: ClassTag](initialCapacity: Int = 16) extends Bag[A] {
-  private var array = new Array[A](initialCapacity)
-  private var s: Int = 0
+final class SimpleBag[A >: Null <: AnyRef: ClassTag](initialCapacity: Int = 16) extends Bag[A] {
+  private[this] var array = new Array[A](initialCapacity)
+  private[this] var s: Int = 0
 
   override def size: Int = s
   override def apply(i: Int): A = array(i)
@@ -44,9 +44,15 @@ final class SimpleBag[A >: Null: ClassTag](initialCapacity: Int = 16) extends Ba
     System.arraycopy(arr, offset, array, s, length)
     this
   }
-  def ++=(bag: SimpleBag[A], offset: Int): this.type = ++=(bag.array, offset, bag.s - offset)
 
-  def ++=(bag: SimpleBag[A]): this.type = ++=(bag.array, 0, bag.s)
+  def ++=(bag: SimpleBag[A], offset: Int = 0): this.type = {
+    bag.addTo(this, offset)
+    this
+  }
+
+  private def addTo(to: SimpleBag[A], offset: Int): Unit = {
+    to ++= (array, offset, s - offset)
+  }
 
   override def iterator: MutableIterator[A] = new MutableIterator[A] {
     private[this] var i = 0

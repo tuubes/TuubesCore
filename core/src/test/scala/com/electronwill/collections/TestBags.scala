@@ -41,7 +41,7 @@ class TestBags {
 		assert(bag.isEmpty)
 	}
 
-	private def bagOf[E >: Null : ClassTag](elements: E*): Bag[E] = {
+	private def bagOf[E >: Null <: AnyRef : ClassTag](elements: E*): Bag[E] = {
 		val bag = new SimpleBag[E]
 		elements.foreach(bag.+=)
 		bag

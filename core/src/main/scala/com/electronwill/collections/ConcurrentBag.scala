@@ -5,7 +5,7 @@ import scala.reflect.ClassTag
 /**
  * @author TheElectronWill
  */
-final class ConcurrentBag[A >: Null: ClassTag](initialCapacity: Int = 16) extends Bag[A] {
+final class ConcurrentBag[A >: Null <: AnyRef: ClassTag](initialCapacity: Int = 16) extends Bag[A] {
   @volatile
   private[this] var s = 0
   @volatile
