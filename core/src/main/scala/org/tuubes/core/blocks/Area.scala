@@ -7,7 +7,7 @@ import org.tuubes.core.engine.{Actor, ActorMessage}
  * @author TheElectronWill
  */
 trait Area extends Actor {
-  override protected def filter(msg: ActorMessage): Boolean = {
+  def filter(msg: ActorMessage): Boolean = {
     msg.isInstanceOf[AreaMessage] || msg.isInstanceOf[EngineMessage]
   }
 }
