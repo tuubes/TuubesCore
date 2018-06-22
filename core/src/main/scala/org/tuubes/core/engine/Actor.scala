@@ -15,11 +15,4 @@ trait Actor {
 	 * @param msg the message
 	 */
   def !(msg: ActorMessage)(implicit currentGroup: ExecutionGroup): Unit
-
-  /**
-	 * Gets the ID that uniquely identifies this actor.
-	 *
-	 * @return the actor's unique id
-	 */
-  def id: ActorId
 }

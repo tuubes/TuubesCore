@@ -5,7 +5,7 @@ import org.tuubes.core.engine.messages.MoveToGroup
 /**
  * @author TheElectronWill
  */
-abstract class GroupedActor(id: ActorId = ActorId.next()) extends LocalActor(id) {
+abstract class GroupedActor extends LocalActor {
   private[this] var _group: ExecutionGroup = _
   private[engine] var moveGroup: ExecutionGroup = _
 
@@ -16,7 +16,7 @@ abstract class GroupedActor(id: ActorId = ActorId.next()) extends LocalActor(id)
 				   without going through the queue. */
         onMessage(msg)
       } else {
-        msgBox.add(msg)
+        handleLater(msg)
       }
     }
   }
@@ -27,6 +27,8 @@ abstract class GroupedActor(id: ActorId = ActorId.next()) extends LocalActor(id)
       case MoveToGroup(newGroup) => moveGroup = newGroup
     }
   }
+
+  protected def handleLater(msg: ActorMessage): Unit = msgBox.add(msg)
 
   def group: ExecutionGroup = _group
   private[engine] def group_=(g: ExecutionGroup): Unit = _group = g
