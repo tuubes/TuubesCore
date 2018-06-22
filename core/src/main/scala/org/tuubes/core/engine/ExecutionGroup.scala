@@ -1,5 +1,6 @@
 package org.tuubes.core.engine
 
+import java.lang.invoke.{MethodHandles, MethodType, SwitchPoint}
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 
@@ -20,14 +21,17 @@ final class ExecutionGroup(private val id: Int) extends Runnable {
   private val toAdd = new ConcurrentLinkedQueue[GroupedActor]
   private val toMerge = new ConcurrentLinkedQueue[SimpleBag[GroupedActor]]
 
+  private val stats = new MovingStats(ExecutionGroup.NbMovingStats)
   private val actors = new SimpleBag[GroupedActor](256) // Bag for O(1) removal
   private var lastTime: Double = Double.NaN
   private var maxUpdateTime = 0L
   private var minUpdateTime = 0L
   private var increaseCount = 0
-  private var continue = false
 
-  private val stats = new MovingStats(ExecutionGroup.NbMovingStats)
+  private var continue = false
+  private var forwardDestination: ExecutionGroup = _
+  private val continueSwitch = new SwitchPoint() // SwitchPoint invalidated when the group is deleted
+  private val addHandle = continueSwitch.guardWithTest(ExecutionGroup.normalHandle, ExecutionGroup.forwarderHandle)
 
   /** Accepts the actors that are waiting to be added and merged into this group */
   private def acceptNewActors(): Unit = {
@@ -119,8 +123,10 @@ final class ExecutionGroup(private val id: Int) extends Runnable {
     } else {
       val otherGroup = ExecutionGroup.belowMinGroup.getAndUpdate(v => if (v == null) this else v)
       if (otherGroup != null) {
-        otherGroup.merge(actors)
-        ExecutionGroup.delete(id)
+        forwardDestination = otherGroup
+        SwitchPoint.invalidateAll(Array(continueSwitch))
+        otherGroup.merge(actors, toAdd, toMerge)
+        ExecutionGroup.delete(this)
         continue = false
       }
     }
@@ -163,19 +169,37 @@ final class ExecutionGroup(private val id: Int) extends Runnable {
    * @param actor the actor to add
    */
   def add(actor: GroupedActor): Unit = {
+    addHandle.invokeExact(actor) // Call normalAdd until the SwitchPoint is invalidated, then call forwardAdd
+  }
+
+  // private[ExecutionGroup] makes the method "public" in the bytecode, allowing the
+  // MethodHandles.Lookup  to find the methods while being executed in the companion object
+  /** Adds an actor to this group */
+  private[ExecutionGroup] def normalAdd(actor: GroupedActor): Unit = {
     assert(actor.state == Created || actor.state == Moving)
     actor.group = this
     toAdd.offer(actor)
   }
 
+  /** Adds an actor to the forwardDestination group, because this group has been merged */
+  private[ExecutionGroup] def forwardAdd(actor: GroupedActor): Unit = {
+    forwardDestination.add(actor)
+  }
+
   /**
    * Merge a group of actors into this group.
    *
-   * @param actors the actors to add to this group
+   * @param actors     the actors of the group to merge into this group
+   * @param addQueue   the addition queue of the group to merge
+   * @param mergeQueue the merge queue of the group to merge
    */
-  def merge(actors: SimpleBag[GroupedActor]): Unit = {
+  private def merge(actors: SimpleBag[GroupedActor],
+                    addQueue: util.Queue[GroupedActor],
+                    mergeQueue: util.Queue[SimpleBag[GroupedActor]]): Unit = {
     actors.foreach(a => {a.group = this; a.state = Moving})
     toMerge.offer(actors)
+    toMerge.addAll(mergeQueue)
+    toAdd.addAll(addQueue)
   }
 
   /**
@@ -190,6 +214,7 @@ final class ExecutionGroup(private val id: Int) extends Runnable {
 }
 
 object ExecutionGroup {
+  //--- Global parameters ---
   val NbMovingStats: Int = ???
   val MaxUpdateTime0: Long = ???
   val MinUpdateTime0: Long = ???
@@ -197,13 +222,15 @@ object ExecutionGroup {
   val MaxIncreaseCount: Int = ???
   val MaxGroupCount: Int = ???
 
-  private val groups = new RecyclingIndex[ExecutionGroup](MaxGroupCount)
-  private val belowMinGroup = new AtomicReference[ExecutionGroup]()
+  //--- Groups management ---
+  private final val groups = new RecyclingIndex[ExecutionGroup](MaxGroupCount)
+  private final val belowMinGroup = new AtomicReference[ExecutionGroup]()
 
   def create(): Option[ExecutionGroup] = {
     groups.synchronized {
       if (groups.size < MaxGroupCount) {
-        Some(groups += (i => new ExecutionGroup(i)))
+        val newGroup = groups += (i => new ExecutionGroup(i))
+        Some(newGroup)
       } else {
         None
       }
@@ -216,9 +243,17 @@ object ExecutionGroup {
     }
   }
 
-  private[engine] def delete(id: Int): Unit = {
+  private[engine] def delete(group: ExecutionGroup): Unit = {
     groups.synchronized {
-      groups.remove(id)
+      groups -= group.id
     }
+  }
+
+  //--- Handles for the SwitchPoint ---
+  private final val (normalHandle, forwarderHandle) = {
+    val lookup = MethodHandles.lookup()
+    val n = lookup.findVirtual(classOf[ExecutionGroup], "normalAdd", MethodType.methodType(classOf[Unit], classOf[GroupedActor]))
+    val f = lookup.findVirtual(classOf[ExecutionGroup], "forwardAdd", MethodType.methodType(classOf[Unit], classOf[GroupedActor]))
+    (n, f)
   }
 }
