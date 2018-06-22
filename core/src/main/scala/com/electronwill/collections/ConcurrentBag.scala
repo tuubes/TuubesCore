@@ -88,6 +88,15 @@ final class ConcurrentBag[A >: Null <: AnyRef: ClassTag](initialCapacity: Int = 
       }
     }
   }
+  override def indexOf(elem: A): Int = {
+    this.synchronized {
+      var i = 0
+      while (i < s && array(i) != elem) {
+        i += 1
+      }
+      if (i == s) -1 else i
+    }
+  }
   override def iterator: MutableIterator[A] = new MutableIterator[A] {
     private[this] var i = 0
     private[this] val (arrayView: Array[A], sView: Int) = {
