@@ -6,7 +6,7 @@ import better.files.File
 import com.electronwill.collections.{Bag, SimpleBag}
 import com.electronwill.niol.io.ChannelInput
 import org.tuubes.core.TuubesServer
-import org.tuubes.core.engine.{ActorMessage, ExecutionGroup, LocalActor}
+import org.tuubes.core.engine.{ActorMessage, ExecutionGroup, GroupedActor, LocalActor}
 import org.tuubes.core.tasks.{IOSystem, TaskSystem}
 
 import scala.collection.mutable
@@ -16,7 +16,7 @@ import scala.collection.mutable
  *
  * @param world the world that this service takes care of
  */
-final class LocalChunkService(private val world: LocalWorld) extends LocalActor with ChunkService {
+final class LocalChunkService(private val world: LocalWorld) extends GroupedActor with ChunkService {
   /** The currently loaded chunk columns */
   private val loadedColumns = new mutable.LongMap[ChunkColumn]()
 
@@ -92,7 +92,7 @@ final class LocalChunkService(private val world: LocalWorld) extends LocalActor 
     val columnKey = key(cx, cz)
     val loaded = loadedColumns.get(columnKey)
     loaded match {
-      case s: Some[Chunk] => callback(s)
+      case s: Some[ChunkColumn] => callback(s)
       case None => {
         val chunkFile = file(cx, cz)
         if (chunkFile.exists) {

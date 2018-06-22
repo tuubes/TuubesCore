@@ -20,5 +20,5 @@ trait ThrowableFunction0[+R] {
 object ThrowableFunction0 {
   implicit def fromFunction0[R](f: () => R): ThrowableFunction0[R] = () => f.apply()
 
-  implicit def toFunction0[R](tf: ThrowableFunction0[R]): () => R = tf.apply
+  implicit def toFunction0[R](tf: ThrowableFunction0[R]): () => R = () => tf.apply()
 }
