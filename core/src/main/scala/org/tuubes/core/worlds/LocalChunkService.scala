@@ -12,7 +12,7 @@ import org.tuubes.core.tasks.{IOSystem, TaskSystem}
 import scala.collection.mutable
 
 /**
- * Asynchronously servers chunk columns from local files.
+ * Asynchronously serves chunk columns from local files.
  *
  * @param world the world that this service takes care of
  */
