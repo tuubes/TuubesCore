@@ -1,6 +1,7 @@
 package org.tuubes.core.engine
 
 import java.lang.invoke.{MethodHandles, MethodType, SwitchPoint}
+import java.util
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 
@@ -31,7 +32,8 @@ final class ExecutionGroup(private val id: Int) extends Runnable {
   private var continue = false
   private var forwardDestination: ExecutionGroup = _
   private val continueSwitch = new SwitchPoint() // SwitchPoint invalidated when the group is deleted
-  private val addHandle = continueSwitch.guardWithTest(ExecutionGroup.normalHandle, ExecutionGroup.forwarderHandle)
+  private val addHandle = continueSwitch.guardWithTest(ExecutionGroup.normalHandle,
+                                                        ExecutionGroup.forwarderHandle)
 
   /** Accepts the actors that are waiting to be added and merged into this group */
   private def acceptNewActors(): Unit = {
@@ -114,18 +116,25 @@ final class ExecutionGroup(private val id: Int) extends Runnable {
   }
 
   /** Optimizes this group when updateTime < minUpdateTime */
-  private def optimizeTinyGroup(): Unit = {
-    // Group too small => decrease its max and min or merge it with another group
+  private def optimizeLightGroup(): Unit = {
+    // Group too lightweight => decrease its max and min or merge it with another group
     if (increaseCount > 0) {
       maxUpdateTime = (maxUpdateTime / ExecutionGroup.IncreaseFactor).toLong
       minUpdateTime = (minUpdateTime / ExecutionGroup.IncreaseFactor).toLong
       increaseCount -= 1
     } else {
-      val otherGroup = ExecutionGroup.belowMinGroup.getAndUpdate(v => if (v == null) this else v)
-      if (otherGroup != null) {
+      // If belowMinGroup is null, set it to this group and return
+      // If belowMinGroup is already set to this group, simply return
+      // If belowMinGroup is an other group, reset the variable to null and merge with the group
+      val otherGroup = ExecutionGroup.belowMinGroup.getAndUpdate(v => if (v == null || v == this) this else null)
+      if (otherGroup != null && otherGroup != this) {
+        // -- Merge with this other group --
+        // 1) Setup the forwarding to avoid losing actor (see issue #45):
         forwardDestination = otherGroup
         SwitchPoint.invalidateAll(Array(continueSwitch))
+        // 2) Move all the actors to the other group:
         otherGroup.merge(actors, toAdd, toMerge)
+        // 3) Stop this group:
         ExecutionGroup.delete(this)
         continue = false
       }
@@ -157,7 +166,7 @@ final class ExecutionGroup(private val id: Int) extends Runnable {
     if (avgUpdateTime > maxUpdateTime) {
       optimizeHeavyGroup()
     } else if (avgUpdateTime < minUpdateTime) {
-      optimizeTinyGroup()
+      optimizeLightGroup()
     }
 
     reschedule(updateTime)
@@ -225,7 +234,13 @@ object ExecutionGroup {
   //--- Groups management ---
   private final val groups = new RecyclingIndex[ExecutionGroup](MaxGroupCount)
   private final val belowMinGroup = new AtomicReference[ExecutionGroup]()
+  private final val groupOrdering: Ordering[ExecutionGroup] = Ordering.by(_.stats.mean)
 
+  /**
+   * Creates a new group, if possible.
+   *
+   * @return the new group, or None if the maximum number of groups has been reached
+   */
   def create(): Option[ExecutionGroup] = {
     groups.synchronized {
       if (groups.size < MaxGroupCount) {
@@ -237,23 +252,51 @@ object ExecutionGroup {
     }
   }
 
-  def existing(id: Int): Option[ExecutionGroup] = {
-    groups.synchronized {
-      groups(id)
-    }
-  }
-
+  /** Deletes a group */
   private[engine] def delete(group: ExecutionGroup): Unit = {
     groups.synchronized {
       groups -= group.id
     }
   }
 
+  /**
+   * Returns an existing group by its id.
+   *
+   * @param id the group's id
+   * @return the group, or None if no group matches this id
+   */
+  def existing(id: Int): Option[ExecutionGroup] = {
+    groups.synchronized {
+      groups(id)
+    }
+  }
+
+  /**
+   * Returns one of the lightest groups, that is, a group whose updateTime is smaller than the others.
+   *
+   * @return one of the lightest group
+   */
+  def lightest(): ExecutionGroup = {
+    val mini = belowMinGroup.get()
+    if (mini != null) {
+      mini
+    } else {
+      groups.synchronized {
+        groups.valuesIterator.min(groupOrdering)
+      }
+    }
+  }
+
+
   //--- Handles for the SwitchPoint ---
   private final val (normalHandle, forwarderHandle) = {
     val lookup = MethodHandles.lookup()
-    val n = lookup.findVirtual(classOf[ExecutionGroup], "normalAdd", MethodType.methodType(classOf[Unit], classOf[GroupedActor]))
-    val f = lookup.findVirtual(classOf[ExecutionGroup], "forwardAdd", MethodType.methodType(classOf[Unit], classOf[GroupedActor]))
+    val n = lookup.findVirtual(classOf[ExecutionGroup],
+                                "normalAdd",
+                                MethodType.methodType(classOf[Unit], classOf[GroupedActor]))
+    val f = lookup.findVirtual(classOf[ExecutionGroup],
+                                "forwardAdd",
+                                MethodType.methodType(classOf[Unit], classOf[GroupedActor]))
     (n, f)
   }
 }
