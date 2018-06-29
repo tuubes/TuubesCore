@@ -38,6 +38,7 @@ object ChunkColumn {
     for (i <- 0 until 256) {
       val id = in.getUnsignedByte()
       val biomeType = BiomeType.getOrNull(id)
+      biomes(i) = biomeType
     }
     new ChunkColumn(chunks, biomes)
   }
