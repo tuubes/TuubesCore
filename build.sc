@@ -1,6 +1,7 @@
 // build.sc
 import mill._, scalalib._
 import coursier.maven.MavenRepository
+import $ivy.`ch.epfl.scala::mill-bloop:1.0.0-M11`
 
 trait TuubesModule extends ScalaModule {
   def scalaVersion = "2.12.6"

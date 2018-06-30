@@ -6,6 +6,9 @@ out/
 # Directory where the server is launched and tested
 run/
 
+# Bloop output
+.bloop/
+
 # Gradle cache
 .gradle*
 
