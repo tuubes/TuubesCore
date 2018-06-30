@@ -13,7 +13,7 @@ trait TuubesModule extends ScalaModule {
 
 trait JUnitTesting extends TestModule {// JUnit 5 tests
   def ivyDeps = Agg(ivy"net.aichler:jupiter-interface:0.7.0")
-  def testFrameworks = Seq("net.aichler.jupiter.api.JUnitFramework")
+  def testFrameworks = Seq("net.aichler.jupiter.api.JupiterFramework")
 }
 
 object core extends TuubesModule {
