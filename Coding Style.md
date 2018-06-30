@@ -17,6 +17,6 @@ Scalafmt doesn't work with Java source files, please format your code carefully,
 ## Config files
 - [scalafmt configuration](.scalafmt.conf)
 - [editorconfig file](.editorconfig)
-- [IntelliJ formatter settings](CodingStyle.xml)
+- [IntelliJ formatter settings](CodeStyle.xml)
 
 The scalafmt configuration takes over everything else and scalafmt should be the primary formatting tool. The other files are provided to help you but they don't reflect the exact code style.
