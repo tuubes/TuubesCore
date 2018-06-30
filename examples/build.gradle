@@ -1,5 +1,0 @@
-version 'unspecified'
-
-dependencies {
-	compile project(':core')
-}
