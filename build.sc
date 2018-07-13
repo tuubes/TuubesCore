@@ -6,8 +6,7 @@ import $ivy.`ch.epfl.scala::mill-bloop:1.0.0-M11`
 trait TuubesModule extends ScalaModule {
   def scalaVersion = "2.12.6"
   def repositories = super.repositories ++ Seq(
-    MavenRepository("https://jcenter.bintray.com"),
-    MavenRepository("https://jitpack.io")
+    MavenRepository("https://jcenter.bintray.com")
   )
 }
 
@@ -18,10 +17,10 @@ trait JUnitTesting extends TestModule {// JUnit 5 tests
 
 object core extends TuubesModule {
   def ivyDeps = super.ivyDeps() ++ Agg(
-    ivy"com.github.TheElectronWill.Night-Config:core:3.1.0",
-    ivy"com.github.TheElectronWill.Night-Config:json:3.1.0",
-    ivy"com.github.TheElectronWill.Night-Config:toml:3.1.0",
-    ivy"com.github.TheElectronWill:Niol:1.5.2",
+    ivy"com.electronwill.night-config:core:3.3.0",
+    ivy"com.electronwill.night-config:json:3.3.0",
+    ivy"com.electronwill.night-config:toml:3.3.0",
+    ivy"com.electronwill::niol:1.5.2",
     ivy"org.fusesource.jansi:jansi:1.17.1",
     ivy"com.typesafe.scala-logging::scala-logging:3.9.0",
     ivy"com.github.pathikrit::better-files:3.5.0"
