@@ -13,15 +13,15 @@ import org.tuubes.core.plugins.ScalaPluginLoader
 object TuubesServer {
   private[core] val logger = LoggerFactory.getLogger("TuubesCore")
 
-  val Version: String = "0.6-alpha"
+  final val Version: String = "0.6-alpha-snapshot"
 
-  val DirMain = File(System.getProperty("user.dir"))
-  val DirConfig: File = DirMain / "config"
-  val DirPlugins: File = DirMain / "plugins"
-  val DirWorlds: File = DirMain / "worlds"
-  val DirLogs: File = DirMain / "logs"
+  final val DirMain = File(System.getProperty("user.dir"))
+  final val DirConfig: File = DirMain / "config"
+  final val DirPlugins: File = DirMain / "plugins"
+  final val DirWorlds: File = DirMain / "worlds"
+  final val DirLogs: File = DirMain / "logs"
 
-  val PluginLoader = new ScalaPluginLoader
+  final val PluginLoader = new ScalaPluginLoader
 
   def main(args: Array[String]): Unit = {
     Seq(DirConfig, DirPlugins, DirWorlds, DirLogs).foreach(_.createDirectories())
