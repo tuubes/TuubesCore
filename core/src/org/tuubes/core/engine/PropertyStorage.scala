@@ -15,6 +15,18 @@ final class PropertyStorage extends Iterable[Property[_]] {
   private[this] val propertiesMap = new mutable.LongMap[Property[_]]
 
   /**
+   * Gets the value of a property, or null.
+   *
+   * @param prop the PropertyType
+   * @tparam A the value's type
+   * @return The value if this storage contains the property, null otherwise
+   */
+  def getOrNull[A](prop: PropertyType[A]): A = {
+    val p = propertiesMap.getOrNull(prop.id)
+    if (p == null) null.asInstanceOf[A] else p.get.asInstanceOf[A]
+  }
+
+  /**
 	 * Gets the value of a property.
 	 *
 	 * @param prop the PropertyType
