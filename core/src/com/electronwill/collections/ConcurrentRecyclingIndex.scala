@@ -143,6 +143,19 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](initialCapac
     elements = elems //volatile write
   }
 
+  override def compact(): Unit = {
+    if (elementCount < elements.length) {
+      var lastUsedId = elements.length
+      while (lastUsedId >= 0 && (elements(lastUsedId) eq null)) {
+        lastUsedId += 1
+      }
+      elements = shrink(elements, lastUsedId)
+    }
+    if (recycleCount < idsToRecycle.length) {
+      idsToRecycle = shrink(idsToRecycle, recycleCount)
+    }
+  }
+
   override def iterator: Iterator[(Int, A)] = new Iterator[(Int, A)] {
     // Iterates over (key,elem) - WEAKLY CONSISTENT
     private[this] val elems = elements //volatile read
@@ -187,18 +200,5 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](initialCapac
     override def hasNext: Boolean = it.hasNext
     override def next(): Int = it.next()._1
     override def size: Int = it.size
-  }
-
-  override def compact(): Unit = {
-    if (elementCount < elements.length) {
-      var lastUsedId = elements.length
-      while (lastUsedId >= 0 && (elements(lastUsedId) eq null)) {
-        lastUsedId += 1
-      }
-      elements = shrink(elements, lastUsedId)
-    }
-    if (recycleCount < idsToRecycle.length) {
-      idsToRecycle = shrink(idsToRecycle, recycleCount)
-    }
   }
 }
