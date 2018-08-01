@@ -7,7 +7,7 @@ import com.electronwill.collections.RecyclingIndex
  *
  * @author TheElectronWill
  */
-sealed abstract class Property[A](private[tuubes] val `type`: PropertyType[A],
+sealed abstract class Property[A](private[engine] val typ: PropertyType[A],
                                   protected[this] var value: A,
                                   newlyAdded: Boolean,
                                   private[tuubes] val listeners: RecyclingIndex[ValueListener[A]]) {
@@ -81,7 +81,7 @@ final class MemorizedProperty[A](t: PropertyType[A],
   private[this] var old: A = value
 
   def this(sp: SimpleProperty[A]) = {
-    this(sp.`type`, sp.get, false, sp.listeners)
+    this(sp.typ, sp.get, false, sp.listeners)
   }
 
   override def set(newValue: A): Unit = {
