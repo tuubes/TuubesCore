@@ -168,7 +168,7 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](initialCapac
         if (v ne null) {
           nextElement = v.asInstanceOf[A]
         }
-        id -= 1
+        id += 1
       }
     }
     override def hasNext: Boolean = {

@@ -134,7 +134,7 @@ final class RecyclingIndex[A >: Null <: AnyRef: ClassTag](initialCapacity: Int,
         if (v ne null) {
           nextElement = v.asInstanceOf[A]
         }
-        id -= 1
+        id += 1
       }
     }
     override def hasNext: Boolean = {
