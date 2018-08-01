@@ -29,8 +29,7 @@ final class RecyclingIndex[A >: Null <: AnyRef: ClassTag](initialCapacity: Int,
   private[this] var elementCount = 0
 
   /** Contains the IDs that have been removed and can be recycled */
-  private[this] var idsToRecycle: Array[Int] =
-    new Array[Int](initialCapacity / 2)
+  private[this] var idsToRecycle: Array[Int] = new Array[Int](initialCapacity / 2)
 
   /** The number of IDs to recycle */
   private[this] var recycleCount = 0
@@ -101,8 +100,10 @@ final class RecyclingIndex[A >: Null <: AnyRef: ClassTag](initialCapacity: Int,
     elements(id) = null
   }
 
+  override def apply(id: Int): A = elements(id)
+
   override def getOrNull(id: Int): A = {
-    elements(id)
+    if (id >= 0 && id < elements.length) elements(id) else null
   }
 
   override def update(id: Int, element: A): Unit = {

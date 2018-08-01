@@ -14,7 +14,7 @@ class TypeRegistry[T >: Null <: Type[T]: ClassTag] {
   private[this] val index = new RecyclingIndex[T]
   private[this] val namesMap = new mutable.AnyRefMap[String, T]
 
-  def apply(uniqueName: String): Option[T] = {
+  def get(uniqueName: String): Option[T] = {
     namesMap.get(uniqueName)
   }
 
@@ -22,8 +22,8 @@ class TypeRegistry[T >: Null <: Type[T]: ClassTag] {
     namesMap.getOrNull(uniqueName)
   }
 
-  private[tuubes] def apply(internalId: Int): Option[T] = {
-    index.apply(internalId)
+  private[tuubes] def get(internalId: Int): Option[T] = {
+    index.get(internalId)
   }
 
   private[tuubes] def getOrNull(internalId: Int): T = {

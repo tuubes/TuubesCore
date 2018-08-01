@@ -46,21 +46,21 @@ abstract class Index[A] extends Iterable[(Int, A)] with Compactable {
   def -=(id: Int, expectedValue: A): Boolean
 
   /**
-	 * Gets an element from the index.
+	 * Gets an element from the index. May return null of throw an exception if not found.
 	 *
 	 * @param id the element's id
-	 * @return an Option that contains the element, or None if there is no element associated to
-	 *         the given id.
+	 * @return the element at the given id if it exists, or null, or throws an exception
 	 */
-  def apply(id: Int): Option[A] = Option(getOrNull(id))
+  def apply(id: Int): A
 
   /**
-	 * Updates the element associated with a given id.
-	 *
-	 * @param id      the id
-	 * @param element the new element to associate with the given id
-	 */
-  def update(id: Int, element: A): Unit
+   * Gets an element from the index.
+   *
+   * @param id the element's id
+   * @return an Option that contains the element, or None if there is no element associated to
+   *         the given id.
+   */
+  def get(id: Int): Option[A] = Option(getOrNull(id))
 
   /**
 	 * Gets an element from the index, or null if not found.
@@ -69,6 +69,14 @@ abstract class Index[A] extends Iterable[(Int, A)] with Compactable {
 	 * @return the element, or null if there is no element associated to the given id.
 	 */
   def getOrNull(id: Int): A
+
+  /**
+   * Updates the element associated with a given id.
+   *
+   * @param id      the id
+   * @param element the new element to associate with the given id
+   */
+  def update(id: Int, element: A): Unit
 
   /**
 	 * Removes an element from the index.

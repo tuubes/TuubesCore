@@ -128,8 +128,13 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](initialCapac
     elements = elems //volatile write
   }
 
+  override def apply(id: Int): A = {
+    elements(id) //volatile read, exception if not found
+  }
+
   override def getOrNull(id: Int): A = {
-    elements(id) //volatile read
+    val elems = elements //volatile read
+    if (id >= 0 && id < elems.length) elems(id) else null
   }
 
   override def update(id: Int, element: A): Unit = {
