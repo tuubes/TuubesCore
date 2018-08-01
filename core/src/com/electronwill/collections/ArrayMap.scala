@@ -32,7 +32,7 @@ final class ArrayMap[@specialized(Int) A: ClassTag](initialCapacity: Int,
 
   override def update(key: Int, value: A): Unit = {
     elementCount += 1
-    if (elements.length < key) {
+    if (key >= elements.length) {
       elements = growAmortize(elements, key + 1)
     }
     elements(key) = value
@@ -100,7 +100,7 @@ final class ArrayMap[@specialized(Int) A: ClassTag](initialCapacity: Int,
         if (nullValue != v) {
           nextElement = v.asInstanceOf[A]
         }
-        id -= 1
+        id += 1
       }
     }
     override def hasNext: Boolean = {
