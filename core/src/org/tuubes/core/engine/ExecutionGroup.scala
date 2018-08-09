@@ -267,7 +267,7 @@ object ExecutionGroup {
    */
   def existing(id: Int): Option[ExecutionGroup] = {
     groups.synchronized {
-      groups(id)
+      groups.get(id)
     }
   }
 
