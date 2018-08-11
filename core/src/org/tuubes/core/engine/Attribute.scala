@@ -3,14 +3,14 @@ package org.tuubes.core.engine
 import com.electronwill.collections.RecyclingIndex
 
 /**
- * A [[GameObject]] property.
+ * A [[GameObject]] attribute. It contains data shared with all the object's behaviors.
  *
  * @author TheElectronWill
  */
-sealed abstract class Property[A](private[engine] val typ: PropertyType[A],
-                                  protected[this] var value: A,
-                                  newlyAdded: Boolean,
-                                  private[tuubes] val listeners: RecyclingIndex[ValueListener[A]]) {
+sealed abstract class Attribute[A](private[engine] val typ: AttributeKey[A],
+                                   protected[this] var value: A,
+                                   newlyAdded: Boolean,
+                                   private[tuubes] val listeners: RecyclingIndex[ValueListener[A]]) {
   protected[this] var changed = newlyAdded
 
   /**
@@ -19,14 +19,14 @@ sealed abstract class Property[A](private[engine] val typ: PropertyType[A],
   final def get: A = value
 
   /**
-	 * Updates the property.
+	 * Updates the attribute.
 	 *
 	 * @param newValue the new value to set
 	 */
   def set(newValue: A): Unit
 
   /**
-	 * @return true if the property
+	 * @return true if the attribute
 	 */
   final def hasChanged: Boolean = changed
 
@@ -35,20 +35,20 @@ sealed abstract class Property[A](private[engine] val typ: PropertyType[A],
 	 */
   def endCycle(): Unit
 
-  def addListener(listener: ValueListener[A]): ListenKey[Property[A]] = {
+  def addListener(listener: ValueListener[A]): ListenKey[Attribute[A]] = {
     new ListenKey(listeners += listener)
   }
 
-  def removeListener(key: ListenKey[Property[A]]): Unit = {
+  def removeListener(key: ListenKey[Attribute[A]]): Unit = {
     listeners.remove(key.id)
   }
 }
-final class SimpleProperty[A](t: PropertyType[A],
-                              v: A,
-                              newlyAdded: Boolean = true,
-                              listeners: RecyclingIndex[ValueListener[A]] =
+final class SimpleAttribute[A](t: AttributeKey[A],
+                               v: A,
+                               newlyAdded: Boolean = true,
+                               listeners: RecyclingIndex[ValueListener[A]] =
                                 new RecyclingIndex[ValueListener[A]])
-    extends Property[A](t, v, newlyAdded, listeners) {
+  extends Attribute[A](t, v, newlyAdded, listeners) {
   override def set(newValue: A): Unit = {
     value = newValue
     changed = true
@@ -65,22 +65,22 @@ final class SimpleProperty[A](t: PropertyType[A],
 }
 
 /**
- * A property for which we know both the current and previous value.
+ * A attribute for which we know both the current and previous value.
  *
  * @param t the type
  * @param v the initial value
  * @tparam A the value's type
  */
-final class MemorizedProperty[A](t: PropertyType[A],
-                                 v: A,
-                                 newlyAdded: Boolean = true,
-                                 listeners: RecyclingIndex[ValueListener[A]] =
+final class MemorizedAttribute[A](t: AttributeKey[A],
+                                  v: A,
+                                  newlyAdded: Boolean = true,
+                                  listeners: RecyclingIndex[ValueListener[A]] =
                                    new RecyclingIndex[ValueListener[A]])
-    extends Property[A](t, v, newlyAdded, listeners) {
+  extends Attribute[A](t, v, newlyAdded, listeners) {
 
   private[this] var old: A = value
 
-  def this(sp: SimpleProperty[A]) = {
+  def this(sp: SimpleAttribute[A]) = {
     this(sp.typ, sp.get, false, sp.listeners)
   }
 

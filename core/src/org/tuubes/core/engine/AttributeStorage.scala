@@ -7,12 +7,12 @@ import scala.collection.mutable
  *
  * @author TheElectronWill
  */
-final class PropertyStorage extends Iterable[Property[_]] {
+final class AttributeStorage extends Iterable[Attribute[_]] {
 
   /**
 	 * Map ID => Property
 	 */
-  private[this] val propertiesMap = new mutable.LongMap[Property[_]]
+  private[this] val idMap = new mutable.LongMap[Attribute[_]]
 
   /**
    * Gets the value of a property, or null.
@@ -21,8 +21,8 @@ final class PropertyStorage extends Iterable[Property[_]] {
    * @tparam A the value's type
    * @return The value if this storage contains the property, null otherwise
    */
-  def getOrNull[A](prop: PropertyType[A]): A = {
-    val p = propertiesMap.getOrNull(prop.id)
+  def getOrNull[A](prop: AttributeKey[A]): A = {
+    val p = idMap.getOrNull(prop.id)
     if (p == null) null.asInstanceOf[A] else p.get.asInstanceOf[A]
   }
 
@@ -33,8 +33,8 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @tparam A the value's type
 	 * @return Some(value) if this storage contains the property, None otherwise
 	 */
-  def apply[A](prop: PropertyType[A]): Option[A] = {
-    propertiesMap.get(prop.id).map(_.get.asInstanceOf[A])
+  def apply[A](prop: AttributeKey[A]): Option[A] = {
+    idMap.get(prop.id).map(_.get.asInstanceOf[A])
   }
 
   /**
@@ -45,9 +45,9 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @tparam A the value's type
 	 * @return true if it has been updated, false if this storage doesn't contain the property
 	 */
-  def update[A](prop: PropertyType[A], newValue: A): Boolean = {
-    val p = propertiesMap.get(prop.id)
-    p.foreach(_.asInstanceOf[Property[A]].set(newValue))
+  def update[A](prop: AttributeKey[A], newValue: A): Boolean = {
+    val p = idMap.get(prop.id)
+    p.foreach(_.asInstanceOf[Attribute[A]].set(newValue))
     p.isDefined
   }
 
@@ -59,9 +59,9 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @tparam A the value's type
 	 * @return true if it has been added, false if this storage already contains the property
 	 */
-  def +=[A](prop: PropertyType[A], initialValue: A): Boolean = {
-    if (!propertiesMap.contains(prop.id)) {
-      propertiesMap(prop.id) = new SimpleProperty[A](prop, initialValue)
+  def +=[A](prop: AttributeKey[A], initialValue: A): Boolean = {
+    if (!idMap.contains(prop.id)) {
+      idMap(prop.id) = new SimpleAttribute[A](prop, initialValue)
       true
     } else {
       false
@@ -74,8 +74,8 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @param prop the PropertyType
 	 * @return true if it has been removed, false if this storage doesn't contain the property
 	 */
-  def -=(prop: PropertyType[_]): Boolean = {
-    propertiesMap.remove(prop.id).isDefined
+  def -=(prop: AttributeKey[_]): Boolean = {
+    idMap.remove(prop.id).isDefined
   }
 
   /**
@@ -85,12 +85,12 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @param value the value to set
 	 * @tparam A the value's type
 	 */
-  def put[A](prop: PropertyType[A], value: A): Unit = {
-    val p = propertiesMap.getOrNull(prop.id)
+  def put[A](prop: AttributeKey[A], value: A): Unit = {
+    val p = idMap.getOrNull(prop.id)
     if (p eq null) {
-      propertiesMap(prop.id) = new SimpleProperty[A](prop, value)
+      idMap(prop.id) = new SimpleAttribute[A](prop, value)
     } else {
-      p.asInstanceOf[Property[A]].set(value)
+      p.asInstanceOf[Attribute[A]].set(value)
     }
   }
 
@@ -102,14 +102,14 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @tparam A the property value's type
 	 * @return Some(listenKey) if the property exists, else None
 	 */
-  def listen[A](prop: PropertyType[A],
-                l: SimpleValueListener[A]): Option[ListenKey[Property[A]]] = {
-    val p = propertiesMap.get(prop.id)
-    p.map(_.asInstanceOf[Property[A]].addListener((oldV, newV) => l.onChange(newV)))
+  def listen[A](prop: AttributeKey[A],
+                l: SimpleValueListener[A]): Option[ListenKey[Attribute[A]]] = {
+    val p = idMap.get(prop.id)
+    p.map(_.asInstanceOf[Attribute[A]].addListener((oldV, newV) => l.onChange(newV)))
   }
 
   /**
-	 * Adds a listener to a property, and ensure that the property is a [[MemorizedProperty]].
+	 * Adds a listener to a property, and ensure that the property is a [[MemorizedAttribute]].
 	 * <p>
 	 * If you don't need to know the old value of the property, please use a
 	 * [[SimpleValueListener]] with the other `listen` method.
@@ -119,14 +119,14 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @tparam A the property value's type
 	 * @return Some(listenKey) if the property exists, else None
 	 */
-  def listen[A](prop: PropertyType[A], l: ValueListener[A]): Option[ListenKey[Property[A]]] = {
-    val p = propertiesMap.get(prop.id)
+  def listen[A](prop: AttributeKey[A], l: ValueListener[A]): Option[ListenKey[Attribute[A]]] = {
+    val p = idMap.get(prop.id)
     p match {
-      case Some(sp: SimpleProperty[A]) =>
+      case Some(sp: SimpleAttribute[A]) =>
         // We need a MemorizedProperty but have a SimpleProperty: let's change
-        val mp = new MemorizedProperty[A](sp)
+        val mp = new MemorizedAttribute[A](sp)
         Some(mp.addListener(l))
-      case Some(mp: MemorizedProperty[A]) =>
+      case Some(mp: MemorizedAttribute[A]) =>
         // We have the MemorizedProperty
         Some(mp.addListener(l))
       case _ =>
@@ -143,15 +143,15 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @tparam A the property value's type
 	 * @return Some(listenRegistration) if the property exists, else None
 	 */
-  def rlisten[A](prop: PropertyType[A],
-                 l: SimpleValueListener[A]): Option[ListenRegistration[Property[A]]] = {
+  def rlisten[A](prop: AttributeKey[A],
+                 l: SimpleValueListener[A]): Option[ListenRegistration[Attribute[A]]] = {
     listen(prop, l).map(
       new ListenRegistration(_, key => unlisten(prop, key))
     )
   }
 
   /**
-	 * Adds a listener to a property, and ensure that the property is a [[MemorizedProperty]].
+	 * Adds a listener to a property, and ensure that the property is a [[MemorizedAttribute]].
 	 * <p>
 	 * If you don't need to know the old value of the property, please use a
 	 * [[SimpleValueListener]] with the other `listen` method.
@@ -161,8 +161,8 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @tparam A the property value's type
 	 * @return Some(listenRegistration) if the property exists, else None
 	 */
-  def rlisten[A](prop: PropertyType[A],
-                 l: ValueListener[A]): Option[ListenRegistration[Property[A]]] = {
+  def rlisten[A](prop: AttributeKey[A],
+                 l: ValueListener[A]): Option[ListenRegistration[Attribute[A]]] = {
     listen(prop, l).map(
       new ListenRegistration(_, key => unlisten(prop, key))
     )
@@ -174,9 +174,9 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 * @param prop the PropertyType
 	 * @param key  the listener's key
 	 */
-  def unlisten[A](prop: PropertyType[A], key: ListenKey[Property[A]]): Unit = {
-    val p = propertiesMap.get(prop.id)
-    p.foreach(_.asInstanceOf[Property[A]].removeListener(key))
+  def unlisten[A](prop: AttributeKey[A], key: ListenKey[Attribute[A]]): Unit = {
+    val p = idMap.get(prop.id)
+    p.foreach(_.asInstanceOf[Attribute[A]].removeListener(key))
   }
 
   /**
@@ -184,11 +184,11 @@ final class PropertyStorage extends Iterable[Property[_]] {
 	 *
 	 * @return a new iterator that iterates over all the properties of this storage
 	 */
-  override def iterator: Iterator[Property[_]] = {
-    propertiesMap.valuesIterator
+  override def iterator: Iterator[Attribute[_]] = {
+    idMap.valuesIterator
   }
 
-  override def foreach[U](f: Property[_] => U): Unit = {
-    propertiesMap.foreachValue(f) // Efficient LongMap.foreachValue
+  override def foreach[U](f: Attribute[_] => U): Unit = {
+    idMap.foreachValue(f) // Efficient LongMap.foreachValue
   }
 }
