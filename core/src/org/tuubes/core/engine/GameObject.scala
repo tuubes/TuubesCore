@@ -6,10 +6,20 @@ import org.tuubes.core.worlds.LocalWorld
 import scala.collection.mutable.ArrayBuffer
 
 /**
+ * A GameObject is an actor made of attributes and behaviors.
+ * ==Attributes==
+ * Attributes are pieces of data accessible by all the behaviors. The attributes' changes
+ * are tracked to ease their synchronization with the game clients.
+ * Attributes aren't accessible outside of the GameObject in order to ensure thread-safety.
+ *
+ * ==Behaviors==
+ * Behaviors are pieces of code that make the GameObject react to incoming messages and
+ * updates. They aren't accessible outside of the GameObject.
+ *
  * @author TheElectronWill
  */
-final class GameObject extends GroupedActor {
-  private[this] val props = new PropertyStorage()
+class GameObject extends GroupedActor {
+  private[this] val attributes = new AttributeStorage()
   private[this] val behaviors = new ArrayBuffer[Behavior]
   private[this] val updateListeners = new RecyclingIndex[Runnable]
   private[this] var _world: LocalWorld = _
@@ -25,7 +35,7 @@ final class GameObject extends GroupedActor {
   override protected def onMessage(msg: ActorMessage): Unit = {
     super.onMessage(msg)
     for (behavior <- behaviors) {
-      behavior.onMessage(msg, this)
+      behavior.onMessage(msg, attributes)
     }
   }
   override protected def filter(msg: ActorMessage): Boolean = true
@@ -33,10 +43,10 @@ final class GameObject extends GroupedActor {
   override def update(dt: Double): Unit = {
     // Updates each behavior
     for (behavior <- behaviors) {
-      behavior.update(dt, this)
+      behavior.update(dt, attributes)
     }
     // Notifies each property change
-    for (property <- props) { // Uses the efficient foreach (see PropertyStorage#foreach)
+    for (property <- attributes) { // Uses the efficient foreach (see PropertyStorage#foreach)
       if (property.hasChanged) {
         property.endCycle()
       }

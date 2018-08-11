@@ -1,23 +1,25 @@
 package org.tuubes.core.engine
 
 /**
+ * A behavior composes a GameObject and makes it react to messages.
+ * A behavior can safely access the GameObject's attributes, and may have an internal state.
+ *
  * @author TheElectronWill
  */
 trait Behavior {
-  def onMessage(msg: ActorMessage, receiver: GameObject): Unit
-  def update(dt: Double, obj: GameObject): Unit
-}
-abstract class StatefulBehavior(protected[this] val go: GameObject) extends Behavior {
-  override final def onMessage(msg: ActorMessage, receiver: GameObject): Unit = {
-    if (receiver eq go) {
-      onMessage(msg)
-    }
-  }
-  override final def update(dt: Double, obj: GameObject): Unit = {
-    if (obj eq go) {
-      update(dt)
-    }
-  }
-  def onMessage(msg: ActorMessage): Unit
-  def update(dt: Double): Unit
+  /**
+   * Reacts to a message received by the GameObject.
+   *
+   * @param msg  the message
+   * @param attr the GameObject's attributes
+   */
+  def onMessage(msg: ActorMessage, attr: AttributeStorage): Unit
+
+  /**
+   * Reacts to a GameObeject update.
+   *
+   * @param dt   the time elapsed since the last update
+   * @param attr the GameObjetct's attributes
+   */
+  def update(dt: Double, attr: AttributeStorage): Unit
 }
