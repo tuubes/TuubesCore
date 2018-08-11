@@ -2,19 +2,19 @@ package org.tuubes.core.engine
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
-import ActorState._
-import org.tuubes.core.engine.messages.{MoveToGroup, Terminate}
+import org.tuubes.core.engine.ActorState._
+import org.tuubes.core.engine.messages.Terminate
 
 /**
  * @author TheElectronWill
  */
 abstract class LocalActor extends Actor {
-  protected[this] val msgBox = new ConcurrentLinkedQueue[ActorMessage]
-  private[this] var _state: ActorState = Created
+  protected[this] val mailBox = new ConcurrentLinkedQueue[ActorMessage]
+  private[engine] var state: ActorState = Created
 
   override def !(msg: ActorMessage)(implicit currentGroup: ExecutionGroup): Unit = {
     if (filter(msg)) {
-      msgBox.add(msg)
+      mailBox.add(msg)
     }
   }
 
@@ -30,10 +30,10 @@ abstract class LocalActor extends Actor {
   }
 
   final def processMessages(): Unit = {
-    var msg = msgBox.poll()
+    var msg = mailBox.poll()
     while (msg != null && state == Running) {
       onMessage(msg)
-      msg = msgBox.poll()
+      msg = mailBox.poll()
     }
   }
 
@@ -54,8 +54,4 @@ abstract class LocalActor extends Actor {
   protected def filter(msg: ActorMessage): Boolean = {
     state != Terminated
   }
-
-  def state: ActorState = _state
-
-  private[engine] def state_=(s: ActorState): Unit = _state = s
 }

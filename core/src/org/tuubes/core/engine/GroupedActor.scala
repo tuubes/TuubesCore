@@ -6,7 +6,7 @@ import org.tuubes.core.engine.messages.MoveToGroup
  * @author TheElectronWill
  */
 abstract class GroupedActor extends LocalActor {
-  private[this] var _group: ExecutionGroup = _
+  private[engine] var group: ExecutionGroup = _
   private[engine] var moveGroup: ExecutionGroup = _
 
   override def !(msg: ActorMessage)(implicit currentGroup: ExecutionGroup): Unit = {
@@ -28,8 +28,5 @@ abstract class GroupedActor extends LocalActor {
     }
   }
 
-  protected def handleLater(msg: ActorMessage): Unit = msgBox.add(msg)
-
-  def group: ExecutionGroup = _group
-  private[engine] def group_=(g: ExecutionGroup): Unit = _group = g
+  protected def handleLater(msg: ActorMessage): Unit = mailBox.add(msg)
 }
