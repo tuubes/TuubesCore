@@ -47,4 +47,24 @@ class TypeRegistry[T >: Null <: Type[T] : ClassTag] {
   private[tuubes] def ditchPreRegistrations(): Unit = {
     preRegistrations = null
   }
+
+  private[tuubes] def saveTo(file: File): Unit = {
+    for (writer <- file.bufferedWriter) {
+      for ((key, typ) <- index) {
+        writer.write(key.toString)
+        writer.write('=')
+        writer.write(typ.uniqueName)
+        writer.newLine()
+      }
+    }
+  }
+
+  private[tuubes] def readFrom(file: File): Unit = {
+    for (line <- file.lineIterator) { //the iterator is auto-closed at the end of the iteration
+      val parts = StringUtils.split(line, '=')
+      val key = parts.get(0).toInt
+      val name = parts.get(1)
+      preRegister(name, key)
+    }
+  }
 }
