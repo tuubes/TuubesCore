@@ -7,9 +7,11 @@ import org.tuubes.core.{Type, TypeRegistry}
  *
  * @author TheElectronWill
  */
-abstract class ItemType(n: String) extends Type[ItemType](n, ItemType) {}
+abstract class ItemType[S <: ItemState](n: String) extends Type[ItemType[_]](n, ItemType) {
+  //TODO
+}
 
 /**
  * Companion object and registry of item types.
  */
-object ItemType extends TypeRegistry[ItemType] {}
+object ItemType extends TypeRegistry[ItemType[_]] {}
