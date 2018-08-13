@@ -75,6 +75,15 @@ final class ArrayMap[@specialized(Int) A: ClassTag](initialCapacity: Int,
     elementCount -= 1
   }
 
+  override def clear(): Unit = {
+    var i = 0
+    while (i < elements.length) {
+      elements(i) = nullValue
+      i += 1
+    }
+    elementCount = 0
+  }
+
   override def get(key: Int): Option[A] = {
     if (key >= elements.length) {
       None
