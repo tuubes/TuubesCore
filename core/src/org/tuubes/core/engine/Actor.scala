@@ -8,7 +8,6 @@ package org.tuubes.core.engine
  * @author TheElectronWill
  */
 trait Actor {
-
   /**
 	 * Sends a message to this actor.
 	 *
