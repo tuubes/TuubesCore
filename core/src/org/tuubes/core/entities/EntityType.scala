@@ -35,9 +35,7 @@ abstract class EntityType[S <: EntityState[S]](n: String) extends Type[EntityTyp
    *
    * @return a new EntityState with default values
    */
-  def newState(): S = new S {
-    override def typ: EntityType[S] = EntityType.this
-  }
+  def newState(): S
 }
 
 /**

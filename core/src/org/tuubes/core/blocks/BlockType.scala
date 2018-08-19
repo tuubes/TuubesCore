@@ -35,9 +35,7 @@ abstract class BlockType[S <: BlockState](n: String) extends Type[BlockType[_]](
    *
    * @return a new BlockState with default values
    */
-  def newState(): S = new S {
-    override def typ: BlockType[_] = BlockType.this
-  }
+  def newState(): S
 }
 
 /**
