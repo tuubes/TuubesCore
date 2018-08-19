@@ -11,5 +11,5 @@ import org.tuubes.core.engine.{ActorMessage, AttributeStorage, ExecutionGroup}
  */
 final case class SimpleBlock(typ: BlockType[_], location: BlockLocation) extends Block {
   override def !(msg: ActorMessage)(implicit g: ExecutionGroup) = {}
-  override def safely(f: AttributeStorage => ())(implicit g: ExecutionGroup) = {}
+  override def safely(f: AttributeStorage => Unit)(implicit g: ExecutionGroup) = {}
 }

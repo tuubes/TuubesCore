@@ -19,5 +19,5 @@ trait ItemStack extends Actor {
    * @param f            the function to execute
    * @param currentGroup the current ExecutionGroup
    */
-  def safely(f: AttributeStorage => ())(implicit currentGroup: ExecutionGroup): Unit
+  def safely(f: AttributeStorage => Unit)(implicit currentGroup: ExecutionGroup): Unit
 }
