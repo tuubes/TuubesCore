@@ -17,21 +17,28 @@ class TypeRegistry[T >: Null <: Type[T] : ClassTag] {
   private[this] val namesMap = new mutable.AnyRefMap[String, T](64)
   private[this] var preRegistrations = new mutable.AnyRefMap[String, Int](64)
 
-  def get(uniqueName: String): Option[T] = {
-    namesMap.get(uniqueName)
+  /**
+   * Searches a type by name. Throws an exception if not found.
+   *
+  def apply(uniqueName: String): T = namesMap(uniqueName)
+
+  /**
+   * Searches a type by name. Returns `None` if not found.
+   *
+  def get(uniqueName: String): Option[T] = namesMap.get(uniqueName)
+
+  /**
+   * Searches a type by id. Throws an exception if not found.
+  private[tuubes] def apply(internalId: Int): T = {
+    val typeOrNull = index(internalId)
+    if (typeOrNull == null) throw new NoSuchElementException(s"No type with id $internalId")
+    typeOrNull
   }
 
-  def getOrNull(uniqueName: String): T = {
-    namesMap.getOrNull(uniqueName)
-  }
-
-  private[tuubes] def get(internalId: Int): Option[T] = {
-    index.get(internalId)
-  }
-
-  private[tuubes] def getOrNull(internalId: Int): T = {
-    index(internalId)
-  }
+  /**
+   * Searches a type by id. Returns `None` if not found.
+   *
+  private[tuubes] def get(internalId: Int): Option[T] = index.get(internalId)
 
   private[tuubes] def register(t: T): Int = {
     namesMap(t.uniqueName) = t
