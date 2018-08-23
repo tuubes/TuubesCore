@@ -1,13 +1,9 @@
 package org.tuubes.core.network
 
-import com.electronwill.niol.NiolOutput
-import com.electronwill.niol.network.tcp.ClientAttach
+import com.electronwill.niol.Writeable
 
 /** A network packet that can be written */
-trait Packet {
+trait Packet extends Writeable {
   /** The packet's id in its protocol */
   def id: Int
-
-  /** Writes this packet to the given output */
-  def write(out: NiolOutput): Unit
 }
