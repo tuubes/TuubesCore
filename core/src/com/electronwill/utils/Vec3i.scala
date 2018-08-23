@@ -1,11 +1,13 @@
 package com.electronwill.utils
 
+import scala.language.implicitConversions
+
 /**
  * An immutable vector with integer coordinates.
  *
  * @author TheElectronWill
  */
-final class Vec3i(val x: Int, val y: Int, val z: Int) {
+final case class Vec3i(x: Int, y: Int, z: Int) {
   def +(v: Vec3i) = new Vec3i(x + v.x, y + v.y, z + v.z)
 
   def -(v: Vec3i): Vec3i = new Vec3i(x - v.x, y - v.y, z - v.z)
@@ -68,7 +70,6 @@ final class Vec3i(val x: Int, val y: Int, val z: Int) {
 }
 
 object Vec3i {
-
   /** Converts a Vec3i to a Vec3d */
   implicit def toVec3d(v: Vec3i): Vec3d = new Vec3d(v.x, v.y, v.z)
 
@@ -81,8 +82,11 @@ object Vec3i {
   def min(a: Vec3i, b: Vec3i): Vec3i =
     new Vec3i(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z))
 
-  val Zero = new Vec3i(0, 0, 0)
-  val UnitX = new Vec3i(1, 0, 0)
-  val UnitY = new Vec3i(0, 1, 0)
-  val UnitZ = new Vec3i(0, 0, 1)
+  final val ZERO = new Vec3i(0, 0, 0)
+  final val ONE_X = new Vec3i(1, 0, 0)
+  final val ONE_Y = new Vec3i(0, 1, 0)
+  final val ONE_Z = new Vec3i(0, 0, 1)
+  final val NEG_X = new Vec3i(-1, 0, 0)
+  final val NEG_Y = new Vec3i(0, -1, 0)
+  final val NEG_Z = new Vec3i(0, 0, -1)
 }

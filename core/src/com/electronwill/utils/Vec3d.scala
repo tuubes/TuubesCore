@@ -1,11 +1,13 @@
 package com.electronwill.utils
 
+import scala.language.implicitConversions
+
 /**
  * An immutable vector with floating-point coordinates.
  *
  * @author TheElectronWill
  */
-final class Vec3d(val x: Double, val y: Double, val z: Double) {
+final case class Vec3d(x: Double, y: Double, z: Double) {
   def +(v: Vec3d) = new Vec3d(x + v.x, y + v.y, z + v.z)
 
   def -(v: Vec3d): Vec3d = new Vec3d(x - v.x, y - v.y, z - v.z)
@@ -72,7 +74,6 @@ final class Vec3d(val x: Double, val y: Double, val z: Double) {
 }
 
 object Vec3d {
-
   /** Converts a Vec3d to a Vec3i */
   implicit def toVec3i(v: Vec3d): Vec3i =
     new Vec3i(v.x.toInt, v.y.toInt, v.z.toInt)
@@ -86,8 +87,11 @@ object Vec3d {
   def min(a: Vec3d, b: Vec3d): Vec3d =
     new Vec3d(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z))
 
-  val Zero = new Vec3d(0, 0, 0)
-  val UnitX = new Vec3d(1, 0, 0)
-  val UnitY = new Vec3d(0, 1, 0)
-  val UnitZ = new Vec3d(0, 0, 1)
+  final val ZERO = new Vec3d(0, 0, 0)
+  final val ONE_X = new Vec3d(1, 0, 0)
+  final val ONE_Y = new Vec3d(0, 1, 0)
+  final val ONE_Z = new Vec3d(0, 0, 1)
+  final val NEG_X = new Vec3d(-1, 0, 0)
+  final val NEG_Y = new Vec3d(0, -1, 0)
+  final val NEG_Z = new Vec3d(0, 0, -1)
 }
