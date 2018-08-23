@@ -22,8 +22,9 @@ object core extends TuubesModule {
     ivy"com.electronwill.night-config:toml:3.3.0",
     ivy"com.electronwill::niol:1.5.2",
     ivy"org.fusesource.jansi:jansi:1.17.1",
-    ivy"com.typesafe.scala-logging::scala-logging:3.9.0",
-    ivy"com.github.pathikrit::better-files:3.5.0"
+    ivy"org.apache.logging.log4j:log4j-api:2.11.1",
+    ivy"org.apache.logging.log4j:log4j-core:2.11.1",
+    ivy"org.apache.logging.log4j::log4j-api-scala:11.0"
   )
   object test extends Tests with JUnitTesting
 }
