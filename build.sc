@@ -17,10 +17,11 @@ trait JUnitTesting extends TestModule {// JUnit 5 tests
 
 object core extends TuubesModule {
   def ivyDeps = super.ivyDeps() ++ Agg(
+    ivy"com.electronwill::niol:1.5.4",
     ivy"com.electronwill.night-config:core:3.3.0",
     ivy"com.electronwill.night-config:json:3.3.0",
     ivy"com.electronwill.night-config:toml:3.3.0",
-    ivy"com.electronwill::niol:1.5.2",
+    ivy"com.github.pathikrit::better-files:3.6.0",
     ivy"org.fusesource.jansi:jansi:1.17.1",
     ivy"org.apache.logging.log4j:log4j-api:2.11.1",
     ivy"org.apache.logging.log4j:log4j-core:2.11.1",
@@ -33,7 +34,7 @@ object coreMacros extends TuubesModule {
   def compileIvyDeps = Agg(ivy"org.scala-lang:scala-reflect:2.12.6")
   def scalacPluginIvyDeps = Agg(ivy"org.scalamacros:paradise_2.12.6:2.1.1")
   def moduleDeps = Seq(core)
-} 
+}
 
 object coreExamples extends TuubesModule {
   def moduleDeps = Seq(core)
