@@ -1,7 +1,7 @@
 package org.tuubes.core.worlds
 
 import better.files.File
-import com.electronwill.collections.ConcurrentRecyclingIndex
+import com.electronwill.collection.ConcurrentRecyclingIndex
 import org.tuubes.core.TuubesServer
 import org.tuubes.core.engine.GameObject
 

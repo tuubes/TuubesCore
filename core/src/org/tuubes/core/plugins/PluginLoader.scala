@@ -1,6 +1,6 @@
 package org.tuubes.core.plugins
 
-import better.files.{File, Files}
+import better.files.File
 
 /**
  * Loads and unloads Tuubes plugins.
@@ -13,7 +13,7 @@ trait PluginLoader {
 	 * @param files the plugins' files, one file per plugin
 	 * @return the number of loaded plugins
 	 */
-  def load(files: Files): Int
+  def load(files: Iterator[File]): Int
 
   /**
 	 * Loads one or more plugins from files.

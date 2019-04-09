@@ -1,7 +1,6 @@
-// build.sc
 import mill._, scalalib._
 import coursier.maven.MavenRepository
-import $ivy.`ch.epfl.scala::mill-bloop:1.0.0-M11`
+import $ivy.`ch.epfl.scala::mill-bloop:1.2.5`
 
 trait TuubesModule extends ScalaModule {
   def scalaVersion = "2.12.6"
@@ -11,8 +10,12 @@ trait TuubesModule extends ScalaModule {
 }
 
 trait JUnitTesting extends TestModule {// JUnit 5 tests
-  def ivyDeps = Agg(ivy"net.aichler:jupiter-interface:0.7.0")
+  def ivyDeps = Agg(ivy"net.aichler:jupiter-interface:0.8.1")
   def testFrameworks = Seq("net.aichler.jupiter.api.JupiterFramework")
+}
+
+object utils extends TuubesModule {
+  object test extends Tests with JUnitTesting
 }
 
 object core extends TuubesModule {
@@ -27,6 +30,8 @@ object core extends TuubesModule {
     ivy"org.apache.logging.log4j:log4j-core:2.11.1",
     ivy"org.apache.logging.log4j::log4j-api-scala:11.0"
   )
+  def moduleDeps = Seq(utils)
+   
   object test extends Tests with JUnitTesting
 }
 

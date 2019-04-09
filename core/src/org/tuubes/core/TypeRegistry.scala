@@ -1,8 +1,8 @@
 package org.tuubes.core
 
 import better.files.File
-import com.electronwill.collections.ArrayMap
-import com.electronwill.utils.StringUtils
+import com.electronwill.collection.ArrayMap
+import com.electronwill.util.StringUtils
 
 import scala.collection.mutable
 import scala.reflect.ClassTag

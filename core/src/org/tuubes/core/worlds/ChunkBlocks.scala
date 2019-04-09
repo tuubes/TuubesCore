@@ -1,8 +1,8 @@
 package org.tuubes.core.worlds
 
-import com.electronwill.collections.{Bag, SimpleBag}
+import com.electronwill.collection.{Bag, SimpleBag}
 import com.electronwill.niol.{NiolInput, NiolOutput}
-import com.electronwill.utils.CompactStorage
+import com.electronwill.util.CompactStorage
 import org.tuubes.core.blocks.BlockType
 import ChunkBlocks.{InitialBitsPerBlock, MaxPaletteSize}
 

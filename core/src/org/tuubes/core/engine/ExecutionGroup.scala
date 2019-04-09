@@ -5,8 +5,8 @@ import java.util
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 
-import com.electronwill.collections.{RecyclingIndex, SimpleBag}
-import com.electronwill.utils.MovingStats
+import com.electronwill.collection.{RecyclingIndex, SimpleBag}
+import com.electronwill.util.MovingStats
 import org.tuubes.core.engine.ActorState._
 import org.tuubes.core.tasks.TaskSystem
 

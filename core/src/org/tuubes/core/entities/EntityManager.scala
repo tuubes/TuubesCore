@@ -1,6 +1,6 @@
 package org.tuubes.core.entities
 
-import com.electronwill.utils.Vec3d
+import com.electronwill.util.Vec3d
 
 /**
  * Manages local entities.

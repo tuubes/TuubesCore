@@ -1,6 +1,5 @@
 package org.tuubes.core.network
 
-import com.electronwill.utils.IntBijection
 import com.electronwill.niol.NiolInput
 import com.electronwill.niol.network.tcp.ClientAttach
 import org.tuubes.core.blocks.BlockType
@@ -30,20 +29,23 @@ trait Protocol[C <: ClientAttach] {
   def detectPacket[A <: Packet](in: NiolInput): PacketObj[C, A]
 
   /**
-	 * A bijection of block ids.
-	 * [internal -> external] (direct) and [external -> internal] (inverse).
-	 */
-  def blockFunction: IntBijection[BlockType]
+   *
+   * @param t
+   * @return
+   */
+  def blockHandler(t: BlockType[_]): BlockHandler
 
   /**
-	 * A bijection of item ids.
-	 * [internal -> external] (direct) and [external -> internal] (inverse).
-	 */
-  def itemFunction: IntBijection[ItemType]
+   *
+   * @param t
+   * @return
+   */
+  def itemHandler(t:ItemType[_]): ItemHandler
 
   /**
-	 * A bijection of entity ids.
-	 * [internal -> external] (direct) and [external -> internal] (inverse).
-	 */
-  def entityFunction: IntBijection[EntityType]
+   *
+   * @param t
+   * @return
+   */
+  def entityHandler(t: EntityType[_]): EntityHandler
 }

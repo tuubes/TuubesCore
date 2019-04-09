@@ -2,7 +2,7 @@ package org.tuubes.core.plugins
 
 import java.util.{List => JList}
 
-import com.electronwill.utils.StringUtils
+import com.electronwill.util.StringUtils
 
 /**
  * @author TheElectronWill

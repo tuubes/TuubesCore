@@ -1,6 +1,6 @@
 package org.tuubes.core.engine
 
-import com.electronwill.collections.RecyclingIndex
+import com.electronwill.collection.RecyclingIndex
 
 /**
  * A [[GameObject]] attribute. It contains data shared with all the object's behaviors.

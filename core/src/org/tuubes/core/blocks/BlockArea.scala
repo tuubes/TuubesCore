@@ -1,6 +1,6 @@
 package org.tuubes.core.blocks
 
-import com.electronwill.utils.Vec3i
+import com.electronwill.util.Vec3i
 
 /**
  * An area that contains blocks.

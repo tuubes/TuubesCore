@@ -3,7 +3,7 @@ package org.tuubes.core.worlds
 import java.nio.file.StandardOpenOption
 
 import better.files.File
-import com.electronwill.collections.{Bag, SimpleBag}
+import com.electronwill.collection.{Bag, SimpleBag}
 import com.electronwill.niol.io.ChannelInput
 import org.tuubes.core.TuubesServer
 import org.tuubes.core.engine.{ActorMessage, ExecutionGroup, GroupedActor, LocalActor}

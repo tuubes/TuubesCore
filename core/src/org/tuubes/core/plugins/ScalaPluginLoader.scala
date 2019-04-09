@@ -1,12 +1,11 @@
 package org.tuubes.core.plugins
 
-import better.files.{File, Files}
+import better.files.File
+import org.tuubes.core.TuubesServer.logger
 
 import scala.collection.mutable
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
-
-import org.tuubes.core.TuubesServer.logger
 
 /**
  * @author TheElectronWill
@@ -20,7 +19,7 @@ final class ScalaPluginLoader extends PluginLoader {
   override def plugin(name: String): Option[Plugin] =
     loaded.get(name).map(_.plugin)
 
-  override def load(files: Files): Int = {
+  override def load(files: Iterator[File]): Int = {
     def parentFailed(dependent: Node, parent: String, errors: mutable.ArrayBuffer[String]): Unit = {
       dependent.markInvalid()
       val name = dependent.data.name

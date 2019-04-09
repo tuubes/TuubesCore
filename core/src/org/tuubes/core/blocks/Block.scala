@@ -1,6 +1,6 @@
 package org.tuubes.core.blocks
 
-import com.electronwill.utils.BlockLocation
+import com.electronwill.util.BlockLocation
 import org.tuubes.core.engine.{Actor, AttributeStorage, ExecutionGroup}
 
 /**

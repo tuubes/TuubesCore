@@ -1,6 +1,6 @@
 package org.tuubes.core.network
 
-import com.electronwill.collections.ConcurrentRecyclingIndex
+import com.electronwill.collection.ConcurrentRecyclingIndex
 import com.electronwill.niol.Reader
 import com.electronwill.niol.network.tcp.ClientAttach
 import org.tuubes.core.TuubesServer

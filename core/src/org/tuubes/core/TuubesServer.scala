@@ -1,9 +1,8 @@
 package org.tuubes.core
 
 import better.files.File
+import org.apache.logging.log4j.LogManager
 import org.fusesource.jansi.AnsiConsole
-import org.slf4j.LoggerFactory
-import org.slf4j.impl.{LogLevel, PhotonLogger}
 import org.tuubes.core.network.NetworkSystem
 import org.tuubes.core.plugins.ScalaPluginLoader
 
@@ -11,7 +10,7 @@ import org.tuubes.core.plugins.ScalaPluginLoader
  * @author TheElectronWill
  */
 object TuubesServer {
-  private[core] val logger = LoggerFactory.getLogger("TuubesCore")
+  private[core] val logger = LogManager.getLogger("TuubesCore")
 
   final val Version: String = "0.6-alpha-snapshot"
 
@@ -27,7 +26,6 @@ object TuubesServer {
     Seq(DirConfig, DirPlugins, DirWorlds, DirLogs).foreach(_.createDirectories())
     logger.info("Tuubes core loading...")
     logger.warn("WARNING: This is an unreleased version of TuubesCore, potentially unstable")
-    PhotonLogger.setLevel(LogLevel.DEBUG)
 
     AnsiConsole.systemInstall()
     // TODO read configuration(s?)
