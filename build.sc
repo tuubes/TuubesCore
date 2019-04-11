@@ -35,12 +35,6 @@ object core extends TuubesModule {
   object test extends Tests with JUnitTesting
 }
 
-object coreMacros extends TuubesModule {
-  def compileIvyDeps = Agg(ivy"org.scala-lang:scala-reflect:2.12.6")
-  def scalacPluginIvyDeps = Agg(ivy"org.scalamacros:paradise_2.12.6:2.1.1")
-  def moduleDeps = Seq(core)
-}
-
 object coreExamples extends TuubesModule {
   def moduleDeps = Seq(core)
 }
