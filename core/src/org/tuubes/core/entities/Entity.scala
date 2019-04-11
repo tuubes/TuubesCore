@@ -1,6 +1,6 @@
 package org.tuubes.core.entities
 
-import com.electronwill.util.Location
+import org.tuubes.core.worlds.Location
 import org.tuubes.core.engine.{Actor, AttributeStorage, ExecutionGroup}
 
 /**
