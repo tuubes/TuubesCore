@@ -26,9 +26,7 @@ object core extends TuubesModule {
     ivy"com.electronwill.night-config:toml:3.5.2",
     ivy"com.github.pathikrit::better-files:3.7.1",
     ivy"org.fusesource.jansi:jansi:1.17.1",
-    ivy"org.apache.logging.log4j:log4j-api:2.11.1",
-    ivy"org.apache.logging.log4j:log4j-core:2.11.1",
-    ivy"org.apache.logging.log4j::log4j-api-scala:11.0"
+    ivy"org.wvlet.airframe::airframe-log:19.4.1"
   )
   def moduleDeps = Seq(utils)
 
