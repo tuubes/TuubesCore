@@ -21,15 +21,15 @@ object Rotation3d {
 
   def cardanRotationMatrix(angleX: Double, angleY: Double, angleZ: Double): MutableMatrix3d = {
     // TODO optimize by hand?
-    val rx = zRotationMatrix(angleX)
-    val ry = zRotationMatrix(angleY)
+    val rx = xRotationMatrix(angleX)
+    val ry = yRotationMatrix(angleY)
     val rz = zRotationMatrix(angleZ)
     rz * ry * rx
   }
 
   def eulerRotationMatrix(alpha: Double, beta: Double, gamma: Double): MutableMatrix3d = {
     // TODO optimize by hand?
-    val rx = zRotationMatrix(beta)
+    val rx = xRotationMatrix(beta)
     val rz1 = zRotationMatrix(gamma)
     val rz2 = zRotationMatrix(alpha)
     rz1 * rx * rz2
