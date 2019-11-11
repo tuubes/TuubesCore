@@ -1,4 +1,4 @@
-package com.electronwill.util
+package com.electronwill.collection
 
 /**
  * A `CompactStorage` is a fixed-length container that stores its value in a contiguous way,
