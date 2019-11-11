@@ -13,24 +13,19 @@ trait JUnitTests extends TestModule {// JUnit 5 tests
   def testFrameworks = Seq("net.aichler.jupiter.api.JupiterFramework")
 }
 
-object `util-collections` extends TuubesModule {
-  object test extends Tests with JUnitTests
-}
-
-object `util-maths` extends TuubesModule {
+object maths extends TuubesModule {
   object test extends Tests with JUnitTests
 }
 
 object engine extends TuubesModule {
-  def moduleDeps = Seq(`util-collections`, `util-maths`)
+  def moduleDeps = Seq(maths)
 }
 
 object plugin extends TuubesModule {
   def moduleDeps = Seq(engine)
-  
-  def ivyDeps = super.ivyDeps ++ Agg(
-      ivy"com.electronwill.night-config:toml:3.6.2"
-    )
+  def ivyDeps = Agg(
+    ivy"com.electronwill.night-config:toml:3.6.2"
+  )
 }
 
 object worldgen extends TuubesModule {
@@ -39,8 +34,7 @@ object worldgen extends TuubesModule {
 
 object network extends TuubesModule {
   def moduleDeps = Seq(engine)
-  
-  def ivyDeps = super.ivyDeps ++ Agg(
+  def ivyDeps = Agg(
     ivy"com.electronwill::niol:2.0.0"
   )
 }
@@ -48,7 +42,7 @@ object network extends TuubesModule {
 object runnable extends TuubesModule {
   def mainClass = Some("org.tuubes.Main")
   def moduleDeps = Seq(plugin, worldgen, network)
-  def ivyDeps = super.ivyDeps ++ Agg(
+  def ivyDeps = Agg(
     ivy"org.fusesource.jansi:jansi:1.18"
   )
 }
