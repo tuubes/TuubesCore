@@ -1,38 +1,49 @@
 import mill._, scalalib._
 import coursier.maven.MavenRepository
-import $ivy.`ch.epfl.scala::mill-bloop:1.2.5`
 
 trait TuubesModule extends ScalaModule {
-  def scalaVersion = "2.12.8"
+  def scalaVersion = "2.13.1"
   def repositories = super.repositories ++ Seq(
     MavenRepository("https://jcenter.bintray.com")
   )
 }
 
-trait JUnitTesting extends TestModule {// JUnit 5 tests
-  def ivyDeps = Agg(ivy"net.aichler:jupiter-interface:0.8.1")
+trait JUnitTests extends TestModule {// JUnit 5 tests
+  def ivyDeps = Agg(ivy"net.aichler:jupiter-interface:0.8.3")
   def testFrameworks = Seq("net.aichler.jupiter.api.JupiterFramework")
 }
 
-object utils extends TuubesModule {
-  object test extends Tests with JUnitTesting
+object maths extends TuubesModule {
+  object test extends Tests with JUnitTests
 }
 
-object core extends TuubesModule {
-  def ivyDeps = super.ivyDeps() ++ Agg(
-    ivy"com.electronwill::niol:1.5.4",
-    ivy"com.electronwill.night-config:core:3.5.2",
-    ivy"com.electronwill.night-config:json:3.5.2",
-    ivy"com.electronwill.night-config:toml:3.5.2",
-    ivy"com.github.pathikrit::better-files:3.7.1",
-    ivy"org.fusesource.jansi:jansi:1.17.1",
-    ivy"org.wvlet.airframe::airframe-log:19.4.1"
+object engine extends TuubesModule {
+  def moduleDeps = Seq(maths)
+}
+
+object plugin extends TuubesModule {
+  def moduleDeps = Seq(engine)
+  def ivyDeps = Agg(
+    ivy"com.electronwill.night-config:toml:3.6.2"
   )
-  def moduleDeps = Seq(utils)
-
-  object test extends Tests with JUnitTesting
 }
 
-object coreExamples extends TuubesModule {
-  def moduleDeps = Seq(core)
+object worldgen extends TuubesModule {
+  def moduleDeps = Seq(engine)
 }
+
+object network extends TuubesModule {
+  def moduleDeps = Seq(engine)
+  def ivyDeps = Agg(
+    ivy"com.electronwill::niol:2.0.0"
+  )
+}
+
+object runnable extends TuubesModule {
+  def mainClass = Some("org.tuubes.Main")
+  def moduleDeps = Seq(plugin, worldgen, network)
+  def ivyDeps = Agg(
+    ivy"org.fusesource.jansi:jansi:1.18"
+  )
+}
+
